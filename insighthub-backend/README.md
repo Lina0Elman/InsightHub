@@ -98,4 +98,4 @@ Run tests:
 npm run test
 ```
 
-See our `master` test coverage at https://taljacob2.github.io/colman-advanced-web-apps
+See our `main` test coverage at https://Lina0Elman.github.io/InsightHub
