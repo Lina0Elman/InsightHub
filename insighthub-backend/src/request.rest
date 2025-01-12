@@ -1,0 +1,87 @@
+
+###
+
+GET http://localhost:3000/post
+
+// GET ALL POSTS
+###
+
+GET http://localhost:3000/post?sender=Mevorah
+
+//GET ALL POSTS OF SPECISIC USERNAME
+
+###
+
+GET http://localhost:3000/post/6755df72fa7704d85baec0c2
+
+//GET POST BY ID
+
+###
+
+
+### - POST NEW POST
+POST http://localhost:3000/post
+Content-Type: application/json
+
+{
+    "sender": "Tal",
+    "title": "Post 2",
+    "content": "HELLO 12345!!"
+}
+
+###
+
+PUT http://localhost:3000/post/6755da8614e9b89cb0e24bd4
+
+//UPDATE POST
+Content-Type: application/json
+
+{
+    "sender": "Mevorah 1234",
+    "title": "Post 1234",
+    "content": "HEY 1234!!"
+}
+
+###
+
+POST http://localhost:3000/comment
+//POST NEW COMMENT
+Content-Type: application/json
+
+{
+    "postId": "6755fd5616f2c59bcec78e17",
+    "sender": "Mevorah",
+    "content": "First Comment!!"
+}
+
+###
+
+PUT http://localhost:3000/comment/6755da8614e9b89cb0e24bd4
+
+//UPDATE COMMENT BY COMMENT ID
+Content-Type: application/json
+
+{
+    "sender": "Tal 1234",
+    "content": "HELLO COMMENT 1234!!"
+}
+
+###
+
+GET http://localhost:3000/comment/post/6755fd5616f2c59bcec78e17
+
+//GET ALL COMMENTS OF SPECIFIC POST
+
+###
+
+DELETE http://localhost:3000/comment/6755fe0f16f2c59bcec78e27
+
+//DELETE COMMENT BY COMMENT_ID
+
+###
+
+GET http://localhost:3000/comment
+
+//GET ALL COMMENTS
+
+###
