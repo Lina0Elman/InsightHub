@@ -1,7 +1,7 @@
 {
   "name": "ex",
   "version": "1.0.0",
-  "description": "Advanced Web Apps Course Exercise",
+  "description": "InsightHub Backend",
   "main": "src/server.ts",
   "scripts": {
     "start": "tsc && node dist/server.js",
@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/taljacob2/colman-advanced-web-apps.git"
+    "url": "git+https://github.com/Lina0Elman/InsightHub.git"
   },
-  "author": "Mevorah Berrebi & Tal Jacob",
+  "author": "Mevorah Berrebi & Tal Jacob & Lina Elman & Liav Tibi",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/taljacob2/colman-advanced-web-apps/issues"
+    "url": "https://github.com/Lina0Elman/InsightHub/issues"
   },
-  "homepage": "https://github.com/taljacob2/colman-advanced-web-apps#readme",
+  "homepage": "https://github.com/Lina0Elman/InsightHub#readme",
   "dependencies": {
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
