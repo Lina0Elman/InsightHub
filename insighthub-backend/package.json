@@ -1,0 +1,54 @@
+{
+  "name": "ex",
+  "version": "1.0.0",
+  "description": "InsightHub Backend",
+  "main": "src/server.ts",
+  "scripts": {
+    "start": "tsc && node dist/server.js",
+    "dev": "nodemon ./src/server.ts",
+    "test": "cross-env NODE_ENV=test jest --runInBand",
+    "testAuth": "cross-env NODE_ENV=test jest --runInBand auth_controller.test.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lina0Elman/InsightHub.git"
+  },
+  "author": "Mevorah Berrebi & Tal Jacob & Lina Elman & Liav Tibi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Lina0Elman/InsightHub/issues"
+  },
+  "homepage": "https://github.com/Lina0Elman/InsightHub#readme",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.3",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.4.5",
+    "dotenv-expand": "^12.0.1",
+    "express": "^4.21.1",
+    "jest": "^29.7.0",
+    "jest-junit": "^16.0.0",
+    "js-yaml": "^4.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.8.2",
+    "supertest": "^7.0.0",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.26.0",
+    "@babel/preset-typescript": "^7.26.0",
+    "@eslint/js": "^9.17.0",
+    "@types/bcrypt": "^5.0.2",
+    "@types/express": "^4.17.1",
+    "@types/jest": "^29.5.14",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/supertest": "^6.0.2",
+    "eslint": "^9.17.0",
+    "globals": "^15.14.0",
+    "nodemon": "^3.1.7",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.2"
+  }
+}
