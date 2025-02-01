@@ -60,10 +60,6 @@ for example:
 
 You can set the NUMBER and the TIME_UNIT to your liking.
 
-### `REFRESH_TOKEN_SECRET`
-
-You should define it in the same way as [`ACCESS_TOKEN_SECRET`](https://github.com/Lina0Elman/InsightHub?tab=readme-ov-file#access_token_secret).
-
 ### `REFRESH_TOKEN_EXPIRATION`
 
 Determines the expiration time for the authentication refresh token.

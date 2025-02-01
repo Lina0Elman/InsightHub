@@ -18,15 +18,40 @@ GET http://localhost:3000/post/6755df72fa7704d85baec0c2
 
 ###
 
+### - REGISTER
+POST http://localhost:3000/auth/register
+Authorization: jwt
+Content-Type: application/json
+
+{
+    "email": "berrebi@gmail.com",
+    "password": "0105896"
+}
+
+###
+
+### - LOGIN
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+    "email": "berrebi@gmail.com",
+    "password": "0105896"
+}
+
+###
 
 ### - POST NEW POST
 POST http://localhost:3000/post
 Content-Type: application/json
-
+Authorization: jwt eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2Nzg2NDkxYTc5NDM3NDBiZGFmYmE5MjgiLCJyYW5kb20iOjk2NjI5OCwiaWF0IjoxNzM2ODUzODkwLCJleHAiOjE3Mzc0NTg2OTB9.oEDZaquYp4e8nAdSkeFrtIXEMh91smGsIGKo4CNiR3g
+    
 {
-    "sender": "Tal",
-    "title": "Post 2",
-    "content": "HELLO 12345!!"
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2Nzg2NDkxYTc5NDM3NDBiZGFmYmE5MjgiLCJyYW5kb20iOjk2NjI5OCwiaWF0IjoxNzM2ODUzODkwLCJleHAiOjE3MzY4NTM4OTN9.QFrAgLp3q8XpDfVBGbeg2GD-L8p85tV7nhl70WQVp-0",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2Nzg2NDkxYTc5NDM3NDBiZGFmYmE5MjgiLCJyYW5kb20iOjk2NjI5OCwiaWF0IjoxNzM2ODUzODkwLCJleHAiOjE3Mzc0NTg2OTB9.oEDZaquYp4e8nAdSkeFrtIXEMh91smGsIGKo4CNiR3g",
+    "sender": "6784e4b9878c5166ee883fde",
+    "title": "Post New After manuel login",
+    "content": "HELLO PostTEST!!"
 }
 
 ###
