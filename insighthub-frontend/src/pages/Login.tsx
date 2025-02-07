@@ -1,25 +1,35 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Container, TextField, Button, Typography, Box, Paper, Link } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import { Container, TextField, Button, Typography, Box, Paper, Link, Alert } from '@mui/material';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import './Login.css';
+import { config } from '../config';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      const response = await axios.post(`${config.app.backend_url}/auth/login`, {
         email,
         password,
       });
+
       // Handle successful login, e.g., save token, redirect, etc.
       console.log(response.data);
+      navigate('/dashboard'); // Redirect to dashboard or another page after login
     } catch (error) {
       // Handle login error
-      console.error(error);
+      const err = error as any;
+      if (err.response && err.response.data) {
+        setError(err.response.data.message);
+      } else {
+        setError('An error occurred. Please try again.');
+      }
     }
   };
 
@@ -34,6 +44,7 @@ const Login: React.FC = () => {
             <Typography component="h1" variant="h5" align="center">
               Login
             </Typography>
+            {error && <Alert severity="error">{error}</Alert>}
             <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
               <TextField
                 variant="outlined"
@@ -72,7 +83,7 @@ const Login: React.FC = () => {
               </Button>
               <Typography variant="body2" align="center">
                 Don't have an account?{' '}
-                <Link component={RouterLink as any} to="/register">
+                <Link component={RouterLink} to="/register">
                   Register
                 </Link>
               </Typography>

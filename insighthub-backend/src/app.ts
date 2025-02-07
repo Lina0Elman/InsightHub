@@ -7,9 +7,17 @@ import comments_routes from './routes/comments_routes';
 import auth_routes from './routes/auth_routes';
 import swaggerUi from 'swagger-ui-express';
 import loadOpenApiFile from './openapi/openapi_loader';
+import cors from 'cors';
+import { config } from './config';
 
 dotenvExpand.expand(dotenv.config());
 const app = express();
+
+app.use(cors({
+    origin: config.app.client_url,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, // Allow cookies to be sent with requests
+  }));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -20,6 +28,8 @@ app.use((err, req, res, next) => {
     }
     next(err);
 });
+
+
 
 app.use('/swagger', swaggerUi.serve, swaggerUi.setup(loadOpenApiFile()));
 app.use('/post', posts_routes);

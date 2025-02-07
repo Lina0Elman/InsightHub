@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { AnyObject } from 'mongoose';
 import { error } from 'console';
+import { config } from '../config';
 
 const register = async (req, res) => {
     const email = req.body.email;
@@ -37,18 +38,15 @@ const generateTokens = (_id: string): { accessToken: string, refreshToken: strin
             random: random
         },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: process.env.TOKEN_EXPIRATION });
+        { expiresIn: parseInt(process.env.TOKEN_EXPIRATION) });
 
-    if (!process.env.REFRESH_TOKEN_EXPIRATION) {
-        throw new Error("Missing REFRESH_TOKEN_EXPIRATION in environment variables");
-    }
     const refreshToken = jwt.sign(
         {
             _id: _id,
             random: random
         },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: process.env.REFRESH_TOKEN_EXPIRATION });
+        { expiresIn: parseInt(config.refresh_token.expiration) });
 
     return { accessToken, refreshToken };
 }
@@ -62,9 +60,7 @@ const login = async (req, res) => {
     try {
         const user = await userModel.findOne({ email: email });
         if (!user) {
-
             return res.status(400).send("Wrong email or password");
-
         }
 
         const validPassword = await bcrypt.compare(password, user.password);

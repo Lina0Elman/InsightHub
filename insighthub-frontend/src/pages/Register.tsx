@@ -1,27 +1,40 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Container, TextField, Button, Typography, Box, Paper, Link } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import { Container, TextField, Button, Typography, Box, Paper, Link, Alert } from '@mui/material';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import './Register.css';
+import { config } from '../config';
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', {
+      const response = await axios.post(`${config.app.backend_url}/auth/register`, {
         username,
         email,
         password,
       });
-      // Handle successful registration, e.g., redirect to login
+      // Handle successful registration
       console.log(response.data);
+      setSuccess(true);
+      setTimeout(() => {
+        navigate('/login'); // Redirect to login page after registration
+      }, 4000);
     } catch (error) {
       // Handle registration error
-      console.error(error);
+      const err = error as any;
+      if (err.response && err.response.data) {
+        setError(err.response.data);
+      } else {
+        setError('An error occurred. Please try again.');
+      }
     }
   };
 
@@ -36,6 +49,8 @@ const Register: React.FC = () => {
             <Typography component="h1" variant="h5" align="center">
               Register
             </Typography>
+            {error != '' && <Alert severity="error">{error}</Alert>}
+            {success && <Alert severity="success" sx={{ width: '100%', mb: 2 }}>Registration successful! Redirecting to login...</Alert>}
             <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
               <TextField
                 variant="outlined"
@@ -86,7 +101,7 @@ const Register: React.FC = () => {
               </Button>
               <Typography variant="body2" align="center">
                 Already have an account?{' '}
-                <Link component={RouterLink as any} to="/login">
+                <Link component={RouterLink} to="/login">
                   Login
                 </Link>
               </Typography>
