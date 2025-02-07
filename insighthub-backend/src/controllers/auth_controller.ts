@@ -21,7 +21,7 @@ const register = async (req, res) => {
         });
         res.status(200).send(user);
     } catch (err) {
-        return res.status(500).send(err);
+        return res.status(500).send(err.message);
     }
 };
 const generateTokens = (_id: string): { accessToken: string, refreshToken: string } => {
@@ -86,7 +86,7 @@ const login = async (req, res) => {
             refreshToken: tokens.refreshToken,
         });
     } catch (err) {
-        return res.status(400).send(err);
+        return res.status(400).send(err.message);
     }
 
 };
