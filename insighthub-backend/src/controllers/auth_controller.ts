@@ -30,7 +30,7 @@ const generateTokens = (_id: string): { accessToken: string, refreshToken: strin
             random: random
         },
         config.token.access_token_secret,
-        { expiresIn: parseInt(config.token.token_expiration) });
+        { expiresIn: config.token.token_expiration });
 
     const refreshToken = jwt.sign(
         {
@@ -38,7 +38,7 @@ const generateTokens = (_id: string): { accessToken: string, refreshToken: strin
             random: random
         },
         config.token.access_token_secret,
-        { expiresIn: parseInt(config.token.refresh_token_expiration) });
+        { expiresIn: config.token.refresh_token_expiration });
 
     return { accessToken, refreshToken };
 }
