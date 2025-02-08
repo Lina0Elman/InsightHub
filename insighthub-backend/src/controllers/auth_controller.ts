@@ -1,9 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction } from 'express';
 import userModel from '../models/user_model';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { AnyObject } from 'mongoose';
-import { error } from 'console';
 import { config } from '../config';
 
 const register = async (req, res) => {
@@ -26,27 +24,21 @@ const register = async (req, res) => {
 };
 const generateTokens = (_id: string): { accessToken: string, refreshToken: string } => {
     const random = Math.floor(Math.random() * 1000000);
-    if (!process.env.ACCESS_TOKEN_SECRET) {
-        throw new Error("Missing ACCESS_TOKEN_SECRET in environment variables");
-    }
-    if (!process.env.TOKEN_EXPIRATION) {
-        throw new Error("Missing TOKEN_EXPIRATION in environment variables");
-    }
     const accessToken = jwt.sign(
         {
             _id: _id,
             random: random
         },
-        process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: parseInt(process.env.TOKEN_EXPIRATION) });
+        config.token.access_token_secret,
+        { expiresIn: parseInt(config.token.refresh_token_expiration) });
 
     const refreshToken = jwt.sign(
         {
             _id: _id,
             random: random
         },
-        process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: parseInt(config.refresh_token.expiration) });
+        config.token.access_token_secret,
+        { expiresIn: parseInt(config.token.refresh_token_expiration) });
 
     return { accessToken, refreshToken };
 }
@@ -96,12 +88,7 @@ const logout = async (req, res) => {
     if (!refreshToken) {
         return res.status(400).send("missing refresh Token");
     }
-    // need to check the refresh token is valid
-    if (!process.env.ACCESS_TOKEN_SECRET) {
-        return res.status(400).send("missing auth config");
-
-    }
-    jwt.verify(refreshToken, process.env.ACCESS_TOKEN_SECRET, async (err, data) => {
+    jwt.verify(refreshToken, config.token.access_token_secret, async (err, data) => {
         if (err) {
             return res.status(403).send("Invalid Token");
         }
@@ -132,10 +119,7 @@ const refresh = async (req, res) => {
     if (!refreshToken) {
         return res.status(400).send("invalid refresh token");
     }
-    if (!process.env.ACCESS_TOKEN_SECRET) {
-        return res.status(500).send("missing auth config");
-    }
-    jwt.verify(refreshToken, process.env.ACCESS_TOKEN_SECRET, async (err, data) => {
+    jwt.verify(refreshToken, config.token.access_token_secret, async (err, data) => {
         if (err) {
             return res.status(403).send("Invalid Token");
         }
@@ -191,11 +175,11 @@ export const authMiddleware = (req, res, next: NextFunction) => {
     if (!token) {
         return res.status(401).send("missing token");
     }
-    if (!process.env.ACCESS_TOKEN_SECRET) {
+    if (!config.token.access_token_secret) {
         return res.status(500).send("missing auth config");
 
     }
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, data) => {
+    jwt.verify(token, config.token.access_token_secret, (err, data) => {
         if (err) {
             return res.status(403).send("Invalid Token");
         }

@@ -6,7 +6,8 @@ export const config = {
         port: process.env.PORT || 3000,
         client_url: process.env.CLIENT_URL || 'http://localhost:5000'
     },
-    refresh_token: {
-        expiration: process.env.TOKEN_EXPIRATION || '10000'
+    token: {
+        refresh_token_expiration: process.env.TOKEN_EXPIRATION || '10000',
+        access_token_secret: process.env.ACCESS_TOKEN_SECRET || 'secret'
     }
 }
