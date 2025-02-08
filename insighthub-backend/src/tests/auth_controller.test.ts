@@ -204,6 +204,9 @@ describe('Auth Invalid & Refresh tokens Tests', () => {
         });
         expect(response.statusCode).toBe(200);
         expect(response.body.accessToken).toBeDefined();
+        
+        console.log(response.body.accessToken);
+
         expect(response.body.refreshToken).toBeDefined();
         userInfo.accessToken = response.body.accessToken
         userInfo.refreshToken = response.body.refreshToken

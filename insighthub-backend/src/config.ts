@@ -7,8 +7,8 @@ export const config = {
         client_url: process.env.CLIENT_URL || 'http://localhost:5000'
     },
     token: {
-        refresh_token_expiration: process.env.REFRESH_TOKEN_EXPIRATION || '10000',
-        token_expiration: process.env.TOKEN_EXPIRATION || '10000',
+        refresh_token_expiration: process.env.REFRESH_TOKEN_EXPIRATION || '3d',
+        token_expiration: process.env.TOKEN_EXPIRATION || '100000s',
         access_token_secret: process.env.ACCESS_TOKEN_SECRET || 'secret'
     }
 }
