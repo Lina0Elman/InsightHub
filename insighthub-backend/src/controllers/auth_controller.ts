@@ -29,16 +29,16 @@ const generateTokens = (_id: string): { accessToken: string, refreshToken: strin
             _id: _id,
             random: random
         },
-        config.token.access_token_secret,
-        { expiresIn: config.token.token_expiration });
+        config.token.access_token_secret(),
+        { expiresIn: config.token.token_expiration() });
 
     const refreshToken = jwt.sign(
         {
             _id: _id,
             random: random
         },
-        config.token.access_token_secret,
-        { expiresIn: config.token.refresh_token_expiration });
+        config.token.access_token_secret(),
+        { expiresIn: config.token.refresh_token_expiration() });
 
     return { accessToken, refreshToken };
 }
@@ -88,7 +88,7 @@ const logout = async (req, res) => {
     if (!refreshToken) {
         return res.status(400).send("missing refresh Token");
     }
-    jwt.verify(refreshToken, config.token.access_token_secret, async (err, data) => {
+    jwt.verify(refreshToken, config.token.access_token_secret(), async (err, data) => {
         if (err) {
             return res.status(403).send("Invalid Token");
         }
@@ -119,7 +119,7 @@ const refresh = async (req, res) => {
     if (!refreshToken) {
         return res.status(400).send("invalid refresh token");
     }
-    jwt.verify(refreshToken, config.token.access_token_secret, async (err, data) => {
+    jwt.verify(refreshToken, config.token.access_token_secret(), async (err, data) => {
         if (err) {
             return res.status(403).send("Invalid Token");
         }
@@ -175,11 +175,11 @@ export const authMiddleware = (req, res, next: NextFunction) => {
     if (!token) {
         return res.status(401).send("missing token");
     }
-    if (!config.token.access_token_secret) {
+    if (!config.token.access_token_secret()) {
         return res.status(500).send("missing auth config");
 
     }
-    jwt.verify(token, config.token.access_token_secret, (err, data) => {
+    jwt.verify(token, config.token.access_token_secret(), (err, data) => {
         if (err) {
             return res.status(403).send("Invalid Token");
         }
