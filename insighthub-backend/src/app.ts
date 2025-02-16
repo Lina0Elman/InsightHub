@@ -14,7 +14,7 @@ dotenvExpand.expand(dotenv.config());
 const app = express();
 
 app.use(cors({
-    origin: config.app.client_url,
+    origin: [config.app.frontend_url(), config.app.backend_url()],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, // Allow cookies to be sent with requests
   }));

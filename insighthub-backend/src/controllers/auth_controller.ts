@@ -175,10 +175,6 @@ export const authMiddleware = (req, res, next: NextFunction) => {
     if (!token) {
         return res.status(401).send("missing token");
     }
-    if (!config.token.access_token_secret()) {
-        return res.status(500).send("missing auth config");
-
-    }
     jwt.verify(token, config.token.access_token_secret(), (err, data) => {
         if (err) {
             return res.status(403).send("Invalid Token");
