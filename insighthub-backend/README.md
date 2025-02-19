@@ -34,6 +34,14 @@ For example `3000`.
 
 The connection string to the mongodb database.
 
+### `FRONTEND_URL`
+
+The url to the frontend that the app uses, to allow cors
+
+### `BACKEND_URL`
+
+The url to the backend for swagger usage
+
 ### `ACCESS_TOKEN_SECRET`
 
 To generate a secret key for access and refresh token, execite this command in your terminal:
