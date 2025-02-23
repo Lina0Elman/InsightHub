@@ -4,6 +4,7 @@ import { Container, TextField, Button, Typography, Box, Paper, Link, Alert } fro
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import './Login.css';
 import { config } from '../config';
+import Footer from '../components/Footer';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -34,7 +35,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="login-background">
+    <div className="login-container">
       <Container component="main" maxWidth="xs">
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 8 }}>
           <Typography component="h1" variant="h3" gutterBottom>
@@ -91,6 +92,7 @@ const Login: React.FC = () => {
           </Paper>
         </Box>
       </Container>
+      <Footer/>
     </div>
   );
 };
