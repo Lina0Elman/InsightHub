@@ -30,7 +30,7 @@ const generateTokens = (_id: string): { accessToken: string, refreshToken: strin
             random: random
         },
         config.token.access_token_secret(),
-        { expiresIn: config.token.token_expiration() });
+        { expiresIn: process.env.TOKEN_EXPIRATION as jwt.SignOptions['expiresIn'] });
 
     const refreshToken = jwt.sign(
         {
@@ -38,7 +38,7 @@ const generateTokens = (_id: string): { accessToken: string, refreshToken: strin
             random: random
         },
         config.token.access_token_secret(),
-        { expiresIn: config.token.refresh_token_expiration() });
+        { expiresIn: process.env.REFRESH_TOKEN_EXPIRATION as jwt.SignOptions['expiresIn'] });
 
     return { accessToken, refreshToken };
 }
