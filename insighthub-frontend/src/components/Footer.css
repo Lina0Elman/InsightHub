@@ -1,6 +1,6 @@
 .footer {
-  background-color: #052652;
-  color: white;
+  background-color: var(--color-5);
+  color: var(--color-2);
   padding: 10px 20px;
   text-align: center;
   width: 100%;
