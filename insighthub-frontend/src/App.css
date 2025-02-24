@@ -1,3 +1,13 @@
+:root {
+  --color-1: #1877f2;
+  --color-2: #f0f2f5;
+  --color-3: #606770;
+  --color-4: #ccd0d5;
+  --color-5: #165dbb;
+  --color-6: #052652;
+  --color-shadow-1: rgba(0, 0, 0, 0.1);
+}
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
