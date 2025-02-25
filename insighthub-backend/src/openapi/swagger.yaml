@@ -435,6 +435,9 @@ components:
           type: string
           format: date-time
           description: The timestamp when the post was last updated
+        imagePath:
+          type: string
+          description: Optional, related image path stored in the server
 
     PostRequest:
       type: object
