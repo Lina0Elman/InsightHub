@@ -12,6 +12,7 @@ const postSchema = new Schema({
         type: String,
         required: true
     },
+    imagePath: String,
 }, {
    versionKey: false,
 });

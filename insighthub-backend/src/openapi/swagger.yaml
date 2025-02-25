@@ -452,6 +452,9 @@ components:
         content:
           type: string
           description: The content of the post
+        imagePath:
+          type: string
+          description: Optional, related image path stored in the server
 
     Comment:
       type: object
