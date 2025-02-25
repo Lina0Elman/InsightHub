@@ -11,6 +11,8 @@ tags:
     description: Operations related to comments on posts
   - name: Authentication
     description: Operations related to authentication tokens
+  - name: Resources
+    description: Operations related to uploading & downloading resources
 
 paths:
   # Post Routes
@@ -368,6 +370,38 @@ paths:
           description: Successfully logged out
         '401':
           description: Invalid refresh token
+
+  /resource/image:
+    post:
+      tags:
+        - Resources
+      summary: Upload an image
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Image uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  imagePath:
+                    type: string
+        '400':
+          description: Bad request - No file uploaded
+        '500':
+          description: Internal server error
 
 components:
   schemas:
