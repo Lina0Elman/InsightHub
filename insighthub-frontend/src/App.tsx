@@ -4,7 +4,10 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import './App.css'
 import Dashboard from './pages/Dashboard';
+import Logout from './pages/Logout';
 
+
+// maybe need to be like " <Route path="/logout" element={<Logout />}  />" ?
 const App: React.FC = () => {
   return (
     <Router>
@@ -13,6 +16,8 @@ const App: React.FC = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/logout" element={<Logout />} />
+
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>

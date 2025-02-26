@@ -13,15 +13,30 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      const response = await axios.post(`${config.app.backend_url()}/auth/login`, {
+
+      interface LoginResponse {
+        email: string; // user.email
+        _id: string; // user._id
+        accessToken: string; // tokens.accessToken
+        refreshToken: string; // tokens.refreshToken
+      }
+
+      const response = await axios.post<LoginResponse>(`${config.app.backend_url()}/auth/login`, {
         email,
         password,
       });
+      setEmail(response.data.email);
 
-      // Handle successful login, e.g., save token, redirect, etc.
-      console.log(response.data);
+      // Handle successful login, e.g., save tokens, redirect, etc.
+      localStorage.setItem('email', response.data.email); // Store the email in localStorage
+      localStorage.setItem('accessToken', response.data.accessToken); // Store the token in localStorage
+      localStorage.setItem('refreshToken', response.data.refreshToken); // Store the token in localStorage
+      localStorage.setItem('userId', response.data._id); // Store the user ID in localStorage 
+
       navigate('/dashboard'); // Redirect to dashboard or another page after login
+
     } catch (error) {
       // Handle login error
       const err = error as any;
@@ -59,6 +74,7 @@ const Login: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
+              
               <TextField
                 variant="outlined"
                 margin="normal"

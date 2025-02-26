@@ -1,21 +1,25 @@
 import React from 'react';
 import { Container, Typography, Box, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { config } from '../config';
 
 const Dashboard: React.FC = () => {
+
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Clear any authentication tokens or user data here
-    navigate('/login');
+    // Add your logout logic here
+    console.log('Logout clicked');
+    navigate('/logout');
   };
 
   return (
     <Container component="main" maxWidth="md">
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 8 }}>
         <Typography component="h1" variant="h3" gutterBottom>
-          Dashboard
+          <h3>{localStorage.getItem('email')}</h3>
         </Typography>
+
         <Typography component="p" variant="body1" gutterBottom>
           Welcome to the Insight Hub Dashboard!
         </Typography>
@@ -24,6 +28,8 @@ const Dashboard: React.FC = () => {
         </Button>
       </Box>
     </Container>
+
+
   );
 };
 
