@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Typography, Box, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { config } from '../config';
+
 
 const Dashboard: React.FC = () => {
 
@@ -23,7 +23,7 @@ const Dashboard: React.FC = () => {
         <Typography component="p" variant="body1" gutterBottom>
           Welcome to the Insight Hub Dashboard!
         </Typography>
-        <Button variant="contained" color="primary" onClick={handleLogout}>
+        <Button variant="contained" color="error" onClick={handleLogout}>
           Logout
         </Button>
       </Box>
