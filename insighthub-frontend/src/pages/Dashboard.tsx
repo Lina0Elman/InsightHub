@@ -15,9 +15,9 @@ const Dashboard: React.FC = () => {
 
   return (
     <Container component="main" maxWidth="md">
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 8 }}>
+      <Box style={{ backgroundColor: 'lightgray', padding: '10px', borderRadius: 4 }} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 8 }}>
         <Typography component="h1" variant="h3" gutterBottom>
-          <h3>{localStorage.getItem('email')}</h3>
+          <p>{localStorage.getItem('email')}</p>
         </Typography>
 
         <Typography component="p" variant="body1" gutterBottom>
