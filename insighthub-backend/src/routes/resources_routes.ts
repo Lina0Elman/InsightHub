@@ -7,5 +7,6 @@ import { uploadImage } from '../services/resources_service';
 const router = express.Router();
 
 router.post('/image', authMiddleware, uploadImage.single('file'), Resource.createImageResource);
+router.get('/image/:filename', authMiddleware, Resource.getImageResource);
 
 export default router;
