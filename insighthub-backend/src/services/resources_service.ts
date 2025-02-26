@@ -9,7 +9,7 @@ const createImagesStorage = () => {
     // Ensure the directory exists
     const imagesResourcesDir = config.resources.imagesDirectoryPath();
     if (!fs.existsSync(imagesResourcesDir)) {
-        fs.mkdirSync(imagesResourcesDir);
+        fs.mkdirSync(imagesResourcesDir, { recursive: true });
     }
 
     const imagesStorage = multer.diskStorage({
