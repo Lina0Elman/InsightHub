@@ -4,7 +4,6 @@ import { Container, TextField, Button, Typography, Box, Paper, Link, Alert } fro
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import './Register.css';
 import { config } from '../config';
-import Footer from '../components/Footer';
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -110,7 +109,6 @@ const Register: React.FC = () => {
           </Paper>
         </Box>
       </Container>
-      <Footer/>
     </div>
   );
 };
