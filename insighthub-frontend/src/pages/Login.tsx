@@ -34,7 +34,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="login-background">
+    <div className="login-container">
       <Container component="main" maxWidth="xs">
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 8 }}>
           <Typography component="h1" variant="h3" gutterBottom>
