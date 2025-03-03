@@ -7,14 +7,14 @@ import { uploadImage } from '../services/resources_service';
 const createImageResource = async (req, res) => {
     const upload = uploadImage.single('file');
     upload(req, res, error => {
-        if (!req.file) {
-            return res.status(400).send('No file uploaded.');
-        }
         if (error instanceof multer.MulterError) {
             return res.status(400).send(error.message);
         } else if (error instanceof TypeError) {
             return res.status(400).send(error.message);
         } else if (error) {
+            if (!req.file) {
+                return res.status(400).send('No file uploaded.');
+            }
             return res.status(500).send("Internal Server Error");
         }
 
