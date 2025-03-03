@@ -1,26 +1,22 @@
+import mongoose, { Schema } from 'mongoose';
+import { IUser , UserData} from 'types/user_types';
 
-import mongoose from 'mongoose';
-const Schema = mongoose.Schema;
+const userSchema: Schema = new Schema({
+    username: { type: String, required: true },
+    email: { type: String, required: true },
+    password: { type: String, required: true }, // Store hashed passwords
+}, { timestamps: true });
 
-const userSchema = new Schema({
-    email: {
-        type: String,
-        required: true,
-        unique: true
-    },
-
-    password: {
-        type: String,
-        required: true
-    },
-    refreshTokens: {
-        type: [String],
-        default: [] // refresh tokens per user
+userSchema.set('toJSON', {
+    transform: (doc, ret): UserData => {
+        return {
+            id: ret._id,
+            username: ret.username,
+            email: ret.email,
+            createdAt: ret.createdAt,
+            updatedAt: ret.updatedAt
+        };
     }
-}, {
-    versionKey: false,
 });
 
-const UserModel = mongoose.model('Users', userSchema);
-
-export default UserModel;
+export const UserModel = mongoose.model<IUser>('User', userSchema);

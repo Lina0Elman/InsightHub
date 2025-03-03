@@ -1,55 +1,49 @@
-import commentModel from '../models/comments_model';
-import mongoose from 'mongoose';
-import { findPostById } from './posts_service';
+import { CommentModel } from '../models/comments_model';
+import { IComment, CommentData } from 'types/comment_types';
+import { ClientSession, Document } from 'mongoose';
 
-export const createComment = async (comment: any) => {
-    if (!comment.postId || !mongoose.Types.ObjectId.isValid(comment.postId)) {
-        throw new Error("Invalid post ID");
-    }
-
-    const post = await findPostById(comment.postId);
-    if (!post) {
-        throw new Error('Post not found');
-    }
-
-    const utcNow = new Date().toISOString();
-    comment.createdAt = utcNow;
-    comment.updatedAt = utcNow;
-    return commentModel.create(comment);
+const commentToCommentData = (comment: Document<unknown, {}, IComment> & IComment): CommentData => {
+    return { ...comment.toJSON(), author: comment.author.toString(), postId: comment.postId.toString() };
 };
 
-export const updateCommentById = async (id: string, comment: any) => {
-    const oldComment = await commentModel.findById(id);
-    if (oldComment == null) {
-        throw new Error('Comment not found');
-    }
-
-    comment.postId = oldComment.postId;
-    comment.updatedAt = new Date().toISOString();
-    comment.createdAt = oldComment.createdAt;
-    await new commentModel(comment).validate();
-    await commentModel.findByIdAndUpdate(id, comment);
-
-    comment._id = oldComment._id;
-    return comment;
+export const addComment = async (commentData: CommentData): Promise<CommentData> => {
+    const comment = new CommentModel(commentData);
+    await comment.save();
+    return commentToCommentData(comment);
 };
 
-export const getByPostId = async (postId: string) => {
-    const post = await findPostById(postId);
-    if (post == null) {
-        throw new Error('Post not found');
-    }
-    return commentModel.find({ postId: post._id });
+export const getCommentsWithAuthorsByPostId = async (postId: string): Promise<CommentData[]> => {
+    const comments = await CommentModel.find({ postId })
+        .populate('author', 'username email')
+        .exec();
+    return comments.map(commentToCommentData);
 };
 
-export const deleteCommentById = async (id: string) => {
-    const comment = await commentModel.findById(id);
-    if (comment == null) {
-        throw new Error('Comment not found');
-    }
-    return commentModel.findByIdAndDelete(id);
+export const getCommentsByPostId = async (postId: string): Promise<CommentData[]> => {
+    const comments = await CommentModel.find({ postId }).exec();
+    return comments.map(commentToCommentData);
 };
 
-export const getAllComments = async () => {
-    return commentModel.find();
+export const getAllComments = async (): Promise<CommentData[]> => {
+    const comments = await CommentModel.find().exec();
+    return comments.map(commentToCommentData);
+};
+
+export const updateComment = async (commentId: string, commentData: Partial<CommentData>): Promise<CommentData | null> => {
+    const comment = await CommentModel.findByIdAndUpdate(commentId, commentData, { new: true }).exec();
+    return comment ? commentToCommentData(comment) : null;
+};
+
+export const deleteComment = async (commentId: string): Promise<CommentData | null> => {
+    const comment = await CommentModel.findByIdAndDelete(commentId).exec();
+    return comment ? commentToCommentData(comment) : null;
+};
+
+export const getCommentById = async (commentId: string): Promise<CommentData | null> => {
+    const comment = await CommentModel.findById(commentId).exec();
+    return comment ? commentToCommentData(comment) : null;
+};
+
+export const deleteCommentsByPostId = async (postId: string, session: ClientSession): Promise<void> => {
+    await CommentModel.deleteMany({ postId }).session(session).exec();
 };

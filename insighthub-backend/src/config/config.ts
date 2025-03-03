@@ -10,6 +10,8 @@ export const config = {
     token: {
         refresh_token_expiration: () => process.env.REFRESH_TOKEN_EXPIRATION || '3d',
         token_expiration: () => process.env.TOKEN_EXPIRATION || '100000s',
-        access_token_secret: () => process.env.ACCESS_TOKEN_SECRET || 'secret'
+        salt: () => process.env.SALT || 10,
+        access_token_secret: () => process.env.ACCESS_TOKEN_SECRET || 'secret',
+        refresh_token_secret: () => process.env.REFRESH_TOKEN_SECRET || 'secret'
     }
 }

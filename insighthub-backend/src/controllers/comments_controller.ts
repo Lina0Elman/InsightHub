@@ -1,53 +1,88 @@
+import { Request, Response } from 'express';
 import * as commentsService from '../services/comments_service';
+import * as postsService from '../services/posts_service';
+import { handleError } from '../utils/handle_error';
+import {CommentData} from "types/comment_types";
 
-const createComment = async (req, res) => {
-    const comment = req.body;
+export const addComment = async (req: Request, res: Response): Promise<void> => {
     try {
-        const newComment = await commentsService.createComment(comment);
-        return res.status(201).send(newComment);
-    } catch (error) {
-        return res.status(400).send(error.message);
+        const { postId, author, content } = req.body;
+
+        // Validate if the post exists
+        const postExists = await postsService.getPostById(postId);
+        if (!postExists) {
+            res.status(404).json({ message: "Post not found: " + postId });
+            return;
+        }
+
+        const commentData: CommentData = { postId, author, content };
+        const savedComment = await commentsService.addComment(commentData);
+        res.status(201).json(savedComment);
+    } catch (err) {
+        handleError(err, res);
     }
 };
 
-const updateCommentById = async (req, res) => {
-    const id = req.params.id;
-    const comment = req.body;
+
+export const getCommentById = async (req: Request, res: Response): Promise<void> => {
     try {
-        const updatedComment = await commentsService.updateCommentById(id, comment);
-        return res.status(201).send(updatedComment);
-    } catch (error) {
-        return res.status(400).send(error.message);
+        const comment = await commentsService.getCommentById(req.params.comment_id);
+        if (comment == null) {
+            res.status(204).json({ message: 'No comments found for this post' });
+        } else {
+            res.json(comment);
+        }
+    } catch (err) {
+        handleError(err, res);
     }
 };
 
-const getByPostId = async (req, res) => {
-    const postId = req.params.postId;
+
+
+export const getCommentsByPostId = async (req: Request, res: Response): Promise<void> => {
     try {
-        const comments = await commentsService.getByPostId(postId);
-        return res.status(200).send(comments);
-    } catch (error) {
-        return res.status(400).send(error.message);
+        const comments = await commentsService.getCommentsByPostId(req.params.post_id);
+        if (comments.length === 0) {
+            res.status(204).json({ message: 'No comments found for this post' });
+        } else {
+            res.json(comments);
+        }
+    } catch (err) {
+        handleError(err, res);
     }
 };
 
-const deleteCommentById = async (req, res) => {
-    const id = req.params.id;
-    try {
-        const deletedComment = await commentsService.deleteCommentById(id);
-        return res.status(200).send(deletedComment);
-    } catch (error) {
-        return res.status(400).send(error.message);
-    }
-};
-
-const getAllComments = async (req, res) => {
+export const getAllComments = async (req: Request, res: Response): Promise<void> => {
     try {
         const comments = await commentsService.getAllComments();
-        return res.status(200).send(comments || []);
-    } catch (error) {
-        return res.status(400).send(error.message);
+        res.json(comments);
+    } catch (err) {
+        handleError(err, res);
     }
 };
 
-export default { createComment, getByPostId, updateCommentById, deleteCommentById, getAllComments };
+export const updateComment = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const updatedComment = await commentsService.updateComment(req.params.comment_id, req.body);
+        if (!updatedComment) {
+            res.status(404).json({ message: 'Comment not found' });
+        } else {
+            res.json(updatedComment);
+        }
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+export const deleteComment = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const deletedComment = await commentsService.deleteComment(req.params.comment_id);
+        if (!deletedComment) {
+            res.status(404).json({ message: 'Comment not found' });
+        } else {
+            res.json({ message: 'Comment deleted successfully' });
+        }
+    } catch (err) {
+        handleError(err, res);
+    }
+};

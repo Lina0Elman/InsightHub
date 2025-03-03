@@ -1,29 +1,37 @@
-import mongoose from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
+import { IComment } from 'types/comment_types';
 
-const Schema = mongoose.Schema;
-const commentSchema = new Schema({
+
+const commentSchema: Schema = new mongoose.Schema({
     postId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Posts',
-        required: true
+        ref: "Posts",
+        required: true,
     },
-    createdAt: {
-        type: Date,
-        required: true
-    },
-    updatedAt: {
-        type: Date,
-        required: true
-    },
-    content: String,
-    sender: {
+    content: {
         type: String,
-        required: true
+        required: true,
     },
-}, {
-   versionKey: false,
+    author: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: "User"
+    },
+}, { timestamps: true, strict: true });
+
+commentSchema.set('toJSON', {
+    transform: (doc: Document, ret: Record<string, any>) => {
+        return {
+            id: ret._id,
+            postId: ret.postId,
+            content: ret.content,
+            author: ret.author,
+            createdAt: ret.createdAt,
+            updatedAt: ret.updatedAt,
+        };
+    }
 });
 
-const CommentModel = mongoose.model('Comments', commentSchema);
+export const CommentModel = mongoose.model<IComment>("Comments", commentSchema);
 
-export default CommentModel;
+

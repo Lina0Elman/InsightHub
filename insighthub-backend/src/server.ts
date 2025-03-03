@@ -1,6 +1,6 @@
 import app from './app';
 import mongoose from 'mongoose';
-import { config } from './config';
+import { config } from './config/config';
 
 
 // Start app while verifying connection to the database.

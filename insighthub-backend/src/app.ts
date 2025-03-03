@@ -8,7 +8,7 @@ import auth_routes from './routes/auth_routes';
 import swaggerUi from 'swagger-ui-express';
 import loadOpenApiFile from './openapi/openapi_loader';
 import cors from 'cors';
-import { config } from './config';
+import { config } from './config/config';
 
 dotenvExpand.expand(dotenv.config());
 const app = express();

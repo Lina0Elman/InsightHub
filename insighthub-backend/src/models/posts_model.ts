@@ -1,21 +1,31 @@
+import mongoose, { Document, Schema } from 'mongoose';
+import {IPost, PostData} from 'types/post_types';
 
-import mongoose from 'mongoose';
-const Schema = mongoose.Schema;
-
-const postSchema = new Schema({
+const postSchema: Schema = new mongoose.Schema({
     title: {
         type: String,
-        required: true
+        required: true,
     },
     content: String,
-    sender: {
-        type: String,
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         required: true
     },
-}, {
-   versionKey: false,
+}, {  timestamps: true, strict: true });
+
+postSchema.set('toJSON', {
+    transform: (doc: Document, ret: Record<string, any>): PostData => {
+        return {
+            id: ret._id,
+            title: ret.title,
+            content: ret.content,
+            owner: ret.owner._id.toString(),
+            createdAt: ret.createdAt,
+            updatedAt: ret.updatedAt
+
+        };
+    }
 });
 
-const PostModel = mongoose.model('Posts', postSchema);
-
-export default PostModel;
+export const PostModel = mongoose.model<IPost>("Posts", postSchema);
