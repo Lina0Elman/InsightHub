@@ -397,7 +397,16 @@ paths:
                 description: The name of the uploaded file
                 type: string                
         '400':
-          description: Bad request - No file uploaded
+          description: Bad request
+          content:
+            text/plain:
+              examples:
+                fileTooLarge:
+                  value: "File too large"
+                invalidFileType:
+                  value: "Invalid file type. Only images are allowed: /jpeg|jpg|png|gif/"
+                noFileUploaded:
+                  value: "No file uploaded"
         '500':
           description: Internal server error
 
