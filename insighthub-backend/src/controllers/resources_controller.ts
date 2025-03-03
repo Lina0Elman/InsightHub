@@ -3,9 +3,9 @@ import { config } from '../config';
 import fs from 'fs';
 import path from 'path';
 import { uploadImage } from '../services/resources_service';
-const upload = uploadImage.single('file');
 
 const createImageResource = async (req, res) => {
+    const upload = uploadImage.single('file');
     upload(req, res, error => {
         if (!req.file) {
             return res.status(400).send('No file uploaded.');
