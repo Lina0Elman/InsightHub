@@ -2,20 +2,24 @@ import multer from 'multer';
 import { config } from '../config';
 import fs from 'fs';
 import path from 'path';
+import { uploadImage } from '../services/resources_service';
+const upload = uploadImage.single('file');
 
 const createImageResource = async (req, res) => {
-    if (!req.file) {
-        return res.status(400).send('No file uploaded.');
-    }
-
-    try {
-        res.status(201).send(req.file.filename);
-    } catch (error) {
+    upload(req, res, error => {
+        if (!req.file) {
+            return res.status(400).send('No file uploaded.');
+        }
         if (error instanceof multer.MulterError) {
             return res.status(400).send(error.message);
+        } else if (error instanceof TypeError) {
+            return res.status(400).send(error.message);
+        } else if (error) {
+            return res.status(500).send("Internal Server Error");
         }
-        res.status(500).send("Internal Server Error");
-    }
+
+        return res.status(201).send(req.file.filename);
+    })
 };
 
 const getImageResource = async (req, res) => {

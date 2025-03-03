@@ -36,7 +36,7 @@ const createImagesStorage = () => {
             if (extname && mimetype) {
                 return cb(null, true);
             } else {
-                cb(new Error('Invalid file type. Only images are allowed.'));
+                cb(new TypeError(`Invalid file type. Only images are allowed: ${allowedTypes}.`));
             }
         }
     });
