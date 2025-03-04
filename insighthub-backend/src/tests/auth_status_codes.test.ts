@@ -11,6 +11,7 @@ describe('Authentication Status Code Tests', () => {
         // Register and login to get valid access token
         const user = {
             email: "test@status.com",
+            username: "TestUser",
             password: "123456"
         };
         await request(app).post('/auth/register').send(user);

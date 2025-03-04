@@ -61,24 +61,10 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
             return;
         }
 
-        const existingToken = await usersService.findRefreshToken(refreshToken);
-        if (!existingToken) {
-            res.status(401).json({ message: 'Invalid refresh token' });
-            return;
-        }
-
-        const decoded = jwt.verify(refreshToken, config.token.refresh_token_secret()) as { userId: string };
-        const user = await usersService.getUserById(decoded.userId);
-        if (!user) {
-            res.status(401).json({ message: 'Invalid refresh token' });
-            return;
-        }
-
-        const newAccessToken = jwt.sign({ userId: user.id }, config.token.access_token_secret(), { expiresIn: '15m' });
-        await usersService.updateRefreshTokenAccessToken(refreshToken, newAccessToken);
-
-        res.json({ accessToken: newAccessToken });
+        const { newRefreshToken, accessToken } = await usersService.refreshToken(refreshToken);
+        res.json({ accessToken: accessToken, refreshToken: newRefreshToken });
     } catch (err) {
-        res.status(401).json({ message: 'Invalid refresh token' });
+        const e: Error = err as Error
+        res.status(401).json({ message: e.message });
     }
 };

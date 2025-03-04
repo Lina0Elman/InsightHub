@@ -12,7 +12,7 @@ const commentSchema: Schema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    author: {
+    owner: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: "User"
@@ -25,7 +25,7 @@ commentSchema.set('toJSON', {
             id: ret._id,
             postId: ret.postId,
             content: ret.content,
-            author: ret.author,
+            owner: ret.owner,
             createdAt: ret.createdAt,
             updatedAt: ret.updatedAt,
         };

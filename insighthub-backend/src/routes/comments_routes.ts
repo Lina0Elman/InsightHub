@@ -1,6 +1,7 @@
 import express, { Request, Response, Router } from 'express';
 import * as commentsController from '../controllers/comments_controller';
 import {handleValidationErrors, validateComment, validateCommentId} from '../middleware/validation';
+import {CustomRequest} from "types/customRequest";
 
 const router: Router = express.Router();
 
@@ -25,7 +26,7 @@ const router: Router = express.Router();
  *       400:
  *         description: Validation error
  */
-router.post('/', validateComment, handleValidationErrors, (req: Request, res: Response) => commentsController.addComment(req, res));
+router.post('/', validateComment, handleValidationErrors, (req: Request, res: Response) => commentsController.addComment(req as CustomRequest, res));
 
 /**
  * @swagger

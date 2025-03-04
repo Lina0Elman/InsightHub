@@ -3,7 +3,7 @@ import { IComment, CommentData } from 'types/comment_types';
 import { ClientSession, Document } from 'mongoose';
 
 const commentToCommentData = (comment: Document<unknown, {}, IComment> & IComment): CommentData => {
-    return { ...comment.toJSON(), author: comment.author.toString(), postId: comment.postId.toString() };
+    return { ...comment.toJSON(), owner: comment.owner.toString(), postId: comment.postId.toString() };
 };
 
 export const addComment = async (commentData: CommentData): Promise<CommentData> => {

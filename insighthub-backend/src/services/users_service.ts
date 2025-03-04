@@ -54,26 +54,71 @@ export const getUserByUsernameOrEmail = async (username: string, email: string) 
 };
 
 
+/** Generate access and refresh tokens */
+const generateTokens = (id: string): { accessToken: string, refreshToken: string } => {
+    const random = Math.floor(Math.random() * 1000000);
+    const accessToken = jwt.sign(
+        {
+            userId: id,
+            random: random
+        },
+        config.token.access_token_secret(),
+        { expiresIn: config.token.token_expiration() as jwt.SignOptions['expiresIn'] });
+
+    const refreshToken = jwt.sign(
+        {
+            userId: id,
+            random: random
+        },
+        config.token.refresh_token_secret(),
+        { expiresIn: config.token.refresh_token_expiration() as jwt.SignOptions['expiresIn'] });
+
+    return { accessToken, refreshToken };
+}
+
+
+
 export const loginUser = async (email: string, password: string): Promise<{ accessToken: string, refreshToken: string, userId: string } | null> => {
     const user = await getUserByEmail(email);
     if (!user || !(await bcrypt.compare(password, user.password))) {
         return null;
     }
 
-    const accessToken = jwt.sign(
-        { userId: user.id },
-        config.token.access_token_secret(),
-        { expiresIn: config.token.token_expiration() as jwt.SignOptions['expiresIn'] });
-    const refreshToken = jwt.sign(
-        { userId: user.id },
-        config.token.refresh_token_secret(),
-        { expiresIn: config.token.refresh_token_expiration() as jwt.SignOptions['expiresIn'] });
+    const { accessToken, refreshToken } = generateTokens(user.id);
 
     await new RefreshTokenModel({ userId: user.id, token: refreshToken, accessToken: accessToken }).save();
 
     return { accessToken, refreshToken, userId: user.id };
 };
 
+export const refreshToken = async (refreshToken: string): Promise<{ newRefreshToken: string; accessToken: string }> => {
+
+        const existingToken = await findRefreshToken(refreshToken);
+        if (!existingToken) {
+            throw new Error('Invalid refresh token');
+        }
+
+        const decoded = jwt.verify(refreshToken, config.token.refresh_token_secret()) as { userId: string };
+        const user = await getUserById(decoded.userId);
+        if (!user) {
+            throw new Error('Invalid refresh token');
+        }
+
+        const { accessToken: newAccessToken, refreshToken: newRefreshToken } = generateTokens(user.id);
+        await updateRefreshTokenAccessToken(refreshToken, newAccessToken, newRefreshToken);
+
+        return { accessToken: newAccessToken, newRefreshToken };
+}
+
+
+/**
+ * Invalidate the refresh token for a user
+ * If the user didn't send a refresh -> cancel them all (as required)
+ * If sent and the token is valid -> cancel it
+ * If sent and the token is invalid -> return false
+ * @param refreshToken
+ * @param userId
+ */
 export const logoutUser = async (refreshToken: string | undefined, userId: string): Promise<boolean> => {
     if (refreshToken) {
         // Find the refresh token document
@@ -88,7 +133,7 @@ export const logoutUser = async (refreshToken: string | undefined, userId: strin
             return false;
         }
     } else {
-        // No refresh token provided, delete all refresh tokens for the user
+        // None or invalid refresh token provided, delete all refresh tokens for the user
         const refreshTokens = await RefreshTokenModel.find({ userId }).exec();
         for (const tokenDoc of refreshTokens) {
             await BlacklistedTokenModel.create({ token: tokenDoc.accessToken });
@@ -102,10 +147,10 @@ export const findRefreshToken = async (token: string) => {
     return await RefreshTokenModel.findOne({ token }).exec();
 };
 
-export const updateRefreshTokenAccessToken = async (refreshToken: string, newAccessToken: string): Promise<void> => {
+export const updateRefreshTokenAccessToken = async (oldRefreshToken: string, newAccessToken: string, newRefreshToken: string): Promise<void> => {
     await RefreshTokenModel.findOneAndUpdate(
-        { token: refreshToken },
-        { accessToken: newAccessToken }
+        { token: oldRefreshToken },
+        { token: newRefreshToken, accessToken: newAccessToken }
     ).exec();
 };
 

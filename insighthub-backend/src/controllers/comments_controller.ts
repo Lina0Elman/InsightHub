@@ -3,10 +3,12 @@ import * as commentsService from '../services/comments_service';
 import * as postsService from '../services/posts_service';
 import { handleError } from '../utils/handle_error';
 import {CommentData} from "types/comment_types";
+import {CustomRequest} from "types/customRequest";
 
-export const addComment = async (req: Request, res: Response): Promise<void> => {
+export const addComment = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
-        const { postId, author, content } = req.body;
+        const { postId, content } = req.body;
+        const owner = req.user.id;
 
         // Validate if the post exists
         const postExists = await postsService.getPostById(postId);
@@ -15,7 +17,7 @@ export const addComment = async (req: Request, res: Response): Promise<void> => 
             return;
         }
 
-        const commentData: CommentData = { postId, author, content };
+        const commentData: CommentData = { postId, owner, content };
         const savedComment = await commentsService.addComment(commentData);
         res.status(201).json(savedComment);
     } catch (err) {

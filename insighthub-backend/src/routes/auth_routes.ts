@@ -4,8 +4,9 @@ import {
     handleValidationErrors,
     validateLogin,
     validateRefreshToken,
-    validateUserRegister
+    validateUserRegister,
 } from "../middleware/validation";
+import {authenticateLogoutToken} from "../middleware/auth";
 import {CustomRequest} from "types/customRequest";
 
 const router: Router = express.Router();
@@ -76,8 +77,7 @@ router.post('/login', validateLogin, handleValidationErrors, (req: Request, res:
  *       400:
  *         description: Validation error
  */
-router.post('/logout', (req: Request, res: Response) => authController.logoutUser(req as CustomRequest, res));
-
+router.post('/logout', authenticateLogoutToken as unknown as express.RequestHandler, (req: Request, res: Response) => authController.logoutUser(req as CustomRequest, res));
 /**
  * @swagger
  * /auth/register:
@@ -164,6 +164,6 @@ router.post('/register', validateUserRegister, handleValidationErrors, (req: Req
  *       401:
  *         description: Unauthorized
  */
-router.post('/refresh-token', validateRefreshToken, handleValidationErrors, (req: Request, res: Response) => authController.refreshToken(req, res));
+router.post('/refresh', validateRefreshToken, handleValidationErrors, (req: Request, res: Response) => authController.refreshToken(req, res));
 
 export default router;

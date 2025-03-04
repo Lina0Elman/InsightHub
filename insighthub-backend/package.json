@@ -52,6 +52,7 @@
     "globals": "^15.14.0",
     "nodemon": "^3.1.7",
     "swagger-jsdoc": "^6.2.8",
+    "mongodb-memory-server": "^10.1.2",
     "swagger-ui-express": "^5.0.1",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
