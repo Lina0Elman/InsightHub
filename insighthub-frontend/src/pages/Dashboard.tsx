@@ -7,6 +7,7 @@ import { config } from '../config';
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<any[]>([]);
+  const [newPostContent, setNewPostContent] = useState<string>('');
   const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2FmYTc0MDY4ZjczNmYxMTJhZTFkNTEiLCJyYW5kb20iOjEyNzEsImlhdCI6MTc0MTA3NDQ3NSwiZXhwIjoxNzQxMDc4MDc1fQ.VQqlhKMY_Wt2rh4OussLNR0euFqQTpT345KLe5qNkj4'; // Replace with your actual access token
 
   useEffect(() => {
@@ -14,7 +15,7 @@ const Dashboard: React.FC = () => {
       try {
         const response = await axios.get(`${config.app.backend_url()}/post`, {
           headers: {
-            Authorization: encodeURI(`Bearer ${accessToken}`),
+            Authorization: `Bearer ${accessToken}`,
           },
         });
         setPosts(response.data as []);
@@ -25,6 +26,25 @@ const Dashboard: React.FC = () => {
 
     fetchPosts();
   }, []);
+
+  const handleCreatePost = async () => {
+    try {
+      const response = await axios.post(`${config.app.backend_url()}/post`, {
+        sender: 'TEST USER',
+        title: 'TEST TITLE',
+        content: newPostContent,
+      }, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      
+      // Create a new array with the existing posts and the new post
+      setPosts((prevPosts) => [...prevPosts, response.data]);
+    } catch (error) {
+      console.error('Error creating post:', error);
+    }
+  };
 
   const handleLogout = () => {
     // Clear any authentication tokens or user data here
@@ -42,6 +62,9 @@ const Dashboard: React.FC = () => {
         </Typography>
         <Button variant="contained" color="primary" onClick={handleLogout}>
           Logout
+        </Button>
+        <Button variant="contained" color="primary" onClick={handleCreatePost}>
+          Create Post
         </Button>
         <List sx={{ width: '100%', mt: 4 }}>
           {posts.map((post) => (
