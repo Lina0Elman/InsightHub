@@ -1,15 +1,18 @@
 import request from 'supertest';
 import app from '../app';
+import {PostData} from "types/post_types";
+import {CommentData} from "types/comment_types";
 
-let existingPost1: any;
-let existingPost2:any;
-let existingComment:any;
+let existingPost1: PostData;
+let existingPost2:PostData;
+let existingComment:PostData;
 let accessToken: string;
 
 const user = {
     email: "test2@test.com",
     password: "123456",
-    username: "test2"
+    username: "test2",
+    id: undefined
 };
 
 beforeAll(async () => {
@@ -17,6 +20,7 @@ beforeAll(async () => {
 
     await request(app).post('/auth/register').send(user);
     const loginResponse = await request(app).post('/auth/login').send(user);
+    user.id = loginResponse.body.userId;
     accessToken = loginResponse.body.accessToken;
 });
 
@@ -38,7 +42,6 @@ describe('when http request POST /post', () => {
     it('then should add post to the db', async () => {
         // Post 1
         const body1 = {
-            "sender": "USERNAME1",
             "title": "POST1 TITLE",
             "content": "POST1 CONTENT"
         };
@@ -51,7 +54,6 @@ describe('when http request POST /post', () => {
 
         // Post 2
         const body2 = {
-            "sender": "USERNAME1",
             "title": "POST2 TITLE",
             "content": "POST2 CONTENT"
         };
@@ -68,7 +70,6 @@ describe('when http request POST /comment to an unknown post', () => {
     it('then should return 400 bad request http status', async () => {
         const body = {
             "postId": "UNKNOWN",
-            "sender": "USERNAME1",
             "content": "COMMENT1 CONTENT"
         };
         const res = await request(app)
@@ -99,7 +100,6 @@ describe('when http request POST /comment to an unknown post', () => {
 describe('when http request POST /comment without required postId field', () => {
     it('then should return 400 bad request http status', async () => {
         const body = {
-            "sender": "USERNAME1",
             "content": "COMMENT1 CONTENT"
         };
         const res = await request(app)
@@ -115,13 +115,15 @@ describe('when http request POST /comment  to an existing post', () => {
     it('then should add comment to the db', async () => {
         const body = {
             "postId": `${existingPost1.id}`,
-            "owner": user.username,
-            "content": "COMMENT1 CONTENT"
+            "content": "COMMENT1 CONTENT",
+            owner: undefined
         };
         const res = await request(app)
             .post('/comment')
             .set('Authorization', `jwt ${accessToken}`)
             .send(body);
+
+        body.owner = user.id;
         const resBody = res.body;
         existingComment = { ...resBody };
         delete resBody.id;
@@ -181,12 +183,10 @@ describe('given db initialized with comments when http request GET /comment', ()
     });
 });
 
-// TODO - Check if need to change the code, because we ignore in the code from irelevant fields
 describe('when http request PUT /comment/id of unknown post', () => {
     it('then should return 200 for update http status', async () => {
         const body = {
             "postId": "UNKNOWN",
-            "sender": "UPDATED USERNAME",
             "content": "UPDATED COMMENT CONTENT"
         };
         const res = await request(app)
@@ -195,7 +195,7 @@ describe('when http request PUT /comment/id of unknown post', () => {
             .send(body);
         const resBody = res.body;
 
-        expect(res.statusCode).toBe(201);
+        expect(res.statusCode).toBe(200);
         expect(new Date(resBody.updatedAt).getTime())
             .toBeGreaterThan(new Date(resBody.createdAt).getTime());
         delete resBody.id;
@@ -209,7 +209,6 @@ describe('when http request PUT /comment/id of unknown comment', () => {
     it('then should return 400 bad request http status', async () => {
         const body = {
             "postId": `${existingPost1.id}`,
-            "sender": "UPDATED USERNAME",
             "content": "UPDATED COMMENT CONTENT"
         };
         const res = await request(app)
@@ -224,7 +223,6 @@ describe('when http request PUT /comment/id of unknown comment', () => {
 describe('when http request PUT /comment/id without required postId field', () => {
     it('then should return 200 created http status', async () => {
         const body = {
-            "sender": "UPDATED USERNAME",
             "content": "UPDATED COMMENT CONTENT"
         };
         const res = await request(app)
@@ -277,6 +275,7 @@ describe('when http request PUT /comment/id of existing post and comment', () =>
         delete resBody.id;
         delete resBody.createdAt;
         delete resBody.updatedAt;
+        delete resBody.owner;
         expect(resBody).toEqual(body);
     });
 });
@@ -292,7 +291,7 @@ describe('given existing post when http request GET /comment/post/id', () => {
         expect(Array.isArray(resBody)).toBe(true);
 
         if (resBody.length > 0) {
-            const postIds = resBody.map((comment) => comment.postId);
+            const postIds: string[] = resBody.map((comment: CommentData) => comment.postId);
             const uniquePostIds = [...new Set(postIds)];
             expect(uniquePostIds.length).toBe(1);
             expect(uniquePostIds[0]).toEqual(existingPost1.id);
@@ -340,7 +339,6 @@ describe('given existing comment when http request DELETE /comment/id', () => {
             .set('Authorization', `jwt ${accessToken}`)
             .send({
                 postId: existingPost1.id,
-                sender: "USERNAME1",
                 content: "Comment to delete"
             });
 

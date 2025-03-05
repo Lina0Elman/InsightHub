@@ -23,8 +23,8 @@ export const addPost = async (req: CustomRequest, res: Response): Promise<void> 
 export const getPosts = async (req: Request, res: Response): Promise<void> => {
     try {
         let posts;
-        if (req.query.sender) {
-            posts = await postsService.getPosts(req.query.sender as string);
+        if (req.query.owner) {
+            posts = await postsService.getPosts(req.query.owner as string);
         } else {
             posts = await postsService.getPosts();
         }
@@ -70,11 +70,13 @@ export const updatePost = async (req: CustomRequest, res: Response): Promise<voi
                 if (!updatedPost) {
                     res.status(404).json({message: 'Post not found'});
                 } else {
-                    res.json(updatedPost);
+                    res.status(200).json(updatedPost);
                 }
+            } else { // If someone not the owner
+                res.status(403).json({message: 'Forbidden'});
             }
-        } else { // If someone not the owner or try to update post that doesnt exists
-            res.status(403).json({message: 'Forbidden'});
+        } else { // If someone  try to update post that doesn't exist
+            res.status(404).json({ message: 'Post not found' });
         }
     } catch (err) {
         handleError(err, res);
