@@ -30,7 +30,7 @@ export const getPosts = async (req: Request, res: Response): Promise<void> => {
         }
 
         if (posts.length === 0) {
-            res.status(204).json({ message: 'No posts found' });
+            res.status(200).json([]);
         } else {
             res.json(posts);
         }

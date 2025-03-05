@@ -29,8 +29,9 @@ export const addComment = async (req: CustomRequest, res: Response): Promise<voi
 export const getCommentById = async (req: Request, res: Response): Promise<void> => {
     try {
         const comment = await commentsService.getCommentById(req.params.comment_id);
-        if (comment == null) {
-            res.status(204).json({ message: 'No comments found for this post' });
+        if (!comment) {
+            res.status(404).json({ message: "Comment not found: " + req.params.commentId });
+            return;
         } else {
             res.json(comment);
         }
@@ -43,9 +44,15 @@ export const getCommentById = async (req: Request, res: Response): Promise<void>
 
 export const getCommentsByPostId = async (req: Request, res: Response): Promise<void> => {
     try {
+        const postExists = await postsService.getPostById(req.params.post_id);
+        if (!postExists) {
+            res.status(400).json({ message: "Post not found: " + req.params.post_id });
+            return;
+        }
+
         const comments = await commentsService.getCommentsByPostId(req.params.post_id);
         if (comments.length === 0) {
-            res.status(204).json({ message: 'No comments found for this post' });
+            res.status(200).json([]);
         } else {
             res.json(comments);
         }
@@ -57,7 +64,11 @@ export const getCommentsByPostId = async (req: Request, res: Response): Promise<
 export const getAllComments = async (req: Request, res: Response): Promise<void> => {
     try {
         const comments = await commentsService.getAllComments();
-        res.json(comments);
+        if (comments.length === 0) {
+            res.status(200).json([]);
+        } else {
+            res.json(comments);
+        }
     } catch (err) {
         handleError(err, res);
     }

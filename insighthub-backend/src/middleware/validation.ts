@@ -10,11 +10,17 @@ export const validatePostId = [
 export const validateComment = [
     ...validatePostId,
     body('content').isString().isLength({ min: 1 }).withMessage('Content is required'),
-    // body('author').isMongoId().withMessage('Invalid user ID'),
 ];
+
+
 
 export const validateCommentId = [
     param('comment_id').isMongoId().withMessage('Invalid comment ID'),
+];
+
+export const validateUpdate = [
+    ...validateCommentId,
+    body('content').optional().isString().isLength({ min: 1 }).withMessage('Content is required'),
 ];
 
 

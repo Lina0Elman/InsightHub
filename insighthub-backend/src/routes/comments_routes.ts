@@ -1,6 +1,11 @@
 import express, { Request, Response, Router } from 'express';
 import * as commentsController from '../controllers/comments_controller';
-import {handleValidationErrors, validateComment, validateCommentId} from '../middleware/validation';
+import {
+    handleValidationErrors,
+    validateComment,
+    validateCommentId,
+    validatePostIdParam, validateUpdate
+} from '../middleware/validation';
 import {CustomRequest} from "types/customRequest";
 
 const router: Router = express.Router();
@@ -79,7 +84,7 @@ router.get('/', (req: Request, res: Response) => commentsController.getAllCommen
  *       400:
  *         description: Invalid post ID
  */
-router.get('/post/:post_id', (req: Request, res: Response) => commentsController.getCommentsByPostId(req, res));
+router.get('/post/:post_id', validatePostIdParam, handleValidationErrors, (req: Request, res: Response) => commentsController.getCommentsByPostId(req, res));
 
 /**
  * @swagger
@@ -109,7 +114,7 @@ router.get('/post/:post_id', (req: Request, res: Response) => commentsController
  *       400:
  *         description: Invalid comment ID
  */
-router.get('/:commentId', (req: Request, res: Response) => commentsController.getCommentById(req, res));
+router.get('/:commentId', validateCommentId, handleValidationErrors, (req: Request, res: Response) => commentsController.getCommentById(req, res));
 
 /**
  * @swagger
@@ -141,7 +146,7 @@ router.get('/:commentId', (req: Request, res: Response) => commentsController.ge
  *       404:
  *         description: Comment not found
  */
-router.put('/:comment_id', validateCommentId, handleValidationErrors, (req: Request, res: Response) => commentsController.updateComment(req, res));
+router.put('/:comment_id', validateUpdate, handleValidationErrors, (req: Request, res: Response) => commentsController.updateComment(req, res));
 
 /**
  * @swagger

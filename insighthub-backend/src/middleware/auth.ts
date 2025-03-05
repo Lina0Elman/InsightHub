@@ -5,11 +5,11 @@ import {config} from '../config/config';
 import { CustomRequest } from 'types/customRequest';
 import {unless} from 'express-unless';
 import * as usersService from '../services/users_service';
-import {findRefreshToken} from "../services/users_service";
 
 
 const getTokenFromHeader = (req: CustomRequest): string | undefined => {
-    return req.headers['authorization']?.split(' ')[1];
+  const authHeader= (req.headers['authorization'] as string | undefined) ?? (req.headers['Authorization'] as string | undefined);
+  return authHeader?.split(' ')[1];
 }
 
 const authenticateTokenHandler: any & { unless: typeof unless } = async (req: CustomRequest, res: Response, next: NextFunction, ignoreExpiration = false): Promise<void> => {

@@ -30,7 +30,7 @@ export const getAllComments = async (): Promise<CommentData[]> => {
 };
 
 export const updateComment = async (commentId: string, commentData: Partial<CommentData>): Promise<CommentData | null> => {
-    const comment = await CommentModel.findByIdAndUpdate(commentId, commentData, { new: true }).exec();
+    const comment = await CommentModel.findByIdAndUpdate(commentId, {content: commentData?.content}, { new: true }).exec();
     return comment ? commentToCommentData(comment) : null;
 };
 
