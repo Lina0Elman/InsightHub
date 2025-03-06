@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
-import { Container, TextField, Button, Typography, Box } from '@mui/material';
+import { Container, Button, Typography, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { config } from '../config';
+import FroalaEditor from 'react-froala-wysiwyg';
+import 'froala-editor/css/froala_style.min.css';
+import 'froala-editor/css/froala_editor.pkgd.min.css';
+import 'froala-editor/js/plugins/image.min.js';
 
 const NewPost: React.FC = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const navigate = useNavigate();
-  const accessToken = 'your_access_token_here'; // Replace with your actual access token
+  const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2FmYTc0MDY4ZjczNmYxMTJhZTFkNTEiLCJyYW5kb20iOjk4NDc5MywiaWF0IjoxNzQxMjUzNTk2LCJleHAiOjE3NDEyNTcxOTZ9.UVGbkvHQsJWqoxv_V-VLSMycvTKj9nckshBaBov8WfM'; // Replace with your actual access token
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,25 +40,31 @@ const NewPost: React.FC = () => {
           Create New Post
         </Typography>
         <form onSubmit={handleSubmit} style={{ width: '100%', marginTop: '1rem' }}>
-          <TextField
-            variant="outlined"
-            margin="normal"
-            required
-            fullWidth
-            label="Title"
+          <input
+            type="text"
+            placeholder="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-          />
-          <TextField
-            variant="outlined"
-            margin="normal"
+            style={{ width: '100%', marginBottom: '1rem', padding: '10px', fontSize: '16px' }}
             required
-            fullWidth
-            label="Content"
-            multiline
-            rows={4}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
+          />
+          <FroalaEditor
+            tag='textarea'
+            model={content}
+            onModelChange={setContent}
+            config={{
+              placeholderText: 'Edit Your Content Here!',
+              charCounterCount: false,
+              toolbarButtons: [
+                'bold', 'italic', 'underline', 'insertImage', 'insertLink', 'paragraphFormat', 'alert'
+              ],
+              events: {
+                'image.uploaded': function (response) {
+                  console.log('Image uploaded:', response);
+                },
+              },
+              pluginsEnabled: ['image'],
+            }}
           />
           <Button type="submit" fullWidth variant="contained" color="primary" sx={{ mt: 3, mb: 2 }}>
             Submit
