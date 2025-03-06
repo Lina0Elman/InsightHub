@@ -33,6 +33,24 @@ const NewPost: React.FC = () => {
     }
   };
 
+  const handleImageUpload = async (file: File) => {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const response = await axios.post(`${config.app.backend_url()}/resource/image`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      return null;
+    }
+  };
+
   return (
     <Container component="main" maxWidth="md">
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 8 }}>
@@ -59,8 +77,17 @@ const NewPost: React.FC = () => {
                 'bold', 'italic', 'underline', 'insertImage', 'insertLink', 'paragraphFormat', 'alert'
               ],
               events: {
-                'image.uploaded': function (response) {
-                  console.log('Image uploaded:', response);
+                'image.uploaded': async (response: any) => {
+                  console.log('Image upload event triggered:', response);
+                  const imageUrl = await handleImageUpload(response);
+                  if (imageUrl) {
+                    console.log(imageUrl)
+                    // Replace the blob URL with the permanent URL
+                    this.editor.image.insert(imageUrl, null, null, this.editor.image.get());
+                  }
+                },
+                'image.beforeUpload': (file: any) => {
+                  console.log('Image before upload:', file);
                 },
               },
               pluginsEnabled: ['image'],
