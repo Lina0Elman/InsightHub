@@ -27,23 +27,9 @@ const Dashboard: React.FC = () => {
     fetchPosts();
   }, []);
 
-  const handleCreatePost = async () => {
-    try {
-      const response = await axios.post(`${config.app.backend_url()}/post`, {
-        sender: 'TEST USER',
-        title: 'TEST TITLE',
-        content: newPostContent,
-      }, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      
-      // Create a new array with the existing posts and the new post
-      setPosts((prevPosts) => [...prevPosts, response.data]);
-    } catch (error) {
-      console.error('Error creating post:', error);
-    }
+  const handleCreatePost = () => {
+    // Navigate to the "new post" page
+    navigate('/new-post');
   };
 
   const handleLogout = () => {
