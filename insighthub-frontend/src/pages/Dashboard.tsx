@@ -52,39 +52,41 @@ const Dashboard: React.FC = () => {
         <Button variant="contained" color="primary" onClick={handleCreatePost}>
           Create Post
         </Button>
-        <List sx={{ width: '100%', mt: 4 }}>
-          {posts.map((post) => (
-            <React.Fragment key={post._id}>
-              <ListItem alignItems="flex-start">
-                <ListItemText
-                  primary={post.title}
-                  secondary={
-                    <React.Fragment>
-                      <Typography
-                        component="span"
-                        variant="body2"
-                        color="text.primary"
-                      >
-                        {post.sender}
-                      </Typography>
-                      {" — "}
-                      <span dangerouslySetInnerHTML={{ __html: post.content }} />
-                    </React.Fragment>
-                  }
-                />
-              </ListItem>
-              {post.comments && post.comments.map((comment: any) => (
-                <ListItem key={comment._id} sx={{ pl: 4 }}>
+        <Box sx={{ width: '100%', maxHeight: '60vh', overflowY: 'auto', mt: 4 }}>
+          <List>
+            {posts.map((post) => (
+              <React.Fragment key={post._id}>
+                <ListItem alignItems="flex-start">
                   <ListItemText
-                    primary={comment.sender}
-                    secondary={comment.content}
+                    primary={post.title}
+                    secondary={
+                      <React.Fragment>
+                        <Typography
+                          component="span"
+                          variant="body2"
+                          color="text.primary"
+                        >
+                          {post.sender}
+                        </Typography>
+                        {" — "}
+                        <span dangerouslySetInnerHTML={{ __html: post.content }} />
+                      </React.Fragment>
+                    }
                   />
                 </ListItem>
-              ))}
-              <Divider component="li" />
-            </React.Fragment>
-          ))}
-        </List>
+                {post.comments && post.comments.map((comment: any) => (
+                  <ListItem key={comment._id} sx={{ pl: 4 }}>
+                    <ListItemText
+                      primary={comment.sender}
+                      secondary={comment.content}
+                    />
+                  </ListItem>
+                ))}
+                <Divider component="li" />
+              </React.Fragment>
+            ))}
+          </List>
+        </Box>
       </Box>
     </Container>
   );
