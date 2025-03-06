@@ -67,7 +67,8 @@ const Dashboard: React.FC = () => {
                       >
                         {post.sender}
                       </Typography>
-                      {" — " + post.content}
+                      {" — "}
+                      <span dangerouslySetInnerHTML={{ __html: post.content }} />
                     </React.Fragment>
                   }
                 />
