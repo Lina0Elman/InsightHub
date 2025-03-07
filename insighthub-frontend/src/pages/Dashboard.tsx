@@ -7,7 +7,6 @@ import { config } from '../config';
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<any[]>([]);
-  const [newPostContent, setNewPostContent] = useState<string>('');
   const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2FmYTc0MDY4ZjczNmYxMTJhZTFkNTEiLCJyYW5kb20iOjEyNzEsImlhdCI6MTc0MTA3NDQ3NSwiZXhwIjoxNzQxMDc4MDc1fQ.VQqlhKMY_Wt2rh4OussLNR0euFqQTpT345KLe5qNkj4'; // Replace with your actual access token
 
   useEffect(() => {
