@@ -89,7 +89,6 @@ const NewPost: React.FC = () => {
                 imageAllowedTypes: ['jpeg', 'jpg', 'png', 'gif'],
                 events: {
                   "image.beforeUpload": async function (fileList: any) {
-                    console.log(fileList);
                     const editor = this as any;
                     let firstFile = fileList[0];
                     if (firstFile instanceof Blob) {
