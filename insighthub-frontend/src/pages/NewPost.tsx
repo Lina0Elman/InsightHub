@@ -12,7 +12,7 @@ const NewPost: React.FC = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const navigate = useNavigate();
-  const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2FmYTc0MDY4ZjczNmYxMTJhZTFkNTEiLCJyYW5kb20iOjMyODQxLCJpYXQiOjE3NDEzMjQ4NDEsImV4cCI6MTc0MTMyODQ0MX0.HRh-P3qLtRIAdUnudvarsqwV5QfX2LKLtn6j7KV9xrE'; // Replace with your actual access token
+  const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2FmYTc0MDY4ZjczNmYxMTJhZTFkNTEiLCJyYW5kb20iOjQyNjg1MCwiaWF0IjoxNzQxMzU5MzgyLCJleHAiOjE3NDEzNjI5ODJ9.Dk9NgUxnYolbEPdtPm9waQgCW-g66CuFO-2zreMUCPE'; // Replace with your actual access token
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,16 +82,17 @@ const NewPost: React.FC = () => {
                   "paragraphFormat",
                   "alert",
                 ],
+                imageUploadURL: `${config.app.backend_url()}/resource/image`,
                 imageUploadRemoteUrls: false,
                 // Set max image size to 10MB.
                 imageMaxSize: 10 * 1024 * 1024,
                 imageAllowedTypes: ['jpeg', 'jpg', 'png', 'gif'],
                 events: {
                   "image.beforeUpload": async function (fileList: any) {
-                    console.log(fileList)
+                    console.log(fileList);
                     const editor = this as any;
                     let firstFile = fileList[0];
-                    if (firstFile instanceof Blob){
+                    if (firstFile instanceof Blob) {
                       // In case the image was inserted by URL
                       const fileExtension = firstFile.type.split('/')[1];
                       const fileName = `file.${fileExtension}`;
@@ -105,6 +106,15 @@ const NewPost: React.FC = () => {
                         editor.image.insert(`${config.app.backend_url()}/resource/image/${imageFilename}`, null, null, editor.image.get());
                       }
                     }
+                    
+                    // Remove image blobs of Froala
+                    const images = editor.el.getElementsByTagName("img");
+                    Array.from(images).forEach((img: any) => {
+                      if (img.src.startsWith("blob:")) {
+                        img.parentNode?.removeChild(img);
+                      }
+                    });
+
                     return false; // Prevent Froala from handling the default upload behavior
                   },
                 },
