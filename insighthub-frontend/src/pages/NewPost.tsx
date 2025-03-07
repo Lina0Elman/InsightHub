@@ -26,7 +26,6 @@ const NewPost: React.FC = () => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      console.log('Post created:', response.data);
       navigate('/dashboard'); // Redirect to dashboard after successful post creation
     } catch (error) {
       console.error('Error creating post:', error);
