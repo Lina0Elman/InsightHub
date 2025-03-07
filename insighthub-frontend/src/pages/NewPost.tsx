@@ -71,55 +71,55 @@ const NewPost: React.FC = () => {
             model={content}
             onModelChange={setContent}
             config={
-                {
-                    placeholderText: "Edit Your Content Here!",
-                    charCounterCount: false,
-                    toolbarButtons: [
-                    "bold",
-                    "italic",
-                    "underline",
-                    "insertImage",
-                    "insertLink",
-                    "paragraphFormat",
-                    "alert",
+              {
+                placeholderText: "Edit Your Content Here!",
+                charCounterCount: false,
+                toolbarButtons: [
+                  "bold",
+                  "italic",
+                  "underline",
+                  "insertImage",
+                  "insertLink",
+                  "paragraphFormat",
+                  "alert",
                 ],
                 events: {
-                    "image.beforeUpload": async function (fileList: FileList) {
-                        const editor = this as any;
-                        const firstFile = fileList.item(0);
-                        if (firstFile) {
-                            // Remove image blobs of Froala
-                            setTimeout(() => {
-                              const images = editor.el.getElementsByTagName("img");
+                  "image.beforeUpload": async function (fileList: FileList) {
+                    const editor = this as any;
+                    const firstFile = fileList.item(0);
+                    if (firstFile) {
+                      // Remove image blobs of Froala
+                      setTimeout(() => {
+                        const images = editor.el.getElementsByTagName("img");
 
-                              Array.from(images).forEach((img: any) => {
-                                  if (img.src.startsWith("blob:")) {
-                                      img.parentNode?.removeChild(img);
-                                  }
-                              });
-                          }, 100);
+                        Array.from(images).forEach((img: any) => {
+                          if (img.src.startsWith("blob:")) {
+                            img.parentNode?.removeChild(img);
+                          }
+                        });
+                      }, 100);
 
-                            // Upload the image to the backend
-                            const imageFilename = await handleImageUpload(firstFile);
-                            if (imageFilename) {
-                                // Insert the image URL as the image in the content
-                                editor.image.insert(`${config.app.backend_url()}/resource/image/${imageFilename}`, null, null, editor.image.get());
-                            }
-                        }
-                        return false; // Prevent Froala from handling the default upload behavior
-                    },
+                      // Upload the image to the backend
+                      const imageFilename = await handleImageUpload(firstFile);
+                      if (imageFilename) {
+                        // Insert the image URL as the image in the content
+                        editor.image.insert(`${config.app.backend_url()}/resource/image/${imageFilename}`, null, null, editor.image.get());
+                      }
+                    }
+                    return false; // Prevent Froala from handling the default upload behavior
+                  },
                 },
                 pluginsEnabled: ["image"],
-            }}
+              }}
           />
           <Button type="submit" fullWidth variant="contained" color="primary" sx={{ mt: 3, mb: 2 }}>
             Submit
           </Button>
-          <Button 
-            fullWidth 
-            variant="outlined" 
-            color="secondary" 
-            onClick={() => navigate('/dashboard')} 
+          <Button
+            fullWidth
+            variant="outlined"
+            color="secondary"
+            onClick={() => navigate('/dashboard')}
             sx={{ mt: 2 }}
           >
             Back to Dashboard
