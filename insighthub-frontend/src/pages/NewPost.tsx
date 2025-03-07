@@ -88,8 +88,16 @@ const NewPost: React.FC = () => {
                         const editor = this as any;
                         const firstFile = fileList.item(0);
                         if (firstFile) {
-                            // Remove the auto-inserted image (blob)
-                            editor.image.remove(editor.image.get());
+                            // Remove image blobs of Froala
+                            setTimeout(() => {
+                              const images = editor.el.getElementsByTagName("img");
+
+                              Array.from(images).forEach((img: any) => {
+                                  if (img.src.startsWith("blob:")) {
+                                      img.parentNode?.removeChild(img);
+                                  }
+                              });
+                          }, 100);
 
                             // Upload the image to the backend
                             const imageFilename = await handleImageUpload(firstFile);
