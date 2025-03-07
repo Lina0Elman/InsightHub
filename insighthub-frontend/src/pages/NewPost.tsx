@@ -12,7 +12,7 @@ const NewPost: React.FC = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const navigate = useNavigate();
-  const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2FmYTc0MDY4ZjczNmYxMTJhZTFkNTEiLCJyYW5kb20iOjcxODg4NCwiaWF0IjoxNzQxMzIwMTI4LCJleHAiOjE3NDEzMjM3Mjh9.KjOLD9pbrZpvwv1N3D0aeRcmRYDfLT2cvRUj00Bw19w'; // Replace with your actual access token
+  const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2FmYTc0MDY4ZjczNmYxMTJhZTFkNTEiLCJyYW5kb20iOjMyODQxLCJpYXQiOjE3NDEzMjQ4NDEsImV4cCI6MTc0MTMyODQ0MX0.HRh-P3qLtRIAdUnudvarsqwV5QfX2LKLtn6j7KV9xrE'; // Replace with your actual access token
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,6 +82,10 @@ const NewPost: React.FC = () => {
                   "paragraphFormat",
                   "alert",
                 ],
+                imageUploadRemoteUrls: false,
+                // Set max image size to 10MB.
+                imageMaxSize: 10 * 1024 * 1024,
+                imageAllowedTypes: ['jpeg', 'jpg', 'png', 'gif'],
                 events: {
                   "image.beforeUpload": async function (fileList: any) {
                     console.log(fileList)
@@ -94,17 +98,6 @@ const NewPost: React.FC = () => {
                       firstFile = new File([firstFile], fileName, { type: firstFile.type });
                     }
                     if (firstFile) {
-                      // Remove image blobs of Froala
-                      setTimeout(() => {
-                        const images = editor.el.getElementsByTagName("img");
-
-                        Array.from(images).forEach((img: any) => {
-                          if (img.src.startsWith("blob:")) {
-                            img.parentNode?.removeChild(img);
-                          }
-                        });
-                      }, 100);
-
                       // Upload the image to the backend
                       const imageFilename = await handleImageUpload(firstFile);
                       if (imageFilename) {
