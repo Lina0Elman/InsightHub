@@ -83,7 +83,7 @@ const NewPost: React.FC = () => {
                   "alert",
                 ],
                 imageUploadURL: `${config.app.backend_url()}/resource/image`,
-                imageUploadRemoteUrls: false,
+                imageUploadRemoteUrls: true,
                 // Set max image size to 10MB.
                 imageMaxSize: 10 * 1024 * 1024,
                 imageAllowedTypes: ['jpeg', 'jpg', 'png', 'gif'],
@@ -106,7 +106,7 @@ const NewPost: React.FC = () => {
                         editor.image.insert(`${config.app.backend_url()}/resource/image/${imageFilename}`, null, null, editor.image.get());
                       }
                     }
-                    
+
                     // Remove image blobs of Froala
                     const images = editor.el.getElementsByTagName("img");
                     Array.from(images).forEach((img: any) => {
