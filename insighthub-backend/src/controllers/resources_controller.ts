@@ -11,10 +11,9 @@ const createImageResource = async (req, res) => {
             return res.status(400).send(error.message);
         } else if (error instanceof TypeError) {
             return res.status(400).send(error.message);
+        } else if (!req.file) {
+            return res.status(400).send('No file uploaded.');
         } else if (error) {
-            if (!req.file) {
-                return res.status(400).send('No file uploaded.');
-            }
             return res.status(500).send("Internal Server Error");
         }
 
