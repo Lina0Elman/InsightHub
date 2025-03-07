@@ -83,9 +83,16 @@ const NewPost: React.FC = () => {
                   "alert",
                 ],
                 events: {
-                  "image.beforeUpload": async function (fileList: FileList) {
+                  "image.beforeUpload": async function (fileList: any) {
+                    console.log(fileList)
                     const editor = this as any;
-                    const firstFile = fileList.item(0);
+                    let firstFile = fileList[0];
+                    if (firstFile instanceof Blob){
+                      // In case the image was inserted by URL
+                      const fileExtension = firstFile.type.split('/')[1];
+                      const fileName = `file.${fileExtension}`;
+                      firstFile = new File([firstFile], fileName, { type: firstFile.type });
+                    }
                     if (firstFile) {
                       // Remove image blobs of Froala
                       setTimeout(() => {
