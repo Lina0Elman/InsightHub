@@ -85,18 +85,19 @@ const NewPost: React.FC = () => {
                 ],
                 events: {
                     "image.beforeUpload": async function (fileList: FileList) {
-                        console.log("Image before upload:", fileList);
                         const firstFile = fileList.item(0);
                         if (firstFile) {
+                            // Remove the auto-inserted image (blob)
+                            this.image.remove(this.image.get());
+
+                            // Upload the image to the backend
                             const imageFilename = await handleImageUpload(firstFile);
                             if (imageFilename) {
-                                console.log("Uploaded Image filename:", imageFilename);
-                                
-                                // Insert the image using the Froala instance
+                                // Insert the image URL as the image in the content
                                 this.image.insert(`${config.app.backend_url()}/resource/image/${imageFilename}`, null, null, this.image.get());
                             }
                         }
-                        return false; // Prevent default upload behavior
+                        return false; // Prevent Froala from handling the default upload behavior
                     },
                 },
                 pluginsEnabled: ["image"],
