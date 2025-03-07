@@ -12,7 +12,7 @@ const NewPost: React.FC = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const navigate = useNavigate();
-  const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2FmYTc0MDY4ZjczNmYxMTJhZTFkNTEiLCJyYW5kb20iOjk4NDc5MywiaWF0IjoxNzQxMjUzNTk2LCJleHAiOjE3NDEyNTcxOTZ9.UVGbkvHQsJWqoxv_V-VLSMycvTKj9nckshBaBov8WfM'; // Replace with your actual access token
+  const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2FmYTc0MDY4ZjczNmYxMTJhZTFkNTEiLCJyYW5kb20iOjQ3ODE5NCwiaWF0IjoxNzQxMzE2MTA4LCJleHAiOjE3NDEzMTk3MDh9.PfoUDZA-P6Bf_Df-OWS13slQCZ6cY7IGHi4fTKfCHZw'; // Replace with your actual access token
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +35,7 @@ const NewPost: React.FC = () => {
 
   const handleImageUpload = async (file: File) => {
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append('file', file);
 
     try {
       const response = await axios.post(`${config.app.backend_url()}/resource/image`, formData, {
@@ -77,17 +77,17 @@ const NewPost: React.FC = () => {
                 'bold', 'italic', 'underline', 'insertImage', 'insertLink', 'paragraphFormat', 'alert'
               ],
               events: {
-                'image.uploaded': async (response: any) => {
-                  console.log('Image upload event triggered:', response);
-                  const imageUrl = await handleImageUpload(response);
-                  if (imageUrl) {
-                    console.log(imageUrl)
-                    // Replace the blob URL with the permanent URL
+                'image.beforeUpload': async (fileList: FileList) => {
+                  console.log('Image before upload:', fileList);
+                  const firstFile = fileList.item(0);
+                  if (firstFile) {
+                    const imageUrl = await handleImageUpload(firstFile);
+                    if (imageUrl) {
+                      console.log(imageUrl);
+                    }
+                      // Replace the blob URL with the permanent URL
                     this.editor.image.insert(imageUrl, null, null, this.editor.image.get());
                   }
-                },
-                'image.beforeUpload': (file: any) => {
-                  console.log('Image before upload:', file);
                 },
               },
               pluginsEnabled: ['image'],
