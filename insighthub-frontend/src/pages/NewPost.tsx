@@ -12,7 +12,7 @@ const NewPost: React.FC = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const navigate = useNavigate();
-  const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2FmYTc0MDY4ZjczNmYxMTJhZTFkNTEiLCJyYW5kb20iOjQ3ODE5NCwiaWF0IjoxNzQxMzE2MTA4LCJleHAiOjE3NDEzMTk3MDh9.PfoUDZA-P6Bf_Df-OWS13slQCZ6cY7IGHi4fTKfCHZw'; // Replace with your actual access token
+  const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2FmYTc0MDY4ZjczNmYxMTJhZTFkNTEiLCJyYW5kb20iOjcxODg4NCwiaWF0IjoxNzQxMzIwMTI4LCJleHAiOjE3NDEzMjM3Mjh9.KjOLD9pbrZpvwv1N3D0aeRcmRYDfLT2cvRUj00Bw19w'; // Replace with your actual access token
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,30 +67,39 @@ const NewPost: React.FC = () => {
             required
           />
           <FroalaEditor
-            tag='textarea'
+            tag="textarea"
             model={content}
             onModelChange={setContent}
-            config={{
-              placeholderText: 'Edit Your Content Here!',
-              charCounterCount: false,
-              toolbarButtons: [
-                'bold', 'italic', 'underline', 'insertImage', 'insertLink', 'paragraphFormat', 'alert'
-              ],
-              events: {
-                'image.beforeUpload': async (fileList: FileList) => {
-                  console.log('Image before upload:', fileList);
-                  const firstFile = fileList.item(0);
-                  if (firstFile) {
-                    const imageUrl = await handleImageUpload(firstFile);
-                    if (imageUrl) {
-                      console.log(imageUrl);
-                    }
-                      // Replace the blob URL with the permanent URL
-                    this.editor.image.insert(imageUrl, null, null, this.editor.image.get());
-                  }
+            config={
+                {
+                    placeholderText: "Edit Your Content Here!",
+                    charCounterCount: false,
+                    toolbarButtons: [
+                    "bold",
+                    "italic",
+                    "underline",
+                    "insertImage",
+                    "insertLink",
+                    "paragraphFormat",
+                    "alert",
+                ],
+                events: {
+                    "image.beforeUpload": async function (fileList: FileList) {
+                        console.log("Image before upload:", fileList);
+                        const firstFile = fileList.item(0);
+                        if (firstFile) {
+                            const imageFilename = await handleImageUpload(firstFile);
+                            if (imageFilename) {
+                                console.log("Uploaded Image filename:", imageFilename);
+                                
+                                // Insert the image using the Froala instance
+                                this.image.insert(`${config.app.backend_url()}/resource/image/${imageFilename}`, null, null, this.image.get());
+                            }
+                        }
+                        return false; // Prevent default upload behavior
+                    },
                 },
-              },
-              pluginsEnabled: ['image'],
+                pluginsEnabled: ["image"],
             }}
           />
           <Button type="submit" fullWidth variant="contained" color="primary" sx={{ mt: 3, mb: 2 }}>
