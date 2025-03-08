@@ -379,6 +379,8 @@ paths:
                     type: string
                   _id:
                     type: string
+                  imageFilename:
+                    type: string
         '401':
           description: Invalid credentials
 

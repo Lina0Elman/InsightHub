@@ -75,6 +75,7 @@ const login = async (req, res) => {
             email: user.email,
             _id: user._id,
             accessToken: tokens.accessToken,
+            imageFilename: user.imageFilename,
             refreshToken: tokens.refreshToken,
         });
     } catch (err) {
