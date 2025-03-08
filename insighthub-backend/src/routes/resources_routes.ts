@@ -5,6 +5,7 @@ import  { authMiddleware } from '../controllers/auth_controller';
 
 const router = express.Router();
 
+router.post('/image/user', authMiddleware, Resource.createUserImageResource);
 router.post('/image', authMiddleware, Resource.createImageResource);
 router.get('/image/:filename', Resource.getImageResource);
 
