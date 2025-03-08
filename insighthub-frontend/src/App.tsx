@@ -9,7 +9,7 @@ import Profile from './components/Profile';
 
 const App: React.FC = () => {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div>
       <Router>
         <Routes>
           <Route path="/" element={<Login />} />
