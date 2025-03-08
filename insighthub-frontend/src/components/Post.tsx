@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageSquare, ArrowUp, ArrowDown, Share2, User } from 'lucide-react';
+import { MessageSquare, Share2, User } from 'lucide-react';
 import { PostType, CommentType } from '../types/Types';
 import { config } from '../config';
 
