@@ -7,7 +7,7 @@ const Profile: React.FC = () => {
   const [image, setImage] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2FmYTc0MDY4ZjczNmYxMTJhZTFkNTEiLCJyYW5kb20iOjQ1MTMyMSwiaWF0IjoxNzQxNDAzNjE3LCJleHAiOjE3NDE0MDcyMTd9.ZD2PfiwxL3Rwu-lvOJqlYg9Y2nM2qzP8pPv7rvYBAjQ'; // Replace with your actual access token
+  const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2FmYTc0MDY4ZjczNmYxMTJhZTFkNTEiLCJyYW5kb20iOjYwMTc3NywiaWF0IjoxNzQxNDA4MTIxLCJleHAiOjE3NDE0MTE3MjF9.8J-Es2F-3VOqzGxFQEPbiBDrPLDsM0jafeOQZlrqyJ8'; // Replace with your actual access token
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -26,7 +26,7 @@ const Profile: React.FC = () => {
     formData.append('file', image);
 
     try {
-      await axios.post(`${config.app.backend_url()}/resource/image`, formData, {
+      await axios.post(`${config.app.backend_url()}/resource/image/user`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${accessToken}`,
