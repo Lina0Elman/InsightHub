@@ -1,24 +1,13 @@
-name: Deploy coverage report to Pages
+name: Backend - Run all tests
 
 on:
   push:
-    branches: ['main']
-
-  workflow_dispatch:
-
-concurrency:
-  group: 'pages'
-  cancel-in-progress: true
+    branches: ['*']
+  pull_request:
+    branches: ['*']
 
 jobs:
-  deploy:
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  test:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -41,7 +30,7 @@ jobs:
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.10.0
         with:
-          mongodb-version: '6.0'       
+          mongodb-version: '6.0'
       - uses: actions/setup-node@v4
         with:
           node-version: 18
@@ -49,16 +38,3 @@ jobs:
         run: npm i
       - name: Run tests
         run: npm run test -- --testTimeout=30000
-      - name: Setup Pages
-        if: always()
-        uses: actions/configure-pages@v4      
-      - name: Upload Artifact
-        if: always()
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: 'insighthub-backend/coverage/lcov-report'
-          name: 'github-pages'      
-      - name: Deploy to GitHub Pages
-        if: always()
-        id: deployment
-        uses: actions/deploy-pages@v4
