@@ -6,11 +6,3 @@ export interface PostType {
   createdAt: string;
   updatedAt?: string;
 }
-
-export interface CommentType {
-  id: string;
-  content: string;
-  author: string;
-  createdAt: string;
-  updatedAt?: string;
-}

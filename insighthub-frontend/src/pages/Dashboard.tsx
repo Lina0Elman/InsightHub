@@ -12,7 +12,6 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import AddPost from "../components/AddPost";
-import Post from "../components/Post";
 import { config } from "../config";
 import { PostType } from "../types/Types";
 import TopBar from "../components/TopBar";
@@ -76,7 +75,8 @@ function Dashboard() {
             ) : posts.length === 0 ? (
               <Typography>No posts yet. Be the first to create one!</Typography>
             ) : (
-              posts.map((post) => <Post key={post.id} {...post} />)
+              "todo : implement here posts retrieval"
+              /*posts.map((post) => <Post key={post.id} {...post} />)*/
             )}
           </Paper>
           <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
