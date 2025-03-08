@@ -8,7 +8,7 @@ import Footer from './components/Footer';
 
 const App: React.FC = () => {
   return (
-    <div>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Router>
         <Routes>
           <Route path="/" element={<Login />} />
