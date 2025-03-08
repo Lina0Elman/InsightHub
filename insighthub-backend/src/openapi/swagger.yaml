@@ -307,6 +307,9 @@ paths:
               schema:
                 type: object
                 properties:
+                  email:
+                    type: string
+                    format: email
                   accessToken:
                     type: string
                   refreshToken:
