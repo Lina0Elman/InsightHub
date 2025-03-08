@@ -13,6 +13,7 @@ export const config = {
         access_token_secret: () => process.env.ACCESS_TOKEN_SECRET || 'secret'
     },
     resources: {
-        imagesDirectoryPath: () => 'resources/images'
+        imagesDirectoryPath: () => 'resources/images',
+        imageMaxSize: () => 10 * 1024 * 1024 // Max file size: 10MB
     }
 }

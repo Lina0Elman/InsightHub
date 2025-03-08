@@ -26,7 +26,7 @@ const createImagesStorage = () => {
     const uploadImage = multer({
         storage: imagesStorage,
         limits: {
-            fileSize: 10 * 1024 * 1024 // Max file size: 10MB
+            fileSize: config.resources.imageMaxSize()
         },
         fileFilter: (req, file, cb) => {
             const allowedTypes = /jpeg|jpg|png|gif/;
