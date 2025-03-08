@@ -26,7 +26,12 @@ const Profile: React.FC = () => {
           <Typography variant="h4" gutterBottom>
             User Profile
           </Typography>
-          {/* Add profile details here */}
+          {profile && (
+            <Typography variant="body1">
+              {/* Add profile details here */}
+              {JSON.stringify(profile)}
+            </Typography>
+          )}
         </Paper>
       </Box>
     </Box>
