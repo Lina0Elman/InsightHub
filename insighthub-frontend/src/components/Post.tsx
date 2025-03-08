@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, ArrowUp, ArrowDown, Share2, User } from 'lucide-react';
+import { PostType, CommentType } from '../types/Types';
+import { config } from '../config';
 
 interface PostProps extends PostType {}
 
@@ -9,12 +11,9 @@ const Post: React.FC<PostProps> = ({
   content, 
   author, 
   createdAt, 
-  votes: initialVotes, 
-  commentCount 
 }) => {
-  const [votes, setVotes] = useState(initialVotes);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<CommentType[]>([]);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
 
@@ -26,8 +25,8 @@ const Post: React.FC<PostProps> = ({
 
   const loadComments = async () => {
     try {
-      const response = await commentsApi.getByPostId(id);
-      setComments(response.data);
+      const response = await axios.get(`${config.app.backend_url()}/post/${id}`);
+      setComments(response.data as CommentType[]);
     } catch (error) {
       console.error('Failed to load comments:', error);
     }
@@ -36,7 +35,7 @@ const Post: React.FC<PostProps> = ({
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await commentsApi.create({ content: newComment, postId: id });
+      await axios.post(`${config.app.backend_url()}/comment`, { postId: id, content: newComment });
       setNewComment('');
       loadComments();
     } catch (error) {
@@ -47,29 +46,10 @@ const Post: React.FC<PostProps> = ({
   return (
     <div className="bg-white rounded-lg shadow-md p-4 mb-4">
       <div className="flex">
-        <div className="flex flex-col items-center mr-4">
-          <button 
-            onClick={() => setVotes(v => v + 1)}
-            className="p-1 hover:bg-gray-100 rounded"
-          >
-            <ArrowUp className="w-5 h-5 text-gray-500" />
-          </button>
-          <span className="font-medium text-gray-700">{votes}</span>
-          <button 
-            onClick={() => setVotes(v => v - 1)}
-            className="p-1 hover:bg-gray-100 rounded"
-          >
-            <ArrowDown className="w-5 h-5 text-gray-500" />
-          </button>
-        </div>
-
         <div className="flex-1">
           <div className="flex items-center mb-2">
             <User className="w-4 h-4 mr-2 text-gray-500" />
-            <span className="text-sm text-gray-600">Posted by {author.username}</span>
-            <span className="text-sm text-gray-400 ml-2">
-              {formatDistanceToNow(new Date(createdAt))}
-            </span>
+            <span className="text-sm text-gray-600">Posted by {author}</span>
           </div>
           
           <h2 className="text-xl font-semibold mb-2">{title}</h2>
@@ -91,7 +71,7 @@ const Post: React.FC<PostProps> = ({
               onClick={() => setShowComments(!showComments)}
             >
               <MessageSquare className="w-4 h-4 mr-1" />
-              <span className="text-sm">{commentCount} Comments</span>
+              <span className="text-sm">{comments.length} Comments</span>
             </button>
             <button className="flex items-center text-gray-500 hover:text-gray-700">
               <Share2 className="w-4 h-4 mr-1" />
@@ -120,9 +100,9 @@ const Post: React.FC<PostProps> = ({
               {comments.map((comment) => (
                 <div key={comment.id} className="border-l-2 border-gray-200 pl-4">
                   <div className="flex items-center mb-1">
-                    <span className="font-medium">{comment.author.username}</span>
+                    <span className="font-medium">{comment.author}</span>
                     <span className="text-sm text-gray-500 ml-2">
-                      {formatDistanceToNow(new Date(comment.createdAt))}
+                      {comment.createdAt}
                     </span>
                   </div>
                   <p className="text-gray-700">{comment.content}</p>

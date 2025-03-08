@@ -1,31 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Container,
   Typography,
   Box,
   Paper,
-  Grid,
-  Divider,
   CircularProgress,
-  AppBar,
-  Toolbar,
-  IconButton,
-  Tooltip,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
-import { Home, Person, Message, Settings, Logout } from "@mui/icons-material";
 import axios from "axios";
 import AddPost from "../components/AddPost";
-import Profile from "../components/Profile";
 import Post from "../components/Post";
 import { config } from "../config";
 import { PostType } from "../types/Types";
+import TopBar from "../components/TopBar";
 
 function Dashboard() {
-  const navigate = useNavigate();
   const [posts, setPosts] = useState<PostType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
 
   const loadPosts = async () => {
     try {
@@ -45,47 +42,24 @@ function Dashboard() {
     loadPosts();
   }, []);
 
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      {/* Fixed AppBar Full Width */}
-      <AppBar position="fixed" sx={{ width: "100vw", left: 0 }}>
-        <Toolbar>
-          <Tooltip title="Home">
-            <IconButton color="inherit" onClick={() => navigate("/")}>
-              <Home />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Profile">
-            <IconButton color="inherit" onClick={() => navigate("/profile")}>
-              <Person />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Messages">
-            <IconButton color="inherit" onClick={() => navigate("/messages")}>
-              <Message />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Settings">
-            <IconButton color="inherit" onClick={() => navigate("/settings")}>
-              <Settings />
-            </IconButton>
-          </Tooltip>
-          <Box sx={{ flexGrow: 1 }} />
-          <Tooltip title="Logout">
-            <IconButton color="inherit" onClick={() => navigate("/login")}>
-              <Logout />
-            </IconButton>
-          </Tooltip>
-        </Toolbar>
-      </AppBar>
-
+      <TopBar/>
       {/* Main Layout */}
       <Box sx={{ display: "flex", flexGrow: 1, mt: "64px", px: 2 }}>
         {/* Main Content */}
         <Box sx={{ flexGrow: 1, maxWidth: "900px" }}>
-          <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-            <AddPost onPostCreated={loadPosts} />
-          </Paper>
+          <Button variant="contained" color="primary" onClick={handleClickOpen} sx={{ mb: 4 }}>
+            Create Post
+          </Button>
           <Paper elevation={3} sx={{ p: 2 }}>
             {isLoading ? (
               <Box
@@ -106,20 +80,17 @@ function Dashboard() {
               posts.map((post) => <Post key={post.id} {...post} />)
             )}
           </Paper>
-        </Box>
-
-        {/* Sidebar */}
-        <Box sx={{ width: "300px", ml: 2 }}>
-          <Paper elevation={3} sx={{ p: 2 }}>
-            <Profile />
-          </Paper>
-          <Divider sx={{ my: 2 }} />
-          <Paper elevation={3} sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              Trending
-            </Typography>
-            {/* Add trending content here */}
-          </Paper>
+          <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+            <DialogTitle>Create a New Post</DialogTitle>
+            <DialogContent>
+              <AddPost onPostCreated={loadPosts} />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleClose} color="primary">
+                Cancel
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Box>
       </Box>
     </Box>
