@@ -84,8 +84,7 @@ const NewPost: React.FC = () => {
                 ],
                 imageUploadURL: `${config.app.backend_url()}/resource/image`,
                 imageUploadRemoteUrls: true,
-                // Set max image size to 10MB.
-                imageMaxSize: 10 * 1024 * 1024,
+                imageMaxSize: config.resources.imageMaxSize(),
                 imageAllowedTypes: ['jpeg', 'jpg', 'png', 'gif'],
                 events: {
                   "image.beforeUpload": async function (fileList: any) {
