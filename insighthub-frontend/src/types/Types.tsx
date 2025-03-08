@@ -5,7 +5,6 @@ export interface PostType {
   author: string;
   createdAt: string;
   updatedAt?: string;
-  comments?: CommentType[];
 }
 
 export interface CommentType {
