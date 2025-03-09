@@ -11,7 +11,9 @@ const Dashboard: React.FC = () => {
 
   const handleLogout = async () => {
     console.log('Logout clicked');
-    await axios.post(`${config.app.backend_url()}/auth/logout`);
+    await axios.post(`${config.app.backend_url()}/auth/logout`, {
+      refreshToken: localStorage.getItem('refreshToken'),
+    });
     navigate('/logout');
   };
 
