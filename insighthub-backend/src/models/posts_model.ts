@@ -12,7 +12,15 @@ const postSchema: Schema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-}, {  timestamps: true, strict: true });
+    createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now
+    }
+}, { timestamps: true, strict: true, versionKey: false });
 
 postSchema.set('toJSON', {
     transform: (doc: Document, ret: Record<string, any>): PostData => {

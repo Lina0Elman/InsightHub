@@ -12,6 +12,6 @@ const RefreshTokenSchema: Schema = new Schema({
     token: { type: String, required: true },
     accessToken: { type: String, required: true },
     createdAt: { type: Date, default: Date.now, expires: '7d' }, // Token expires in 7 days
-});
+}, { timestamps: true, strict: true, versionKey: false });
 
 export const RefreshTokenModel = mongoose.model<IRefreshToken>('RefreshToken', RefreshTokenSchema);

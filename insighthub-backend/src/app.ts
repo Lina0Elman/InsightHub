@@ -7,6 +7,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import options from './docs/swagger_options';
 import {authenticateToken} from "./middleware/auth";
+import bodyParser from 'body-parser';
 
 const specs = swaggerJsdoc(options);
 
@@ -14,17 +15,26 @@ const app = express();
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-// const bodyParser = require('body-parser');
-import bodyParser from 'body-parser';
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(authenticateToken.unless({ path: ['/auth/login', '/auth/register', '/auth/refresh', '/auth/logout'] }));
+app.use(authenticateToken.unless({
+    path: [
+        { url: '/auth/login' },
+        { url: '/auth/register' },
+        { url: '/auth/refresh' },
+        { url: '/auth/logout' },
+        { url: '/post', methods: ['GET'] },
+        { url: '/post/:id', methods: ['GET'] },
+        { url: '/comment/post/:postId', methods: ['GET'] },
+        { url: '/comment', methods: ['GET'] }
+    ]
+}));
 
 
 app.use('/auth', authRoutes);
 app.use('/comment', commentsRoutes);
 app.use('/post', postsRoutes);
-app.use('/users', usersRoutes);
+app.use('/user', usersRoutes);
 
 export default app;

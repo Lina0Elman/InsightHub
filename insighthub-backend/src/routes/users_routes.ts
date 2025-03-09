@@ -7,7 +7,7 @@ const router: Router = express.Router();
 
 /**
  * @swagger
- * /users:
+ * /user:
  *   get:
  *     summary: Get all users
  *     tags:
@@ -38,7 +38,7 @@ router.get('/', (req: Request, res: Response) => usersController.getUsers(req, r
 
 /**
  * @swagger
- * /users/{id}:
+ * /user/{id}:
  *   get:
  *     summary: Get a user by ID
  *     tags:
@@ -76,7 +76,7 @@ router.get('/:id', validateUserId, handleValidationErrors, (req: Request, res: R
 
 /**
  * @swagger
- * /users/{id}:
+ * /user/{id}:
  *   delete:
  *     summary: Delete a user by ID
  *     tags:
@@ -100,7 +100,7 @@ router.delete('/:id', validateUserId, handleValidationErrors, (req: Request, res
 
 /**
  * @swagger
- * /users/{id}:
+ * /user/{id}:
  *   put:
  *     summary: Update a user by ID
  *     tags:
@@ -140,7 +140,7 @@ router.put('/:id', validateUserId, validateUserDataOptional, handleValidationErr
 
 /**
  * @swagger
- * /users:
+ * /user:
  *   post:
  *     summary: Create a new user
  *     tags:

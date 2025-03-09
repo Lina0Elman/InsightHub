@@ -1,8 +1,6 @@
 import {Request, Response} from "express";
 import * as usersService from "../services/users_service";
 import {handleError} from "../utils/handle_error";
-import jwt from "jsonwebtoken";
-import {config} from "../config/config";
 import {CustomRequest} from "types/customRequest";
 
 export const loginUser = async (req: Request, res: Response): Promise<void> => {
