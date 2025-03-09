@@ -1,15 +1,17 @@
 import React from 'react';
 import { Container, Typography, Box, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { config } from '../config';
+import axios from 'axios';
 
 
 const Dashboard: React.FC = () => {
 
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    // Add your logout logic here
+  const handleLogout = async () => {
     console.log('Logout clicked');
+    await axios.post(`${config.app.backend_url()}/auth/logout`);
     navigate('/logout');
   };
 

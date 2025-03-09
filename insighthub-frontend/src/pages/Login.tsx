@@ -11,6 +11,7 @@ const Login: React.FC = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -28,6 +29,7 @@ const Login: React.FC = () => {
         password,
       });
       setEmail(response.data.email);
+
 
       // Handle successful login, e.g., save tokens, redirect, etc.
       localStorage.setItem('email', response.data.email); // Store the email in localStorage

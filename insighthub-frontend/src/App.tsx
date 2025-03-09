@@ -7,7 +7,6 @@ import Dashboard from './pages/Dashboard';
 import Logout from './pages/Logout';
 
 
-// maybe need to be like " <Route path="/logout" element={<Logout />}  />" ?
 const App: React.FC = () => {
   return (
     <Router>
