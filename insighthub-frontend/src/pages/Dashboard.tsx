@@ -13,7 +13,7 @@ import {
 import axios from "axios";
 import AddPost from "../components/AddPost";
 import { config } from "../config";
-import { PostType } from "../types/Types";
+import { PostType } from "../models/Post";
 import TopBar from "../components/TopBar";
 
 function Dashboard() {
