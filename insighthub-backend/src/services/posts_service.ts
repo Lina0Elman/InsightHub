@@ -3,6 +3,7 @@ import { IPost, PostData } from 'types/post_types';
 import {ClientSession, Document} from 'mongoose';
 import * as mongoose from 'mongoose';
 import * as commentsService from './comments_service';
+import {UserModel} from "../models/user_model";
 
 
 const postToPostData = (post: Document<unknown, {}, IPost> & IPost): PostData => {
@@ -33,6 +34,23 @@ export const getPosts = async (owner?: string): Promise<PostData[]> => {
          const posts = await PostModel.find().exec();
         return posts.map(postToPostData);
     }
+};
+
+/***
+ * Get posts by username
+ * @param username - The username of the posts to be fetched
+ * @returns The list of posts
+ */
+export const getPostsByUsername = async (username: string): Promise<PostData[]> => {
+    if (!username) return [];
+
+    // Find the user first
+    const user = await UserModel.findOne({ username }).select('_id').lean().exec();
+    if (!user) return [];
+
+    // Then find posts with that user's ID
+    const posts = await PostModel.find({ owner: user._id }).exec();
+    return posts.map(postToPostData);
 };
 
 /**

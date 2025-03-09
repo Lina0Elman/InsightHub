@@ -114,7 +114,7 @@ router.get('/post/:post_id', validatePostIdParam, handleValidationErrors, (req: 
  *       400:
  *         description: Invalid comment ID
  */
-router.get('/:commentId', validateCommentId, handleValidationErrors, (req: Request, res: Response) => commentsController.getCommentById(req, res));
+router.get('/:comment_id', validateCommentId, handleValidationErrors, (req: Request, res: Response) => commentsController.getCommentById(req, res));
 
 /**
  * @swagger

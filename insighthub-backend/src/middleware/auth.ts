@@ -63,6 +63,14 @@ const authenticateToken: any & { unless: typeof unless } = async (req: CustomReq
 
 authenticateToken.unless = unless;
 
+const authenticateTokenForParams: (req: CustomRequest, res: Response, next: NextFunction) => Promise<void> = async (req: CustomRequest, res: Response, next: NextFunction): Promise<void> => {
+  if (Object.keys(req.query).length > 0) {
+    authenticateTokenHandler(req, res, next, false)
+  }
+  else {
+    next();
+  }
+}
 
 const authenticateLogoutToken = async (req: CustomRequest, res: Response, next: NextFunction) => {
     authenticateTokenHandler(req, res, next, true)
@@ -70,4 +78,4 @@ const authenticateLogoutToken = async (req: CustomRequest, res: Response, next: 
 
 authenticateLogoutToken.unless = unless;
 
-export {authenticateToken, authenticateLogoutToken};
+export {authenticateToken, authenticateLogoutToken, authenticateTokenForParams};

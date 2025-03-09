@@ -5,7 +5,7 @@ import {CommentData} from "types/comment_types";
 
 let existingPost1: PostData;
 let existingPost2:PostData;
-let existingComment:PostData;
+let existingComment:CommentData;
 let accessToken: string;
 
 const user = {
@@ -80,22 +80,6 @@ describe('when http request POST /comment to an unknown post', () => {
         expect(res.statusCode).toBe(400);
     });
 });
-
-// NOTE: This test is not needed because we are not getting the sender field in the body, it's from the Auth token.
-// describe('when http request POST /comment to an existing post without required sender field', () => {
-//     it('then should return 400 bad request http status', async () => {
-//         const body = {
-//             "postId": `${existingPost1.id}`,
-//             "content": "COMMENT1 CONTENT"
-//         };
-//         const res = await request(app)
-//             .post('/comment')
-//             .set('Authorization', `jwt ${accessToken}`)
-//             .send(body);
-//
-//         expect(res.statusCode).toBe(400);
-//     });
-// });
 
 describe('when http request POST /comment without required postId field', () => {
     it('then should return 400 bad request http status', async () => {
@@ -183,6 +167,30 @@ describe('given db initialized with comments when http request GET /comment', ()
     });
 });
 
+
+
+describe('Check the private and public route for the auth need', () => {
+    it('should allow GET /comment without authentication', async () => {
+        const response = await request(app).get('/comment');
+        expect(response.status).toBe(200);
+    });
+
+    it('should allow GET /comment/:id without authentication', async () => {
+        const response = await request(app).get(`/comment/${existingComment.id}`);
+        expect(response.status).toBe(200);
+    });
+
+    it('should not allow GET /comment?owner without authentication', async () => {
+        const response = await request(app).get(`/comment?owner=${existingComment.owner}`);
+        expect(response.status).toBe(401);
+    });
+
+    it('should allow GET /comment/:id without authentication', async () => {
+        const response = await request(app).get(`/comment/post/${existingComment.postId}`);
+        expect(response.status).toBe(200);
+    });
+});
+
 describe('when http request PUT /comment/id of unknown post', () => {
     it('then should return 200 for update http status', async () => {
         const body = {
@@ -241,21 +249,6 @@ describe('when http request PUT /comment/id without required postId field', () =
     });
 });
 
-// NOTE: This test is not needed because we are not getting the sender field in the body, it's from the Auth token.
-// describe('when http request PUT /comment/id without required sender field', () => {
-//     it('then should return 400 bad request http status', async () => {
-//         const body = {
-//             "postId": `${existingPost1.id}`,
-//             "content": "UPDATED COMMENT CONTENT"
-//         };
-//         const res = await request(app)
-//             .put(`/comment/${existingComment.id}`)
-//             .set('Authorization', `jwt ${accessToken}`)
-//             .send(body);
-//
-//         expect(res.statusCode).toBe(400);
-//     });
-// });
 
 describe('when http request PUT /comment/id of existing post and comment', () => {
     it('then should update comment in the db', async () => {

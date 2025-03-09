@@ -3,6 +3,7 @@ import * as postsService from '../services/posts_service';
 import { handleError } from '../utils/handle_error';
 import {CustomRequest} from "types/customRequest";
 import {PostData} from "types/post_types";
+import {getPostsByUsername} from "../services/posts_service";
 
 export const addPost = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
@@ -25,7 +26,11 @@ export const getPosts = async (req: Request, res: Response): Promise<void> => {
         let posts;
         if (req.query.owner) {
             posts = await postsService.getPosts(req.query.owner as string);
-        } else {
+        } else if (req.query.username)
+        {
+            posts = await postsService.getPostsByUsername(req.query.username as string);
+        }
+        else {
             posts = await postsService.getPosts();
         }
 

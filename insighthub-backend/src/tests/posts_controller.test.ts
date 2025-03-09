@@ -25,19 +25,16 @@ const userInfo2:UserInfo = {
 }
 
 const testPost1 = {
-    // "sender": "USERNAME1",
     "title": "POST1 TITLE",
     "content": "POST1 CONTENT"
 };
 const testPost2 = {
-    // "sender": "USERNAME2",
     "title": "POST2 TITLE",
     "content": "POST2 CONTENT"
 };
 const testPost3 = {
-    // "sender": "USERNAME2",
-    "title": "POST2 TITLE",
-    "content": "POST2 CONTENT"
+    "title": "POST3 TITLE",
+    "content": "POST3 CONTENT"
 };
 const testUpdatedPost = {
     "title": "UPDATED POST TITLE",
@@ -126,43 +123,47 @@ describe('when http request POST /post', () => {
     });
 });
 
-// No need for the sender field - it is automatically set to the logged in user
-// describe('when http request POST /post without required sender field', () => {
-//     it('then should return 400 bad request http status', async () => {
-//         const tempPostTest = {
-//             "title": "POST1 TITLE",
-//             "content": "POST1 CONTENT"
-//         };
-//         const res = await request(app)
-//             .post('/post')
-//             .set('Authorization', `jwt ` + userInfo.accessToken)
-//             .send(tempPostTest);
-//
-//         expect(res.statusCode).toBe(400);
-//     });
-// });
-
 describe('given db initialized with posts when http request GET /post', () => {
     it('then should return all posts in the db', async () => {
         const res = await request(app)
             .get('/post')
             .set('Authorization', `jwt ` + userInfo.accessToken);
         expect(res.statusCode).toBe(200);
-        expect(res.statusCode).not.toEqual([]);
+        expect(res.body).not.toEqual([]);
+        expect(res.body.length).toBeGreaterThan(1);
+    });
+});
+
+describe('Check the private and public route for the auth need', () => {
+    it('should allow GET /post without authentication', async () => {
+        const response = await request(app).get('/post');
+        expect(response.status).toBe(200);
+    });
+
+    it('should allow GET /post/:id without authentication', async () => {
+        const response = await request(app).get(`/post/${existingPost.id}`);
+        expect(response.status).toBe(200);
+    });
+
+    it('should not allow GET /post?owner without authentication', async () => {
+        const response = await request(app).get(`/post?owner${existingPost.owner}`);
+        expect(response.status).toBe(401);
     });
 });
 
 // TODO - change th test to get posts by owner.username
-// describe('given unknown username when http request GET /post?owner', () => {
-//     it('then should return empty list', async () => {
-//         const res = await request(app)
-//             .get('/post?username=UNKNOWN')
-//             .set('Authorization', `jwt ` + userInfo.accessToken);
-//
-//         expect(res.statusCode).toBe(200);
-//         expect(res.body).toEqual([]);
-//     });
-// });
+describe('given username when http request GET /post?username', () => {
+    it('then should return a post', async () => {
+        const res = await request(app)
+            .get(`/post?username=${userInfo.username}`)
+            .set('Authorization', `jwt ` + userInfo.accessToken);
+
+        expect(res.statusCode).toBe(200);
+        res.body.forEach((post: PostData) => {
+            expect(post.owner).toEqual(userInfo.id);
+        });
+    });
+});
 
 describe('given unknown userId when http request GET /post?owner', () => {
     it('then should return empty list', async () => {
