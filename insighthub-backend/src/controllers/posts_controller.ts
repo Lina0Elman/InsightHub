@@ -1,4 +1,6 @@
+import likeModel from '../models/like_model';
 import postModel from '../models/posts_model';
+import mongoose from 'mongoose';
 
 const getAllPosts =  async (req, res) => {
     const senderFilter = req.query.sender;
@@ -59,4 +61,39 @@ const updatePostById = async (req, res) => {
     }
 }
 
-export default {getAllPosts, createPost, getPostById, updatePostById};
+const updateLikeByPostId = async (req, res) => {
+    const id = req.params.id;
+    const booleanValue = req.body;
+    try {
+        if (booleanValue != "false" && booleanValue != "true") {
+            return res.status(400).send("Bad Request. Body accepts `true` or `false` values only");
+        }
+        const oldPost = await postModel.findById(id);
+        if (oldPost == null) {
+            return res.status(404).send('Post not found');
+        }
+
+        if (booleanValue == "true") {
+            // Upsert
+            await likeModel.updateOne({
+                    userId: new mongoose.Types.ObjectId(req.query.userId),
+                    postId: oldPost._id
+                },
+                {},
+                { upsert: true }
+            );
+        } else {
+            // Delete document if exists
+            await likeModel.findOneAndDelete({
+                userId: new mongoose.Types.ObjectId(req.query.userId),
+                postId: oldPost._id
+            });
+        }
+
+        return res.status(200).send("Success");
+    } catch(error) {
+        res.status(400).send("Bad Request");
+    }
+}
+
+export default {getAllPosts, createPost, getPostById, updatePostById, updateLikeByPostId};
