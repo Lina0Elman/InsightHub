@@ -15,12 +15,17 @@ export const validateComment = [
 
 
 export const validateCommentId = [
-    param('comment_id').isMongoId().withMessage('Invalid comment ID'),
+    param('commentId').isMongoId().withMessage('Invalid comment ID'),
 ];
 
-export const validateUpdate = [
+export const validateCommentDataOptional = [
     ...validateCommentId,
     body('content').optional().isString().isLength({ min: 1 }).withMessage('Content is required'),
+];
+
+export const validateCommentData = [
+    ...validateCommentDataOptional,
+    body('content').notEmpty().withMessage('Content is required'),
 ];
 
 
@@ -67,7 +72,7 @@ export const validatePostData = [
 ];
 
 export const validatePostIdParam = [
-    param('post_id').isMongoId().withMessage('Invalid post ID'),
+    param('postId').isMongoId().withMessage('Invalid post ID'),
 ];
 
 export const handleValidationErrors = (req: Request, res: Response, next: NextFunction) => {

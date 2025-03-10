@@ -3,8 +3,10 @@ import * as commentsController from '../controllers/comments_controller';
 import {
     handleValidationErrors,
     validateComment,
+    validateCommentData,
+    validateCommentDataOptional,
     validateCommentId,
-    validatePostIdParam, validateUpdate
+    validatePostIdParam,
 } from '../middleware/validation';
 import {CustomRequest} from "types/customRequest";
 
@@ -84,7 +86,7 @@ router.get('/', (req: Request, res: Response) => commentsController.getAllCommen
  *       400:
  *         description: Invalid post ID
  */
-router.get('/post/:post_id', validatePostIdParam, handleValidationErrors, (req: Request, res: Response) => commentsController.getCommentsByPostId(req, res));
+router.get('/post/:postId', validatePostIdParam, handleValidationErrors, (req: Request, res: Response) => commentsController.getCommentsByPostId(req, res));
 
 /**
  * @swagger
@@ -114,7 +116,7 @@ router.get('/post/:post_id', validatePostIdParam, handleValidationErrors, (req: 
  *       400:
  *         description: Invalid comment ID
  */
-router.get('/:comment_id', validateCommentId, handleValidationErrors, (req: Request, res: Response) => commentsController.getCommentById(req, res));
+router.get('/:commentId', validateCommentId, handleValidationErrors, (req: Request, res: Response) => commentsController.getCommentById(req, res));
 
 /**
  * @swagger
@@ -146,7 +148,9 @@ router.get('/:comment_id', validateCommentId, handleValidationErrors, (req: Requ
  *       404:
  *         description: Comment not found
  */
-router.put('/:comment_id', validateUpdate, handleValidationErrors, (req: Request, res: Response) => commentsController.updateComment(req, res));
+router.put('/:commentId', validateCommentData, handleValidationErrors, (req: Request, res: Response) => commentsController.updateComment(req, res));
+
+router.patch('/:commentId', validateCommentDataOptional, handleValidationErrors, (req: Request, res: Response) => commentsController.updateComment(req, res));
 
 /**
  * @swagger
@@ -170,6 +174,6 @@ router.put('/:comment_id', validateUpdate, handleValidationErrors, (req: Request
  *       404:
  *         description: Comment not found
  */
-router.delete('/:comment_id', validateCommentId, handleValidationErrors, (req: Request, res: Response) => commentsController.deleteComment(req, res));
+router.delete('/:commentId', validateCommentId, handleValidationErrors, (req: Request, res: Response) => commentsController.deleteComment(req, res));
 
 export default router;

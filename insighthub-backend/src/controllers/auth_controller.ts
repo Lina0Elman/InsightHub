@@ -16,7 +16,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         handleError(err, res);
     }
 };
-// TODO - Also cancel the token of the user
+
 export const logoutUser = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
         const { refreshToken } = req.body;

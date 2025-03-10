@@ -1,6 +1,6 @@
 import express, { Request, Response, Router } from 'express';
 import * as usersController from '../controllers/users_controller';
-import {handleValidationErrors, validateUserDataOptional, validateUserId, validateUserRegister} from "../middleware/validation";
+import {handleValidationErrors, validateUserDataOptional, validateUserId} from "../middleware/validation";
 
 const router: Router = express.Router();
 
@@ -136,7 +136,7 @@ router.delete('/:id', validateUserId, handleValidationErrors, (req: Request, res
  *       404:
  *         description: User not found
  */
-router.put('/:id', validateUserId, validateUserDataOptional, handleValidationErrors, (req: Request, res: Response) => usersController.updateUserById(req, res));
+router.patch('/:id', validateUserId, validateUserDataOptional, handleValidationErrors, (req: Request, res: Response) => usersController.updateUserById(req, res));
 
 /**
  * @swagger
@@ -169,7 +169,7 @@ router.put('/:id', validateUserId, validateUserDataOptional, handleValidationErr
  *       400:
  *         description: Validation error
  */
-router.post('/', validateUserRegister, handleValidationErrors, (req: Request, res: Response) => usersController.createUser(req, res));
+// router.post('/', validateUserRegister, handleValidationErrors, (req: Request, res: Response) => usersController.createUser(req, res));
 
 
 export default router;

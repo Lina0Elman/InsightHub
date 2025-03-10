@@ -125,22 +125,24 @@ export const logoutUser = async (refreshToken: string | undefined, userId: strin
         const tokenDoc = await findRefreshToken(refreshToken);
         if (tokenDoc && tokenDoc.userId === userId) {
             // Delete the specific refresh token
-            await RefreshTokenModel.findOneAndDelete({ token: refreshToken }).exec();
-            await BlacklistedTokenModel.create({ token: tokenDoc.accessToken });
+            await RefreshTokenModel.findOneAndDelete({token: refreshToken}).exec();
+            await BlacklistedTokenModel.create({token: tokenDoc.accessToken});
             return true;
         } else {
             // Invalid refresh token
             return false;
         }
-    } else {
-        // None or invalid refresh token provided, delete all refresh tokens for the user
-        const refreshTokens = await RefreshTokenModel.find({ userId }).exec();
-        for (const tokenDoc of refreshTokens) {
-            await BlacklistedTokenModel.create({ token: tokenDoc.accessToken });
-        }
-        await RefreshTokenModel.deleteMany({ userId }).exec();
-        return true;
     }
+    return false;
+    // } else {
+    //     // None or invalid refresh token provided, delete all refresh tokens for the user
+    //     const refreshTokens = await RefreshTokenModel.find({ userId }).exec();
+    //     for (const tokenDoc of refreshTokens) {
+    //         await BlacklistedTokenModel.create({ token: tokenDoc.accessToken });
+    //     }
+    //     await RefreshTokenModel.deleteMany({ userId }).exec();
+    //     return true;
+    // }
 };
 
 export const findRefreshToken = async (token: string) => {

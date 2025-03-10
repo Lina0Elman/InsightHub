@@ -63,7 +63,7 @@ const authenticateToken: any & { unless: typeof unless } = async (req: CustomReq
 
 authenticateToken.unless = unless;
 
-const authenticateTokenForParams: (req: CustomRequest, res: Response, next: NextFunction) => Promise<void> = async (req: CustomRequest, res: Response, next: NextFunction): Promise<void> => {
+const authenticateTokenForParams: any & { unless: typeof unless } = async (req: CustomRequest, res: Response, next: NextFunction): Promise<void> => {
   if (Object.keys(req.query).length > 0) {
     authenticateTokenHandler(req, res, next, false)
   }

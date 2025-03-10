@@ -3,13 +3,15 @@ import authRoutes from './routes/auth_routes';
 import commentsRoutes from './routes/comments_routes';
 import postsRoutes from './routes/posts_routes';
 import usersRoutes from './routes/users_routes';
-import swaggerUi from 'swagger-ui-express';
+import swaggerUi, {JsonObject} from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import options from './docs/swagger_options';
 import {authenticateToken, authenticateTokenForParams} from "./middleware/auth";
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import {config} from "./config/config";
+import validateUser from "./middleware/validateUser";
+import loadOpenApiFile from "./openapi/openapi_loader";
 
 const specs = swaggerJsdoc(options);
 
@@ -21,10 +23,14 @@ app.use(cors({
     credentials: true, // Allow cookies to be sent with requests
 }));
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(loadOpenApiFile() as JsonObject));
+
 
 // Add Authentication for all routes except the ones listed below
 app.use(authenticateToken.unless({
@@ -50,6 +56,7 @@ app.use(authenticateTokenForParams);
 app.use('/auth', authRoutes);
 app.use('/comment', commentsRoutes);
 app.use('/post', postsRoutes);
+app.use("/user/:id", validateUser);
 app.use('/user', usersRoutes);
 
 export default app;

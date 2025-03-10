@@ -28,7 +28,7 @@ export const addComment = async (req: CustomRequest, res: Response): Promise<voi
 
 export const getCommentById = async (req: Request, res: Response): Promise<void> => {
     try {
-        const comment = await commentsService.getCommentById(req.params.comment_id);
+        const comment = await commentsService.getCommentById(req.params.commentId);
         if (!comment) {
             res.status(404).json({ message: "Comment not found: " + req.params.commentId });
             return;
@@ -44,13 +44,13 @@ export const getCommentById = async (req: Request, res: Response): Promise<void>
 
 export const getCommentsByPostId = async (req: Request, res: Response): Promise<void> => {
     try {
-        const postExists = await postsService.getPostById(req.params.post_id);
+        const postExists = await postsService.getPostById(req.params.postId);
         if (!postExists) {
-            res.status(400).json({ message: "Post not found: " + req.params.post_id });
+            res.status(400).json({ message: "Post not found: " + req.params.postId });
             return;
         }
 
-        const comments = await commentsService.getCommentsByPostId(req.params.post_id);
+        const comments = await commentsService.getCommentsByPostId(req.params.postId);
         if (comments.length === 0) {
             res.status(200).json([]);
         } else {
@@ -74,9 +74,11 @@ export const getAllComments = async (req: Request, res: Response): Promise<void>
     }
 };
 
+// TODO - make different functions for updating comment and updating comment content
 export const updateComment = async (req: Request, res: Response): Promise<void> => {
     try {
-        const updatedComment = await commentsService.updateComment(req.params.comment_id, req.body);
+        // TODO - parse the body before sending to server
+        const updatedComment = await commentsService.updateComment(req.params.commentId, req.body);
         if (!updatedComment) {
             res.status(404).json({ message: 'Comment not found' });
         } else {
@@ -89,7 +91,7 @@ export const updateComment = async (req: Request, res: Response): Promise<void> 
 
 export const deleteComment = async (req: Request, res: Response): Promise<void> => {
     try {
-        const deletedComment = await commentsService.deleteComment(req.params.comment_id);
+        const deletedComment = await commentsService.deleteComment(req.params.commentId);
         if (!deletedComment) {
             res.status(404).json({ message: 'Comment not found' });
         } else {

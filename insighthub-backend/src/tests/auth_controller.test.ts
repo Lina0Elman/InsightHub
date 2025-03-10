@@ -63,7 +63,7 @@ describe('Auth Post Test', () => {
         expect(response.statusCode).toBe(401);
 
         const response2 = await request(app).post('/post').set({
-            Authorization: "Bearer " + userInfo.accessToken
+            Authorization: "jwt " + userInfo.accessToken
         }).send({
             //sender: userInfo.userId,
             title: "My First Post",
@@ -96,7 +96,7 @@ describe('Auth Comment Test', () => {
     });
     test('Get proyected API when trying to Create Comment', async () => {
         const tempPost = await request(app).post('/post').set({
-            Authorization: "Bearer " + userInfo.accessToken
+            Authorization: "jwt " + userInfo.accessToken
         }).send({
             sender: userInfo.userId,
             title: "My First Post",
@@ -113,7 +113,7 @@ describe('Auth Comment Test', () => {
         expect(response.statusCode).toBe(401);
 
         const response2 = await request(app).post('/comment').set({
-            Authorization: "Bearer " + userInfo2.accessToken
+            Authorization: "jwt " + userInfo2.accessToken
         }).send({
             postId: tempPost.body.id,
             // sender: userInfo2.userId,
@@ -131,7 +131,7 @@ describe('Auth Invalid & Refresh tokens Tests', () => {
 
     test('Get proyected API invalid token', async () => {
         const response = await request(app).post('/post').set({
-            Authorization: "Bearer " + userInfo.accessToken + '1'
+            Authorization: "jwt " + userInfo.accessToken + '1'
         }).send({
             sender: userInfo.userId,
             title: "My First Post",
@@ -161,7 +161,7 @@ describe('Auth Invalid & Refresh tokens Tests', () => {
 
     test("Logout - Invalid refresh token", async () => {
         const response = await request(app).post('/auth/logout').set({
-            Authorization: "Bearer " + userInfo.accessToken
+            Authorization: "jwt " + userInfo.accessToken
         }).send({
             refreshToken: userInfo.refreshToken
         });
@@ -220,7 +220,7 @@ describe('Auth Invalid & Refresh tokens Tests', () => {
 
         //try to access with expired token
         const response2 = await request(app).post('/post').set({
-            Authorization: "Bearer " + userInfo.accessToken
+            Authorization: "jwt " + userInfo.accessToken
         }).send({
             sender: "Invalid owner",
             title: "My First Post",
@@ -236,7 +236,7 @@ describe('Auth Invalid & Refresh tokens Tests', () => {
         userInfo.refreshToken = response3.body.refreshToken;
 
         const response4 = await request(app).post('/post').set({
-            Authorization: "Bearer " + userInfo.accessToken
+            Authorization: "jwt " + userInfo.accessToken
         }).send({
             sender: "Invalid owner",
             title: "My First Post",

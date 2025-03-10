@@ -159,7 +159,7 @@ router.get('/', (req: Request, res: Response) => postsController.getPosts(req, r
  *       400:
  *         description: Invalid post ID
  */
-router.get('/:post_id', validatePostIdParam, handleValidationErrors,(req: Request, res: Response) => postsController.getPostById(req, res));
+router.get('/:postId', validatePostIdParam, handleValidationErrors,(req: Request, res: Response) => postsController.getPostById(req, res));
 
 /**
  * @swagger
@@ -223,7 +223,7 @@ router.get('/:post_id', validatePostIdParam, handleValidationErrors,(req: Reques
  *       404:
  *         description: Post not found
  */
-router.put('/:post_id', validatePostIdParam, validatePostDataOptional, handleValidationErrors, (req: Request, res: Response) => postsController.updatePost(req as CustomRequest, res));
+router.put('/:postId', validatePostIdParam, validatePostData, handleValidationErrors, (req: Request, res: Response) => postsController.updatePost(req as CustomRequest, res));
 
 /**
  * @swagger
@@ -287,7 +287,7 @@ router.put('/:post_id', validatePostIdParam, validatePostDataOptional, handleVal
  *       404:
  *         description: Post not found
  */
-router.patch('/:post_id', validatePostIdParam, validatePostDataOptional, handleValidationErrors, (req: Request, res: Response) => postsController.updatePost(req as CustomRequest, res));
+router.patch('/:postId', validatePostIdParam, validatePostDataOptional, handleValidationErrors, (req: Request, res: Response) => postsController.updatePost(req as CustomRequest, res));
 
 /**
  * @swagger
@@ -319,7 +319,7 @@ router.patch('/:post_id', validatePostIdParam, validatePostDataOptional, handleV
  *       500:
  *         description: Internal server error
  */
-router.delete('/:post_id', validatePostIdParam, handleValidationErrors, (req: Request, res: Response) => postsController.deletePostById(req as CustomRequest, res));
+router.delete('/:postId', validatePostIdParam, handleValidationErrors, (req: Request, res: Response) => postsController.deletePostById(req as CustomRequest, res));
 
 
 export default router;

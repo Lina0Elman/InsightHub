@@ -46,7 +46,7 @@ export const getPosts = async (req: Request, res: Response): Promise<void> => {
 
 export const getPostById = async (req: Request, res: Response): Promise<void> => {
     try {
-        const post = await postsService.getPostById(req.params.post_id);
+        const post = await postsService.getPostById(req.params.postId);
         if (!post) {
             res.status(404).json({ message: 'Post not found' });
         } else {
@@ -57,21 +57,22 @@ export const getPostById = async (req: Request, res: Response): Promise<void> =>
     }
 };
 
+// TODO - create a difference between PUT and PATCH
 export const updatePost = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
         const owner = req.user.id;
-        const post_id = req.params.post_id;
+        const postId = req.params.postId;
         const postData: PostData = {
             title: req.body.title,
             content: req.body.content,
             owner
         };
 
-        if (await postsService.postExists(post_id)) {
+        if (await postsService.postExists(postId)) {
 
-            if (await postsService.isPostOwnedByUser(post_id, owner)) {
+            if (await postsService.isPostOwnedByUser(postId, owner)) {
 
-                const updatedPost = await postsService.updatePost(post_id, postData);
+                const updatedPost = await postsService.updatePost(postId, postData);
                 if (!updatedPost) {
                     res.status(404).json({message: 'Post not found'});
                 } else {
@@ -91,12 +92,12 @@ export const updatePost = async (req: CustomRequest, res: Response): Promise<voi
 
 export const deletePostById = async (req: Request, res: Response): Promise<void> => {
     try {
-        const post_id = req.params.post_id;
-        const post = await postsService.getPostById(post_id);
+        const postId = req.params.postId;
+        const post = await postsService.getPostById(postId);
         if (!post) {
             res.status(404).json({ message: 'Post not found' });
         } else {
-            await postsService.deletePostById(post_id);
+            await postsService.deletePostById(postId);
             res.json({ message: 'Post and associated comments deleted successfully' });
         }
     } catch (err) {
