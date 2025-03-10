@@ -19,6 +19,40 @@ const getAllPosts =  async (req, res) => {
 
 }
 
+const getLikedPosts =  async (req, res) => {
+    try {
+        const likedPostsByUserId = await likeModel.aggregate([
+            {
+                $match: {
+                  userId: new mongoose.Types.ObjectId(req.query.userId)
+                }
+            },
+            {
+                $lookup: {
+                    from: 'posts',
+                    localField: 'postId',
+                    foreignField: '_id',
+                    as: 'post'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$post'
+                }
+            },
+            {
+                $replaceRoot: {
+                  newRoot: '$post'
+                }
+            }
+        ]);
+
+        return res.status(200).send(likedPostsByUserId);
+    } catch(error){
+        res.status(400).send("Bad Request");
+    }
+}
+
 const createPost = async (req, res) => {
     const post = req.body;
     try{
@@ -96,4 +130,4 @@ const updateLikeByPostId = async (req, res) => {
     }
 }
 
-export default {getAllPosts, createPost, getPostById, updatePostById, updateLikeByPostId};
+export default {getAllPosts, getLikedPosts, createPost, getPostById, updatePostById, updateLikeByPostId};

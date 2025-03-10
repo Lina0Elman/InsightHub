@@ -7,6 +7,8 @@ const router = express.Router();
 
 router.get('/', Post.getAllPosts);
 
+router.get('/like', authMiddleware, Post.getLikedPosts);
+
 router.post('/', authMiddleware, Post.createPost);
 
 router.get('/:id', Post.getPostById);

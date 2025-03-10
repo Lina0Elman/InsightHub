@@ -163,6 +163,27 @@ paths:
         '404':
           description: Post not found
 
+  /post/like:
+    get:
+      tags:
+        - Posts
+      security:
+        - BearerAuth: []
+      summary: Retrieve liked posts for a specific user
+      responses:
+        '200':
+          description: A list of liked posts for the specified user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '400':
+          description: Bad request - Invalid userId
+        '401':
+          description: Unauthorized - Missing token
+
   # Comment Routes
   /comment:
     get:
