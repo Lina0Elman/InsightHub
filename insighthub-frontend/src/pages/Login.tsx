@@ -12,10 +12,13 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
 
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
+
+
 
       interface LoginResponse {
         email: string; // user.email
@@ -36,7 +39,7 @@ const Login: React.FC = () => {
       localStorage.setItem('accessToken', response.data.accessToken); // Store the token in localStorage
       localStorage.setItem('refreshToken', response.data.refreshToken); // Store the token in localStorage
       localStorage.setItem('userId', response.data._id); // Store the user ID in localStorage 
-
+      
       navigate('/dashboard'); // Redirect to dashboard or another page after login
 
     } catch (error) {

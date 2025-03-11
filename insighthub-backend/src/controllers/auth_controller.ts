@@ -7,21 +7,40 @@ import { config } from '../config';
 const register = async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
+    const authProvider = req.body.authProvider;
+
     if (!email || !password) {
         return res.status(400).send("Missing email or password");
     }
+
+    // Check if user already exists
+    const existingUser = await userModel.findOne({ email });
+    if (existingUser) {
+        return res.status(400).send("User already exists.");
+    }
+    let hashedPassword: string | null = null;
+
     try {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // If registering with a password (local registration)
+        if (password && authProvider === 'local') {
+            const salt = await bcrypt.genSalt(10);
+            hashedPassword = await bcrypt.hash(password, salt);
+        }
+
         const user = await userModel.create({
             email: email,
             password: hashedPassword,
+            authProvider: authProvider || 'local',
+
         });
+
         res.status(200).send(user);
     } catch (err) {
         return res.status(500).send(err.message);
     }
 };
+
 const generateTokens = (_id: string): { accessToken: string, refreshToken: string } => {
     const random = Math.floor(Math.random() * 1000000);
     const accessToken = jwt.sign(
@@ -43,9 +62,12 @@ const generateTokens = (_id: string): { accessToken: string, refreshToken: strin
     return { accessToken, refreshToken };
 }
 
+// Login (Supports Local, Google & Facebook)
 const login = async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
+    const authProvider = req.body.authProvider;
+
     if (!email || !password) {
         return res.status(400).send("Missing email or password");
     }
@@ -55,11 +77,25 @@ const login = async (req, res) => {
             return res.status(400).send("Wrong email or password");
         }
 
-        const validPassword = await bcrypt.compare(password, user.password);
-        if (!validPassword) {
-            return res.status(400).send("Invalid password");
+        // Local login (with password)
+        if (authProvider === 'local') {
+
+            const validPassword = await bcrypt.compare(password, user.password!);
+            if (!validPassword) {
+                return res.status(400).send("Invalid password");
+            }
         }
 
+
+        // OAuth login (Google/Facebook)
+        if (authProvider === 'google' || authProvider === 'facebook') {
+            if (user.authProvider !== authProvider) {
+                return res.status(400).send(`User is registered with ${user.authProvider}, not ${authProvider}.`);
+            }
+        }
+
+
+        // Generate tokens
         const userId: string = user._id.toString();
         const tokens = generateTokens(userId);
         if (!tokens) {
