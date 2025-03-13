@@ -13,7 +13,7 @@ export const config = {
         access_token_secret: () => process.env.ACCESS_TOKEN_SECRET || 'secret'
     },
     firebase: {
-        apiKey: process.env.FIREBASE_API_KEY,
-        authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+        apiKey: () => process.env.FIREBASE_API_KEY,
+        authDomain: () => process.env.FIREBASE_AUTH_DOMAIN,
     }
 }
