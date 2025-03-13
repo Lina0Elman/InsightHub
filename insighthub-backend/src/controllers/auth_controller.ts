@@ -1,8 +1,16 @@
-import { NextFunction } from 'express';
+import e, { NextFunction } from 'express';
 import userModel from '../models/user_model';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { config } from '../config';
+import admin from 'firebase-admin';
+
+// Initialize Firebase Admin SDK (ensure Firebase credentials are set in .env)
+if (!admin.apps.length) {
+    admin.initializeApp({
+        credential: admin.credential.applicationDefault(),
+    });
+}
 
 const register = async (req, res) => {
     const email = req.body.email;
@@ -79,6 +87,10 @@ const login = async (req, res) => {
 
         // Local login (with password)
         if (authProvider === 'local') {
+
+            if (!password) {
+                return res.status(400).send("Password is required for local login.");
+            }
 
             const validPassword = await bcrypt.compare(password, user.password!);
             if (!validPassword) {
@@ -221,5 +233,43 @@ export const authMiddleware = (req, res, next: NextFunction) => {
         next();
     });
 };
+
+// Google & Facebook Authentication (using Firebase)
+const socialAuth = async (req, res) => {
+    try {
+        const { idToken, authProvider } = req.body;
+        if (!idToken) {
+            return res.status(400).json({ message: 'Missing idToken' });
+        }
+        if (!authProvider) {
+            return res.status(400).json({ message: 'Missing authProvider' });
+        }
+
+        // Verify the token using Firebase Admin SDK
+        const decodedToken = await admin.auth().verifyIdToken(idToken);
+        if (!decodedToken.email) {
+            return res.status(400).json({ message: 'Invalid token' });
+        }
+
+        const email = decodedToken.email;
+        let user = await userModel.findOne({ email });
+
+        // If the user does not exist, create a new user
+        if (!user) {
+            user = await userModel.create({
+                email,
+                authProvider,
+            });
+        }
+
+        // Generate tokens and return
+        const tokens = generateTokens(user._id.toString());
+        return res.status(200).json({ message: 'Authentication successful', tokens });
+    } catch (error) {
+        return res.status(400).json({ message: 'Authentication failed', error });
+    }
+};
+
+export { socialAuth };
 
 export default { register, login, refresh, logout };

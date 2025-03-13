@@ -11,5 +11,9 @@ export const config = {
         refresh_token_expiration: () => process.env.REFRESH_TOKEN_EXPIRATION || '3d',
         token_expiration: () => process.env.TOKEN_EXPIRATION || '100000s',
         access_token_secret: () => process.env.ACCESS_TOKEN_SECRET || 'secret'
+    },
+    firebase: {
+        apiKey: process.env.FIREBASE_API_KEY,
+        authDomain: process.env.FIREBASE_AUTH_DOMAIN,
     }
 }
