@@ -4,6 +4,7 @@ export const config = {
     },
     socketMethods: {
         messageFromServer: "message-from-server",
-        messageFromClient: "message-from-client"
+        messageFromClient: "message-from-client",
+        onlineUsers: "online-users"
     }
 }
