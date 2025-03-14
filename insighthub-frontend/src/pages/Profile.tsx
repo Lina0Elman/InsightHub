@@ -18,7 +18,7 @@ const Profile: React.FC = () => {
         const response = await axios.get(`${config.app.backend_url()}/resource/image/${profileImageName}`, {
           responseType: 'blob',
         });
-        const imageUrl = URL.createObjectURL(response.data);
+        const imageUrl = URL.createObjectURL(response.data as Blob);
         setImage(imageUrl);
       } catch (error) {
         setError('Error fetching profile image.');
