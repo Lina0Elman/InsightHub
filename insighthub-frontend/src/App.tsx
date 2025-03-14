@@ -6,7 +6,6 @@ import Profile from './pages/Profile';
 import './App.css'
 import Dashboard from './pages/Dashboard';
 import Footer from './components/Footer';
-import Profile from './components/Profile';
 import RequireAuth from './hoc/RequireAuth';
 
 const App: React.FC = () => {
