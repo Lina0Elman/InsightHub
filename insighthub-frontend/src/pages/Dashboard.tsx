@@ -7,7 +7,7 @@ import { LoginResponse } from '../models/LoginResponse';
 
 
 const Dashboard: React.FC = () => {
-  const userAuthRef = useRef(JSON.parse(localStorage.getItem("userAuth") as string) as LoginResponse);
+  const userAuthRef = useRef(JSON.parse(localStorage.getItem(config.localStorageKeys.userAuth) as string) as LoginResponse);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -16,7 +16,7 @@ const Dashboard: React.FC = () => {
       await axios.post(`${config.app.backend_url()}/auth/logout`, {
         refreshToken: userAuthRef.current.refreshToken,
       });
-      localStorage.removeItem("userAuth");
+      localStorage.removeItem(config.localStorageKeys.userAuth);
     }
     navigate('/logout');
   };

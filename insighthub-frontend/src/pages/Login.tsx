@@ -25,7 +25,7 @@ const Login: React.FC = () => {
 
 
       // Handle successful login, e.g., save tokens, redirect, etc.
-      localStorage.setItem("userAuth", JSON.stringify(response.data));
+      localStorage.setItem(config.localStorageKeys.userAuth, JSON.stringify(response.data));
 
       navigate('/dashboard'); // Redirect to dashboard or another page after login
 
