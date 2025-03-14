@@ -11,7 +11,6 @@ const TopBar: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    console.log('Logout clicked');
     if (userAuthRef.current) {
       await axios.post(`${config.app.backend_url()}/auth/logout`, {
         refreshToken: userAuthRef.current.refreshToken,
