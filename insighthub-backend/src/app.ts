@@ -11,14 +11,17 @@ import loadOpenApiFile from './openapi/openapi_loader';
 import cors from 'cors';
 import { config } from './config';
 
+
 dotenvExpand.expand(dotenv.config());
 const app = express();
 
-app.use(cors({
+const corsOptions = {
     origin: [config.app.frontend_url(), config.app.backend_url()],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, // Allow cookies to be sent with requests
-  }));
+  };
+
+app.use(cors(corsOptions));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -38,4 +41,4 @@ app.use('/comment', comments_routes);
 app.use('/auth', auth_routes);
 app.use('/resource', resource_routes);
 
-export default app;
+export { app, corsOptions };

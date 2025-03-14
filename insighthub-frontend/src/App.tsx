@@ -6,6 +6,8 @@ import './App.css'
 import Dashboard from './pages/Dashboard';
 import Footer from './components/Footer';
 import Profile from './components/Profile';
+import Chat from './pages/Chat';
+
 
 const App: React.FC = () => {
   return (
@@ -17,6 +19,7 @@ const App: React.FC = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/chat" element={<Chat />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Router>
