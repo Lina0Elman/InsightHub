@@ -186,4 +186,23 @@ export const authMiddleware = (req, res, next: NextFunction) => {
     });
 };
 
+export const socketAuthMiddleware = (socket, next) => {
+    const authHeader = socket.handshake.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return next(new Error("401: missing token"));
+    }
+
+    jwt.verify(token, config.token.access_token_secret(), (err, data) => {
+        if (err) {
+            return next(new Error("403: Invalid Token"));
+        }
+
+        const payload = data as TokenPayload;
+        socket.userId = payload._id;
+        next();
+    });
+};
+
 export default { register, login, refresh, logout };
