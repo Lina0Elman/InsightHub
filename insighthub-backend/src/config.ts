@@ -11,5 +11,9 @@ export const config = {
         refresh_token_expiration: () => process.env.REFRESH_TOKEN_EXPIRATION || '3d',
         token_expiration: () => process.env.TOKEN_EXPIRATION || '100000s',
         access_token_secret: () => process.env.ACCESS_TOKEN_SECRET || 'secret'
+    },
+    resources: {
+        imagesDirectoryPath: () => 'resources/images',
+        imageMaxSize: () => 10 * 1024 * 1024 // Max file size: 10MB
     }
 }

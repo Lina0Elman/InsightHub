@@ -18,11 +18,17 @@ cd ..
 git subtree pull -P insighthub-backend https://github.com/taljacob2/colman-advanced-web-apps master --squash
 ```
 
+## Prerequisites
+
+### Configure Environment
+
+1. As a **requirement** for running the application, create an `.env` file in the `insighthub-backend` working directory. Copy the content of the [.env.template](/insighthub-backend/.env.template) file to your newly created `.env` file. Define the environment variables there.
+
+1. Edit the values of the properties to match your environment.
+
+   > In case you want to run a docker environment, see our guide for [how to setup a docker environment](/insighthub-backend/docs/mongodb/mongodb-via-docker.md).
+
 ## `.env`
-
-As a **requirement** for running the application, create an `.env` file in the root working directory and define the environment variables there.
-
-See [`.env.template`](.env.template) for all the environment variables required.
 
 ### `PORT`
 
@@ -63,7 +69,7 @@ It is composed of `<NUMBER><TIME_UNIT>`.
 for example:
 
 - `30s` - is 30 seconds
-- `30m` -  is 30 minutes
+- `30m` - is 30 minutes
 - `30h` - is 30 hours
 
 You can set the NUMBER and the TIME_UNIT to your liking.
@@ -103,3 +109,7 @@ npm run test
 ```
 
 See our `main` test coverage at https://Lina0Elman.github.io/InsightHub
+
+## Documentation
+
+See more docs [here](/insighthub-backend/docs).
