@@ -4,6 +4,7 @@ import { Container, TextField, Button, Typography, Box, Paper, Link, Alert } fro
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import './Login.css';
 import { config } from '../config';
+import { LoginResponse } from '../models/LoginResponse';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -11,17 +12,23 @@ const Login: React.FC = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      const response = await axios.post(`${config.app.backend_url()}/auth/login`, {
+      const response = await axios.post<LoginResponse>(`${config.app.backend_url()}/auth/login`, {
         email,
         password,
       });
+      setEmail(response.data.email);
 
-      // Handle successful login, e.g., save token, redirect, etc.
-      console.log(response.data);
+
+      // Handle successful login, e.g., save tokens, redirect, etc.
+      localStorage.setItem(config.localStorageKeys.userAuth, JSON.stringify(response.data));
+
       navigate('/dashboard'); // Redirect to dashboard or another page after login
+
     } catch (error) {
       // Handle login error
       const err = error as any;
@@ -59,6 +66,7 @@ const Login: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
+
               <TextField
                 variant="outlined"
                 margin="normal"
