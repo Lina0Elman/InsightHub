@@ -10,7 +10,7 @@ const Chat: React.FC = () => {
   
   const connectHandler = () => {
     socketRef.current = io(config.app.backend_url());
-    socketRef.current.on("message-from-server", (receivedMessage: string) => {
+    socketRef.current.on(config.socketMethods.messageFromServer, (receivedMessage: string) => {
       setAllMessages((allMessages) => [...allMessages, receivedMessage]);
     });
   };
@@ -23,7 +23,7 @@ const Chat: React.FC = () => {
   }, []);
 
   const sendMessageHandler = () => {
-    socketRef.current.emit("message-from-client", message);
+    socketRef.current.emit(config.socketMethods.messageFromClient, message);
     setMessage('')
   };
 

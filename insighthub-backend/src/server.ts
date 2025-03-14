@@ -20,9 +20,9 @@ const socketListener = new Server(listener, { cors: corsOptions });
 socketListener.sockets.on("connection", socket => {
     console.log("New client has been connected.");
 
-    socket.on("message-from-client", message => {
+    socket.on(config.socketMethods.messageFromClient, message => {
         console.log(`Client sent message: ${message}`);
-        socketListener.sockets.emit("message-from-server", message);
+        socketListener.sockets.emit(config.socketMethods.messageFromServer, message);
     });
 
     socket.on("disconnect", () => {

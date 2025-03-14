@@ -15,5 +15,9 @@ export const config = {
     resources: {
         imagesDirectoryPath: () => 'resources/images',
         imageMaxSize: () => 10 * 1024 * 1024 // Max file size: 10MB
+    },
+    socketMethods: {
+        messageFromServer: "message-from-server",
+        messageFromClient: "message-from-client"
     }
 }
