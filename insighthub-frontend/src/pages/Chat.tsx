@@ -1,36 +1,41 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Container, TextField, Button, Typography, Box, Paper, Link, Alert } from '@mui/material';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState, useRef } from 'react';
 import './Chat.css';
 import { config } from '../config';
-import { io, Socket } from "socket.io-client";
-
-interface ChatState {
-  message: string;
-  messages: string[];
-}
+import { io } from "socket.io-client";
 
 const Chat: React.FC = () => {
   const [message, setMessage] = useState('');
-  const [messagesHistory, setMessages] = useState([] as string[]);
-  let socket = null;
+  const [allMessages, setAllMessages] = useState([] as string[]);
+  const socketRef = useRef(null as any);
   
   const connectHandler = () => {
-    socket = io(config.app.backend_url());
-
-    socket.on("msg-from-server", (msg: string) => {
-      const messages = [...messagesHistory, msg];
-      setMessages(messages);
+    socketRef.current = io(config.app.backend_url());
+    socketRef.current.on("message-from-server", (receivedMessage: string) => {
+      setAllMessages((allMessages) => [...allMessages, receivedMessage]);
     });
   };
 
   useEffect(() => {
     connectHandler();
+    return () => {
+      socketRef.current.disconnect();
+    };
   }, []);
+
+  const sendMessageHandler = () => {
+    socketRef.current.emit("message-from-client", message);
+    setMessage('')
+  };
 
   return (
     <div className="chat-container">
+        <input type="text" onChange={(e) => setMessage(e.target.value)} value={message} />
+
+        <button onClick={() => sendMessageHandler()}>Send Message</button>
+
+        <div className="Container">
+          {allMessages.map((m, index) => <div key={index}>{m}</div>)}
+        </div>
     </div>
   );
 };

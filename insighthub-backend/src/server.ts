@@ -18,5 +18,14 @@ const socketListener = new Server(listener, { cors: corsOptions });
 
 // Listening to new clients connection:
 socketListener.sockets.on("connection", socket => {
-    console.log("New client has been connected. Total Clients: " + socketListener.engine.clientsCount);
+    console.log("New client has been connected.");
+
+    socket.on("message-from-client", message => {
+        console.log(`Client sent message: ${message}`);
+        socketListener.sockets.emit("message-from-server", message);
+    });
+
+    socket.on("disconnect", () => {
+        console.log("One client disconnected.");
+    });
 });
