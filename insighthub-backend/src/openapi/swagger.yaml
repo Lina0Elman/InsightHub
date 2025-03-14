@@ -11,6 +11,8 @@ tags:
     description: Operations related to comments on posts
   - name: Authentication
     description: Operations related to authentication tokens
+  - name: Resources
+    description: Operations related to uploading & downloading resources
 
 paths:
   # Post Routes
@@ -307,6 +309,9 @@ paths:
               schema:
                 type: object
                 properties:
+                  email:
+                    type: string
+                    format: email
                   accessToken:
                     type: string
                   refreshToken:
@@ -368,6 +373,72 @@ paths:
           description: Successfully logged out
         '401':
           description: Invalid refresh token
+
+  /resource/image:
+    post:
+      tags:
+        - Resources
+      summary: Upload an image
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Image uploaded successfully
+          content:
+            text/plain:
+              schema:
+                description: The name of the uploaded file
+                type: string                
+        '400':
+          description: Bad request
+          content:
+            text/plain:
+              examples:
+                fileTooLarge:
+                  value: "File too large"
+                invalidFileType:
+                  value: "Invalid file type. Only images are allowed: /jpeg|jpg|png|gif/"
+                noFileUploaded:
+                  value: "No file uploaded"
+        '500':
+          description: Internal server error
+
+  /resource/image/{filename}:
+    get:
+      tags:
+        - Resources
+      summary: Retrieve an image
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the image file to retrieve
+      responses:
+        '200':
+          description: Image retrieved successfully
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Image not found
+        '500':
+          description: Internal server error
 
 components:
   schemas:
