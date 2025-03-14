@@ -16,7 +16,7 @@ import { config } from "../config";
 import { PostType } from "../models/Post";
 import TopBar from "../components/TopBar";
 
-function Dashboard() {
+const Dashboard: React.FC = () => {
   const [posts, setPosts] = useState<PostType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,6 +94,6 @@ function Dashboard() {
       </Box>
     </Box>
   );
-}
+};
 
 export default Dashboard;
