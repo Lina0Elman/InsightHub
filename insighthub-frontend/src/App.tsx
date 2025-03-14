@@ -10,7 +10,7 @@ import RequireAuth from './hoc/RequireAuth';
 
 const App: React.FC = () => {
   return (
-    <div>
+    <>
       <Router>
         <Routes>
           <Route path="/" element={<Login />} />
@@ -22,7 +22,7 @@ const App: React.FC = () => {
         </Routes>
       </Router>
       <Footer/>
-    </div>
+    </>
   );
 };
 
