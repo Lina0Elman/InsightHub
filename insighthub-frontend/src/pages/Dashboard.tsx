@@ -68,7 +68,7 @@ const Dashboard: React.FC = () => {
                     <Card sx={{ mb: 2 }}>
                       <CardContent>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                          <Avatar sx={{ mr: 2 }}>{post.sender.charAt(0)}</Avatar>
+                          <Avatar sx={{ mr: 2 }}>{post.sender.charAt(0)}</Avatar> {/* make the avatar either the profile pic or the curr one */}
                           <Typography variant="h6">{post.sender}</Typography>
                         </Box>
                         <Typography variant="h5" component="div">
@@ -86,20 +86,6 @@ const Dashboard: React.FC = () => {
                           <Message />  
                         </IconButton>
                       </CardActions>
-                      {/* {post.comments && post.comments.map((comment: any) => (
-                        <Box key={comment._id} sx={{ pl: 4, pr: 4, pb: 2 }}>
-                          <Divider />
-                          <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-                            <Avatar sx={{ mr: 2 }}>{comment.sender.charAt(0)}</Avatar>
-                            <Typography variant="body2" color="text.primary">
-                              {comment.sender}
-                            </Typography>
-                          </Box>
-                          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                            {comment.content}
-                          </Typography>
-                        </Box>
-                      ))} */}
                     </Card>
                   </React.Fragment>
                 ))}
