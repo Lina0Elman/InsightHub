@@ -3,6 +3,7 @@ import './Chat.css';
 import { config } from '../config';
 import { io } from "socket.io-client";
 import { LoginResponse } from '../models/LoginResponse';
+import DividedList from '../components/DividedList';
 
 const Chat: React.FC = () => {
   const [message, setMessage] = useState('');
@@ -35,7 +36,7 @@ const Chat: React.FC = () => {
 
   const sendMessageHandler = () => {
     socketRef.current.emit(config.socketMethods.messageFromClient, message);
-    setMessage('')
+    setMessage('');
   };
 
   return (
@@ -50,7 +51,7 @@ const Chat: React.FC = () => {
 
         <div className="Container">
           <h3>Online Users: </h3>
-          {onlineUsers.map((u) => <div key={u._id}>{u.email}</div>)}
+          <DividedList onlineUsers={onlineUsers} />
         </div>
     </div>
   );
