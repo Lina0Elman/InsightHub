@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Box, Button, Alert, TextField } from '@mui/material';
+import { Container, Typography, Box, Button, Alert, TextField, Collapse, IconButton } from '@mui/material';
+import { ExpandMore, ExpandLess } from '@mui/icons-material';
 import axios from 'axios';
 import { config } from '../config';
 import TopBar from '../components/TopBar';
@@ -13,6 +14,7 @@ const Profile: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const auth = JSON.parse(localStorage.getItem(config.localStorageKeys.userAuth) as string) as LoginResponse;
 
   useEffect(() => {
@@ -21,10 +23,10 @@ const Profile: React.FC = () => {
         //setName(userData.name); todo
         setEmail(auth.email);
         const response = await axios.get(`${config.app.backend_url()}/resource/image/${auth.imageFilename}`, {
-          responseType: 'blob',
-        });
+            responseType: 'blob',
+          });
         const imageUrl = URL.createObjectURL(response.data as Blob);
-        setImage(imageUrl);
+          setImage(imageUrl);
       } catch (error) {
         setError('Error fetching profile image.');
       }
@@ -63,6 +65,10 @@ const Profile: React.FC = () => {
       }));
       setSuccess(true);
       setError('');
+      setTimeout(() => {
+        setSuccess(false);
+        window.location.reload();
+      }, 3000);
     } catch (err) {
       setError('Error uploading image. Please try again.');
     }
@@ -82,22 +88,26 @@ const Profile: React.FC = () => {
       });
       setSuccess(true);
       setError('');
+      setTimeout(() => {
+        setSuccess(false);
+        window.location.reload();
+      }, 2000);
     } catch (err) {
       setError('Error updating profile. Please try again.');
     }
   };
 
   return (
-    <Container component="main" maxWidth="xs" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+    <Container component="main" maxWidth="xs" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', height: '80vh', overflowY: 'auto', mt: 3 }}>
       <TopBar />
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 8, flexGrow: 1 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 8, flexGrow: 1, overflowY: isProfileOpen ? 'auto' : 'hidden' }}>
         <Typography component="h1" variant="h5">
           Profile
         </Typography>
         {error && <Alert severity="error">{error}</Alert>}
         {success && <Alert severity="success">Profile updated successfully!</Alert>}
         {image && <img src={image} alt="Profile" style={{ width: '200px', height: '200px', marginTop: '16px', objectFit: 'cover' }} />}
-      
+
         <form onSubmit={handleSubmit} style={{ width: '100%' }}>
           <input
             type="file"
@@ -105,39 +115,52 @@ const Profile: React.FC = () => {
             onChange={handleImageChange}
           />
           {selectedFile && (
-            <Button type="submit" fullWidth variant="contained" color="primary" sx={{ mt: 3, mb: 2 }}>
-              Upload Image
+            <Button type="submit" fullWidth variant="contained" color="primary" sx={{ mt: 3, mb: 3 }}>
+              Change profile Image
             </Button>
           )}
         </form>
-        <TextField
-          label="Name"
-          variant="outlined"
-          fullWidth
-          margin="normal"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <TextField
-          label="Email"
-          variant="outlined"
-          fullWidth
-          margin="normal"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <TextField
-          label="Password"
-          type="password"
-          variant="outlined"
-          fullWidth
-          margin="normal"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <Button variant="contained" color="primary" onClick={handleUpdateProfile} sx={{ mt: 3, mb: 2 }}>
-          Update Profile
-        </Button>
+        <Box sx={{ width: '100%', mt: 3, height: '70vh' }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setIsProfileOpen(!isProfileOpen)}
+            endIcon={isProfileOpen ? <ExpandLess /> : <ExpandMore />}
+            fullWidth
+          >
+            {isProfileOpen ? 'Hide' : 'Update Profile'}
+          </Button>
+          <Collapse in={isProfileOpen}>
+            <TextField
+              label="Name"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <TextField
+              label="Email"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <TextField
+              label="Password"
+              type="password"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <Button variant="contained" color="primary" onClick={handleUpdateProfile} sx={{ mt: 3, mb: 2 }}>
+              Save Changes
+            </Button>
+          </Collapse>
+        </Box>
       </Box>
     </Container>
   );
