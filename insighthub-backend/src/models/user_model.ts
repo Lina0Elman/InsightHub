@@ -16,7 +16,12 @@ const userSchema = new Schema({
     refreshTokens: {
         type: [String],
         default: [] // refresh tokens per user
+    },
+
+    authProvider: {
+        type: String, required: false
     }
+
 }, {
     versionKey: false,
 });
