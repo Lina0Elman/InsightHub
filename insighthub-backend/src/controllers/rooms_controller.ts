@@ -32,16 +32,15 @@ const getRoomIdByUserIds = async (req, res) => {
         );
 
         let roomId = roomIdDocument?._id;
-        if (!roomIdDocument) {
-            // Room not found, create one.
-            const newRoom = await roomModel.create(
-                { userIds: [new mongoose.Schema.Types.ObjectId(receiverUserId), initiatorUserId]});
-            roomId = newRoom._id;
-
-            return res.status(201).send(roomId);
+        if (roomId) {
+            return res.status(200).send(roomId);
         }
 
-        return res.status(200).send(roomId);
+        // Room not found, create one.
+        const newRoom = await roomModel.create(
+            { userIds: [new mongoose.Schema.Types.ObjectId(receiverUserId), initiatorUserId]});
+        roomId = newRoom._id;
+        return res.status(201).send(roomId);
     }catch(error){
         res.status(400).send("Bad Request");
     }
