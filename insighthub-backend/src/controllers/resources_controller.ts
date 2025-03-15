@@ -3,7 +3,6 @@ import fs from 'fs';
 import path from 'path';
 import { uploadImage } from '../services/resources_service';
 import userModel from '../models/user_model';
-import { consts } from '../consts';
 import multer from 'multer';
 
 
