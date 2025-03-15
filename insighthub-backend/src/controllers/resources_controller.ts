@@ -29,10 +29,8 @@ const createImageResource = async (req, res) => {
     } catch (error) {
         if (error instanceof multer.MulterError || error instanceof TypeError) {
             return res.status(400).send(error.message);
-        } else if (error.message === consts.errorMessages.NoFileUploaded) {
-            return res.status(400).send(consts.errorMessages.NoFileUploaded);
         } else {
-            return res.status(500).send(consts.errorMessages.internalServerError);
+            return res.status(500).send(error.message);
         }
     }
 };
