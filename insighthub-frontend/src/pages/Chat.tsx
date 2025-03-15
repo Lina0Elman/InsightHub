@@ -5,6 +5,7 @@ import { io } from "socket.io-client";
 import { LoginResponse } from '../models/LoginResponse';
 import DividedList from '../components/DividedList';
 import { Room } from '../models/Room';
+import axios from 'axios';
 
 const Chat: React.FC = () => {
   const [message, setMessage] = useState('');
@@ -44,7 +45,16 @@ const Chat: React.FC = () => {
   };
 
   const onUserClick = (user : any) => {
-    console.log(user);
+    axios.get<Room>(`${config.app.backend_url()}/room/user/${user._id}`, {
+      headers: { Authorization: `Bearer ${userAuthRef.current.accessToken}` }
+    })
+    .then((response) => {
+      setRoom(response.data);
+      console.log(response.data);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
   };
 
   return (
