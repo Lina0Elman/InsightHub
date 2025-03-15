@@ -4,10 +4,11 @@ import { config } from '../config';
 import { io } from "socket.io-client";
 import { LoginResponse } from '../models/LoginResponse';
 import DividedList from '../components/DividedList';
+import { Room } from '../models/Room';
 
 const Chat: React.FC = () => {
   const [message, setMessage] = useState('');
-  const [room, setRoom] = useState({ _id: null, messages: [] } as { _id: any; messages: string[] });
+  const [room, setRoom] = useState<Room>({ _id: null, messages: [] });
   const [onlineUsers, setOnlineUsers] = useState([] as LoginResponse[]);
   const socketRef = useRef(null as any);
   const userAuthRef = useRef(JSON.parse(localStorage.getItem(config.localStorageKeys.userAuth) as string) as LoginResponse);
@@ -19,7 +20,7 @@ const Chat: React.FC = () => {
       }
     });
     socketRef.current.on(config.socketMethods.messageFromServer, (receivedMessage: string) => {
-      setRoom((prevRoom: { _id: any; messages: string[] }) => ({
+      setRoom((prevRoom: Room) => ({
         _id: prevRoom._id,
         messages: [...prevRoom.messages, receivedMessage],
       }));
