@@ -65,7 +65,15 @@ const Dashboard: React.FC = () => {
               <List>
                 {posts.map((post) => (
                   <React.Fragment key={post._id}>
-                    <Card sx={{ mb: 2 }}>
+                    <Card sx={{ 
+                      mb: 2, 
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s, box-shadow 0.2s',
+                      '&:hover': {
+                        boxShadow: 3,
+                        backgroundColor: 'rgba(0, 0, 0, 0.03)',
+                      },
+                    }} onClick={() => navigate(`/post/${post._id}`)}>
                       <CardContent>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                           <Avatar sx={{ mr: 2 }}>{post.sender.charAt(0)}</Avatar> {/* make the avatar either the profile pic or the curr one */}
