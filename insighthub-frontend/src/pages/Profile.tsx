@@ -76,6 +76,7 @@ const Profile: React.FC = () => {
 
 
   const handleUpdateProfile = async () => {
+    // todo route doesnt exist
     try {
       await axios.put(`${config.app.backend_url()}/user/${auth._id}`, {
         name,
