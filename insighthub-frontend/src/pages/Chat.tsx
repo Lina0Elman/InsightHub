@@ -2,20 +2,19 @@ import React, { useEffect, useState, useRef } from 'react';
 import './Chat.css';
 import { config } from '../config';
 import { io } from "socket.io-client";
+import { LoginResponse } from '../models/LoginResponse';
 
 const Chat: React.FC = () => {
   const [message, setMessage] = useState('');
   const [allMessages, setAllMessages] = useState([] as string[]);
   const [onlineUsers, setOnlineUsers] = useState([] as string[]);
   const socketRef = useRef(null as any);
-
-  // TODO: Replace this with accessToken from localstorage
-  const accessTokenRef = useRef("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2FmYTc0MDY4ZjczNmYxMTJhZTFkNTEiLCJyYW5kb20iOjczNzM1NywiaWF0IjoxNzQxOTY5MTEwLCJleHAiOjE3NDE5NzI3MTB9.5Jl8LQL4RJZJkPGzQjLff-WxJi5GLMH3QMftDghUVB8");
+  const userAuthRef = useRef(JSON.parse(localStorage.getItem(config.localStorageKeys.userAuth) as string) as LoginResponse);
   
   const connectHandler = () => {
     socketRef.current = io(`${config.app.backend_url()}/user`, {
       extraHeaders: {
-        authorization: `Bearer ${accessTokenRef.current}`
+        authorization: `Bearer ${userAuthRef.current.accessToken}`
       }
     });
     socketRef.current.on(config.socketMethods.messageFromServer, (receivedMessage: string) => {
