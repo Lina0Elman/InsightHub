@@ -33,8 +33,8 @@ const TopBar: React.FC = () => {
             <Person fontSize='large'/>
           </IconButton>
         </Tooltip>
-        <Tooltip title="Messages">
-          <IconButton color="inherit" onClick={() => null /*navigate('/messages')*/} sx={{ mx: 1 }}>
+        <Tooltip title="Chat">
+          <IconButton color="inherit" onClick={() => navigate('/chat')} sx={{ mx: 1 }}>
             <Message fontSize='large'/>
           </IconButton>
         </Tooltip>
