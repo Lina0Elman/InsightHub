@@ -6,7 +6,7 @@ import ListItem from '@mui/joy/ListItem';
 import ListItemDecorator from '@mui/joy/ListItemDecorator';
 import Typography from '@mui/joy/Typography';
 
-const DividedList: React.FC<any> = ({ onlineUsers }) => {
+const DividedList: React.FC<any> = ({ onlineUsers, onUserClick }) => {
   return (
     <Box
       sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 4 }}
@@ -15,7 +15,7 @@ const DividedList: React.FC<any> = ({ onlineUsers }) => {
             <List variant="outlined" sx={{ minWidth: 240, borderRadius: 'sm' }}>
             {onlineUsers.map((user: any, index: any) => {
                 return (
-                    <div key={user._id}>
+                    <div key={user._id} id={user._id} onClick={() => onUserClick(user)}>
                         {(index !== 0 && <ListDivider />)}
                         <ListItem>
                         <ListItemDecorator>

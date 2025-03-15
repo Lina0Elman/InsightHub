@@ -39,6 +39,10 @@ const Chat: React.FC = () => {
     setMessage('');
   };
 
+  const onUserClick = (e : any) => {
+    console.log(e);
+  };
+
   return (
     <div className="chat-container">
         <input type="text" onChange={(e) => setMessage(e.target.value)} value={message} />
@@ -51,7 +55,7 @@ const Chat: React.FC = () => {
 
         <div className="Container">
           <h3>Online Users: </h3>
-          <DividedList onlineUsers={onlineUsers} />
+          <DividedList onlineUsers={onlineUsers} onUserClick={onUserClick} />
         </div>
     </div>
   );
