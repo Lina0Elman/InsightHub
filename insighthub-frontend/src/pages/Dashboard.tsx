@@ -11,6 +11,7 @@ import {
   CardActions,
   Avatar,
   IconButton,
+  Badge,
 } from "@mui/material";
 import { Favorite, Message } from '@mui/icons-material';
 import axios from "axios";
@@ -21,6 +22,7 @@ import TopBar from "../components/TopBar";
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
+  const [commentsCount, setCommentsCount] = useState<{ [key: string]: number }>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,8 +35,19 @@ const Dashboard: React.FC = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await axios.get(`${config.app.backend_url()}/post`,);
-      setPosts(response.data as Post[]);
+      const response = await axios.get(`${config.app.backend_url()}/post`);
+      const postsData = response.data as Post[];
+      setPosts(postsData);
+
+      // Fetch comments count for each post
+      const commentsCountData: { [key: string]: number } = {};
+      await Promise.all(
+        postsData.map(async (post) => {
+          const commentsResponse = await axios.get(`${config.app.backend_url()}/comment/post/${post._id}`);
+          commentsCountData[post._id] = (commentsResponse.data  as Comment[]).length;
+        })
+      );
+      setCommentsCount(commentsCountData);
     } catch (err) {
       setError("Failed to load posts. Please try again later.");
       console.error("Failed to load posts:", err);
@@ -49,7 +62,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <TopBar/>
+      <TopBar />
       {/* Main Layout */}
       <Box sx={{ display: "flex", flexGrow: 1, mt: "64px", px: 2 }}>
         {/* Main Content */}
@@ -83,7 +96,9 @@ const Dashboard: React.FC = () => {
                           <Favorite />
                         </IconButton>
                         <IconButton aria-label="comments" sx={{ marginLeft: 'auto' }}>
-                          <Message />  
+                          <Badge badgeContent={commentsCount[post._id] || 0} color="primary">
+                            <Message />
+                          </Badge>
                         </IconButton>
                       </CardActions>
                     </Card>
