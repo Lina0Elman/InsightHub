@@ -37,9 +37,11 @@ const getRoomIdByUserIds = async (req, res) => {
             const newRoom = await roomModel.create(
                 { userIds: [new mongoose.Schema.Types.ObjectId(receiverUserId), initiatorUserId]});
             roomId = newRoom._id;
+
+            return res.status(201).send(roomId);
         }
 
-        res.status(200).send(roomId);
+        return res.status(200).send(roomId);
     }catch(error){
         res.status(400).send("Bad Request");
     }

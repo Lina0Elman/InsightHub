@@ -509,24 +509,31 @@ paths:
         - Rooms
       security:
         - BearerAuth: []
-      summary: Get room ID by user IDs
+      summary: Get or create a room by user IDs
       parameters:
         - name: receiverUserId
           in: path
           required: true
+          description: The ID of the receiver user
           schema:
             type: string
-          description: The ID of the receiver user
       responses:
         '200':
-          description: Room ID retrieved successfully
+          description: Room found and returned successfully
           content:
             text/plain:
               schema:
                 type: string
-                description: The ID of the room
+                example: "roomId"
+        '201':
+          description: Room created successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "roomId"
         '400':
-          description: Bad request
+          description: Bad Request
 
 components:
   schemas:
