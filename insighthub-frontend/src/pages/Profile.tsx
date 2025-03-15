@@ -3,19 +3,19 @@ import { Container, Typography, Box, Button, Alert } from '@mui/material';
 import axios from 'axios';
 import { config } from '../config';
 import TopBar from '../components/TopBar';
+import { LoginResponse } from '../models/LoginResponse';
 
 const Profile: React.FC = () => {
   const [image, setImage] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2NhZDhlZGRlODBiZmQyYzliYjUxZDMiLCJyYW5kb20iOjk3OTQ0OSwiaWF0IjoxNzQxOTY5MDM1LCJleHAiOjE3NDE5NjkxMzV9.S2sRsolhL4exIgPIiWuVraGzdHbCqvYTr5RW63SHyKY'; // Replace with your actual access token
-  const profileImageName = 'c0e2a594-a451-46b2-95fa-8604344f98c9.png'; // replace here with the correct one
+  const auth = JSON.parse(localStorage.getItem(config.localStorageKeys.userAuth) as string) as LoginResponse;
 
   useEffect(() => {
     const fetchProfileImage = async () => {
       try {
-        const response = await axios.get(`${config.app.backend_url()}/resource/image/${profileImageName}`, {
+        const response = await axios.get(`${config.app.backend_url()}/resource/image/${auth.imageFilename}`, {
           responseType: 'blob',
         });
         const imageUrl = URL.createObjectURL(response.data as Blob);
@@ -25,7 +25,7 @@ const Profile: React.FC = () => {
       }
     };
     fetchProfileImage();
-  }, [profileImageName]);
+  }, [auth.imageFilename]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -48,7 +48,7 @@ const Profile: React.FC = () => {
       await axios.post(`${config.app.backend_url()}/resource/image/user`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': `Bearer ${auth.accessToken}`,
         },
       });
       setSuccess(true);
