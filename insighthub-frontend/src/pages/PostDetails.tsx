@@ -7,6 +7,7 @@ import { config } from '../config';
 import { Post } from '../models/Post';
 import { Comment } from '../models/Comment';
 import TopBar from '../components/TopBar';
+import { LoginResponse } from '../models/LoginResponse';
 
 const PostDetails: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
