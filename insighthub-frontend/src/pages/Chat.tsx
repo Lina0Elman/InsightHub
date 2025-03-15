@@ -20,7 +20,7 @@ const Chat: React.FC = () => {
         authorization: `Bearer ${userAuthRef.current.accessToken}`
       }
     });
-    socketRef.current.on(config.socketMethods.messageFromServer, (receivedMessage: string) => {
+    socketRef.current.on(`${config.socketMethods.messageFromServer}/${room._id}`, (receivedMessage: string) => {
       setRoom((prevRoom: Room) => ({
         _id: prevRoom._id,
         messages: [...prevRoom.messages, receivedMessage],
@@ -40,7 +40,7 @@ const Chat: React.FC = () => {
   }, []);
 
   const sendMessageHandler = () => {
-    socketRef.current.emit(config.socketMethods.messageFromClient, message);
+    socketRef.current.emit(`${config.socketMethods.messageFromClient}/${room._id}`, message);
     setMessage('');
   };
 
