@@ -13,7 +13,7 @@ import {
   Avatar,
   IconButton,
 } from "@mui/material";
-import { Favorite, Share, MoreVert } from '@mui/icons-material';
+import { Favorite, Message } from '@mui/icons-material';
 import axios from "axios";
 import { config } from "../config";
 import { Post } from "../models/Post";
@@ -83,8 +83,8 @@ const Dashboard: React.FC = () => {
                         <IconButton aria-label="add to favorites">
                           <Favorite />
                         </IconButton>
-                        <IconButton aria-label="more options" sx={{ marginLeft: 'auto' }}>
-                          <MoreVert />
+                        <IconButton aria-label="comments" sx={{ marginLeft: 'auto' }}>
+                          <Message />  
                         </IconButton>
                       </CardActions>
                       {/* {post.comments && post.comments.map((comment: any) => (
