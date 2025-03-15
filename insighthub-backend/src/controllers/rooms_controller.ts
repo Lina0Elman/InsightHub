@@ -18,7 +18,7 @@ const getRoomByUserIds = async (req, res) => {
                 {
                     $match: {
                         userIds: {
-                            $in: [initiatorUserId]
+                            $in: [new mongoose.Types.ObjectId(initiatorUserId)]
                         }
                     }
                 },
@@ -36,8 +36,7 @@ const getRoomByUserIds = async (req, res) => {
         // Handle that a user could send to himself
         let room = null;
         for (let i = 0; i < roomDocuments.length; i++) {
-            const currentRoomDocument = roomDocuments[i];
-            room = currentRoomDocument;
+            room = roomDocuments[i];
             if (room.userIds[0].toString() == room.userIds[1].toString()) {
                 break;
             }
