@@ -7,7 +7,7 @@ import { LoginResponse } from '../models/LoginResponse';
 const Chat: React.FC = () => {
   const [message, setMessage] = useState('');
   const [allMessages, setAllMessages] = useState([] as string[]);
-  const [onlineUsers, setOnlineUsers] = useState([] as string[]);
+  const [onlineUsers, setOnlineUsers] = useState([] as LoginResponse[]);
   const socketRef = useRef(null as any);
   const userAuthRef = useRef(JSON.parse(localStorage.getItem(config.localStorageKeys.userAuth) as string) as LoginResponse);
   
@@ -21,7 +21,7 @@ const Chat: React.FC = () => {
       setAllMessages((allMessages) => [...allMessages, receivedMessage]);
     });
 
-    socketRef.current.on(config.socketMethods.onlineUsers, (receivedOnlineUsers: string[]) => {
+    socketRef.current.on(config.socketMethods.onlineUsers, (receivedOnlineUsers: LoginResponse[]) => {
       setOnlineUsers(receivedOnlineUsers);
     });
   };
@@ -50,7 +50,7 @@ const Chat: React.FC = () => {
 
         <div className="Container">
           <h3>Online Users: </h3>
-          {onlineUsers.map((u, index) => <div key={index}>{u}</div>)}
+          {onlineUsers.map((u) => <div key={u._id}>{u.email}</div>)}
         </div>
     </div>
   );

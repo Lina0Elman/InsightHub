@@ -1,28 +1,27 @@
 import { config } from "../config";
+import userModel from "../models/user_model";
 
-const onlineUsers = new Set();
+const onlineUsers = new Map();
 
-const initSocket = (socketListener) => {
-    socketListener.on("connection", socket => {
+const initSocket = async (socketListener) => {
+    socketListener.on("connection", async socket => {
 
         // Online users
-        console.log("New client has been connected.");
-        onlineUsers.add(socket.userId);
-        console.log(onlineUsers);
-        socketListener.sockets.emit(config.socketMethods.onlineUsers, Array.from(onlineUsers));
+        const user = await userModel.findById({ _id: socket.userId }).lean();
+        if (user) {
+            onlineUsers.set(socket.userId, user);
+        }
+        socketListener.sockets.emit(config.socketMethods.onlineUsers, Array.from(onlineUsers.values()));
 
         // Chat message
         socket.on(config.socketMethods.messageFromClient, message => {
-            console.log(`Client sent message: ${message}`);
             socketListener.sockets.emit(config.socketMethods.messageFromServer, message);
         });
 
         // Online users
         socket.on("disconnect", () => {
-            console.log("One client disconnected.");
             onlineUsers.delete(socket.userId);
-            console.log(onlineUsers);
-            socketListener.sockets.emit(config.socketMethods.onlineUsers, Array.from(onlineUsers));
+            socketListener.sockets.emit(config.socketMethods.onlineUsers, Array.from(onlineUsers.values()));
         });
     });
 };

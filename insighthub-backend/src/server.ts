@@ -19,4 +19,4 @@ const listener = app.listen(port, () => {
 const socketListener = new Server(listener, { cors: corsOptions });
 
 socketListener.use((socket, next) => socketAuthMiddleware(socket, next));
-initSocket(socketListener);
+initSocket(socketListener).then();
