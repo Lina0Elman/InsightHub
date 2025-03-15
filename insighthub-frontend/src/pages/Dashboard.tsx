@@ -6,7 +6,6 @@ import {
   CircularProgress,
   Button,
   List,
-  Divider,
   Card,
   CardContent,
   CardActions,
@@ -21,7 +20,7 @@ import TopBar from "../components/TopBar";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,7 +34,7 @@ const Dashboard: React.FC = () => {
       setIsLoading(true);
       setError(null);
       const response = await axios.get(`${config.app.backend_url()}/post`,);
-      setPosts(response.data as any[]);
+      setPosts(response.data as Post[]);
     } catch (err) {
       setError("Failed to load posts. Please try again later.");
       console.error("Failed to load posts:", err);

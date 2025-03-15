@@ -8,6 +8,7 @@ import 'froala-editor/css/froala_style.min.css';
 import 'froala-editor/css/froala_editor.pkgd.min.css';
 import 'froala-editor/js/plugins/image.min.js';
 import { LoginResponse } from '../models/LoginResponse';
+import TopBar from '../components/TopBar';
 
 const NewPost: React.FC = () => {
   const [title, setTitle] = useState('');
@@ -18,7 +19,7 @@ const NewPost: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${config.app.backend_url()}/post`, {
+      await axios.post(`${config.app.backend_url()}/post`, {
         title,
         content,
         sender: auth._id,
@@ -53,6 +54,7 @@ const NewPost: React.FC = () => {
 
   return (
     <Container component="main" maxWidth="md">
+      <TopBar />
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 8 }}>
         <Typography component="h1" variant="h4" gutterBottom>
           Create New Post
