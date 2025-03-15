@@ -3,7 +3,6 @@ import multer from 'multer';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import fs from 'fs';
-import { consts } from '../consts';
 
 const createImagesStorage = () => {
     
@@ -52,9 +51,9 @@ const uploadImage = (req) : Promise<string> => {
                 if (error instanceof multer.MulterError || error instanceof TypeError) {
                     return reject(error);
                 } else if (!req.file) {
-                    return reject(new TypeError(consts.errorMessages.NoFileUploaded));
+                    return reject(new TypeError('No file uploaded.'));
                 } else {
-                    return reject(new Error(consts.errorMessages.internalServerError));
+                    return reject(new Error('Internal Server Error'));
                 }
             }
             resolve(req.file.filename);
