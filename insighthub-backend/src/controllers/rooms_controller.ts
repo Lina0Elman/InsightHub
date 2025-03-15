@@ -6,7 +6,7 @@ const getRoomByUserIds = async (req, res) => {
     const receiverUserId = req.params.receiverUserId;
     const initiatorUserId = req.query.userId;
     try {
-        let roomDocument: any[] = await roomModel.aggregate(
+        let roomDocuments: any[] = await roomModel.aggregate(
             [
                 {
                     $match: {
@@ -22,14 +22,20 @@ const getRoomByUserIds = async (req, res) => {
                       foreignField: 'roomId',
                       as: 'messages'
                     }
-                },
-                {
-                    $limit: 1
                 }
             ]
         );
 
-        let room = roomDocument?.length > 0 ? roomDocument[0] : null;
+        // Handle that a user could send to himself
+        let room = null;
+        for (let i = 0; i < roomDocuments.length; i++) {
+            const currentRoomDocument = roomDocuments[i];
+            room = currentRoomDocument;
+            if (room.userIds[0].toString() == room.userIds[1].toString()) {
+                break;
+            }
+        }
+
         if (room) {
             return res.status(200).send(room);
         }
