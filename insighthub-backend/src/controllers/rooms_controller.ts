@@ -6,41 +6,36 @@ const getRoomIdByUserIds = async (req, res) => {
     const receiverUserId = req.params.receiverUserId;
     const initiatorUserId = req.query.userId;
     try {
-        let roomIdDocument: any = await roomModel.aggregate(
+        let roomIdDocument: any[] = await roomModel.aggregate(
             [
                 {
-                    $addFields: {
-                        allElementsTrue: {
-                            $and: [
-                                { $in: [new mongoose.Schema.Types.ObjectId(receiverUserId), "$userIds"] },
-                                { $in: [initiatorUserId, "$userIds"] },
-                            ]
-                        }	
-                    }
-                },
-                {
                     $match: {
-                        allElementsTrue: true
+                        userIds: {
+                            $in: [new mongoose.Types.ObjectId(receiverUserId), initiatorUserId]
+                        }
                     }
                 },
                 {
                     $project: {
                         _id: 1
                     }
+                },
+                {
+                    $limit: 1
                 }
             ]
         );
 
-        let roomId = roomIdDocument?._id;
+        let roomId = roomIdDocument?.length > 0 ? roomIdDocument[0]._id : null;
         if (roomId) {
-            return res.status(200).send(roomId);
+            return res.status(200).send(roomId.toString());
         }
 
         // Room not found, create one.
         const newRoom = await roomModel.create(
-            { userIds: [new mongoose.Schema.Types.ObjectId(receiverUserId), initiatorUserId]});
+            { userIds: [new mongoose.Types.ObjectId(receiverUserId), initiatorUserId]});
         roomId = newRoom._id;
-        return res.status(201).send(roomId);
+        return res.status(201).send(roomId.toString());
     }catch(error){
         res.status(400).send("Bad Request");
     }
