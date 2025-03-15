@@ -5,6 +5,6 @@ import  {authMiddleware} from '../controllers/auth_controller';
 
 const router = express.Router();
 
-router.get('/user/:receiverUserId', authMiddleware, Room.getRoomIdByUserIds);
+router.get('/user/:receiverUserId', authMiddleware, Room.getRoomByUserIds);
 
 export default router;

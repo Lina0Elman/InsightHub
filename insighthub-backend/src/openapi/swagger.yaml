@@ -521,17 +521,43 @@ paths:
         '200':
           description: Room found and returned successfully
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                example: "roomId"
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    example: "67d5d49a9757556bd7e30939"
+                  userIds:
+                    type: array
+                    items:
+                      type: string
+                    example: ["67afa72968f736f112ae1d4f", "67afa589118b00ef7c04bbee"]
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example: []
         '201':
           description: Room created successfully
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                example: "roomId"
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    example: "67d5d49a9757556bd7e30939"
+                  userIds:
+                    type: array
+                    items:
+                      type: string
+                    example: ["67afa72968f736f112ae1d4f", "67afa589118b00ef7c04bbee"]
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example: []
         '400':
           description: Bad Request
 
