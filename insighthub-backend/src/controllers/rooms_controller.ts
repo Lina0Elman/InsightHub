@@ -11,7 +11,14 @@ const getRoomByUserIds = async (req, res) => {
                 {
                     $match: {
                         userIds: {
-                            $in: [new mongoose.Types.ObjectId(receiverUserId), initiatorUserId]
+                            $in: [new mongoose.Types.ObjectId(receiverUserId)]
+                        }
+                    }
+                },
+                {
+                    $match: {
+                        userIds: {
+                            $in: [initiatorUserId]
                         }
                     }
                 },
