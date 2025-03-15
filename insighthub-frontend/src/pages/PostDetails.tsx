@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Typography, Box, Paper, CircularProgress, TextField, Button, Avatar, Divider, IconButton } from '@mui/material';
+import { Container, Typography, Box, Paper, CircularProgress, TextField, Button, Avatar, Divider, IconButton, Collapse, Badge } from '@mui/material';
+import { ArrowBack, Comment as CommentIcon, ThumbUp as ThumbUpIcon } from '@mui/icons-material';
 import axios from 'axios';
 import { config } from '../config';
 import { Post } from '../models/Post';
 import { Comment } from '../models/Comment';
 import TopBar from '../components/TopBar';
-import { ArrowBack } from '@mui/icons-material';
 
 const PostDetails: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -16,6 +16,8 @@ const PostDetails: React.FC = () => {
   const [newComment, setNewComment] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const auth = JSON.parse(localStorage.getItem(config.localStorageKeys.userAuth) as string) as LoginResponse;
 
   const loadPostDetails = async () => {
     try {
@@ -24,7 +26,7 @@ const PostDetails: React.FC = () => {
       const postResponse = await axios.get(`${config.app.backend_url()}/post/${postId}`);
       setPost(postResponse.data as Post);
       try {
-        const commentsResponse = await axios.get(`${config.app.backend_url()}/post/${postId}/comments`);
+        const commentsResponse = await axios.get(`${config.app.backend_url()}/comment/post/${postId}`);
         setComments(commentsResponse.data as Comment[]);
       } catch (err) {
         console.log('Failed to load comments:', err);
@@ -38,9 +40,14 @@ const PostDetails: React.FC = () => {
 
   const handleAddComment = async () => {
     try {
-      const response = await axios.post(`${config.app.backend_url()}/post/${postId}/comments`, {
+      const response = await axios.post(`${config.app.backend_url()}/comment`, {
         content: newComment,
-      });
+        postId,
+        sender: auth._id,
+      }, {
+        headers: {
+            Authorization: `Bearer ${auth.accessToken}`,
+      },});
       setComments([...comments, response.data as Comment]);
       setNewComment('');
     } catch (err) {
@@ -53,14 +60,14 @@ const PostDetails: React.FC = () => {
   }, [postId]);
 
   return (
-    <Container component="main" maxWidth="md">
+    <Container component="main" maxWidth="md" sx={{ height: '80vh', display: 'flex', flexDirection: 'column' }}>
       <TopBar />
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 8 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 8, flexGrow: 1, overflowY: 'auto' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mb: 2 }}>
           <IconButton color="primary" onClick={() => navigate('/dashboard')}>
             <ArrowBack />
           </IconButton>
-            <Typography variant="h4" gutterBottom sx={{ flexGrow: 1, textUnderlineOffset: '0.5rem' }}>
+            <Typography variant="h4" gutterBottom sx={{ flexGrow: 1 }}>
               Post Details
             </Typography>
         </Box>
@@ -71,6 +78,10 @@ const PostDetails: React.FC = () => {
         ) : (
           post && (
             <Paper sx={{ p: 4, width: '100%' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Avatar sx={{ mr: 2 }}>{post.sender.charAt(0)}</Avatar>
+                <Typography variant="h6">{post.sender}</Typography>
+              </Box>
               <Typography variant="h4" gutterBottom>
                 {post.title}
               </Typography>
@@ -78,36 +89,50 @@ const PostDetails: React.FC = () => {
                 <span dangerouslySetInnerHTML={{ __html: post.content }} />
               </Typography>
               <Divider sx={{ my: 4 }} />
-              <Typography variant="h5" gutterBottom>
-                Comments
-              </Typography>
-              {comments.map((comment) => (
-                <Box key={comment._id} sx={{ mb: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <Avatar sx={{ mr: 2 }}>{comment.sender.charAt(0)}</Avatar>
-                    <Typography variant="body2" color="text.primary">
-                      {comment.sender}
-                    </Typography>
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {comment.content}
-                  </Typography>
-                  <Divider sx={{ my: 2 }} />
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <IconButton color="primary">
+                  <ThumbUpIcon />
+                </IconButton>
+                <IconButton color="primary" onClick={() => setCommentsOpen(!commentsOpen)}>
+                  <Badge badgeContent={comments.length} color="primary">
+                    <CommentIcon />
+                  </Badge>
+                </IconButton>
+              </Box>
+              <Collapse in={commentsOpen}>
+                <Typography variant="h5" gutterBottom>
+                  Comments
+                </Typography>
+                <Box sx={{ maxHeight: '300px', overflowY: 'auto', mb: 2 }}>
+                  {comments.map((comment) => (
+                    <Box key={comment._id} sx={{ mb: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <Avatar sx={{ mr: 2 }}>{comment.sender.charAt(0)}</Avatar>
+                        <Typography variant="body2" color="text.primary">
+                          {comment.sender}
+                        </Typography>
+                      </Box>
+                      <Typography variant="body2" color="text.secondary">
+                        {comment.content}
+                      </Typography>
+                      <Divider sx={{ my: 2 }} />
+                    </Box>
+                  ))}
                 </Box>
-              ))}
-              <TextField
-                label="Add a comment"
-                variant="outlined"
-                fullWidth
-                multiline
-                rows={4}
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                sx={{ mb: 2 }}
-              />
-              <Button variant="contained" color="primary" onClick={handleAddComment}>
-                Add Comment
-              </Button>
+                <TextField
+                  label="Add a comment"
+                  variant="outlined"
+                  fullWidth
+                  multiline
+                  rows={4}
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  sx={{ mb: 2 }}
+                />
+                <Button variant="contained" color="primary" onClick={handleAddComment}>
+                  Add Comment
+                </Button>
+              </Collapse>
             </Paper>
           )
         )}
