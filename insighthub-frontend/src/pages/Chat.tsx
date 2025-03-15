@@ -12,7 +12,7 @@ const Chat: React.FC = () => {
   const userAuthRef = useRef(JSON.parse(localStorage.getItem(config.localStorageKeys.userAuth) as string) as LoginResponse);
   
   const connectHandler = () => {
-    socketRef.current = io(`${config.app.backend_url()}/user`, {
+    socketRef.current = io(config.app.backend_url(), {
       extraHeaders: {
         authorization: `Bearer ${userAuthRef.current.accessToken}`
       }
