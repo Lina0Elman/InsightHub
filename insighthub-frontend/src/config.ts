@@ -6,5 +6,8 @@ export const config = {
         messageFromServer: "message-from-server",
         messageFromClient: "message-from-client",
         onlineUsers: "online-users"
+    },
+    localStorageKeys: {
+        userAuth: "userAuth"
     }
 }
