@@ -13,6 +13,8 @@ tags:
     description: Operations related to authentication tokens
   - name: Resources
     description: Operations related to uploading & downloading resources
+  - name: Rooms
+    description: Operations related to chat rooms
 
 paths:
   # Post Routes
@@ -500,6 +502,31 @@ paths:
           description: Image not found
         '500':
           description: Internal server error
+
+  /room/user/{receiverUserId}:
+    get:
+      tags:
+        - Rooms
+      security:
+        - BearerAuth: []
+      summary: Get room ID by user IDs
+      parameters:
+        - name: receiverUserId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the receiver user
+      responses:
+        '200':
+          description: Room ID retrieved successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: The ID of the room
+        '400':
+          description: Bad request
 
 components:
   schemas:

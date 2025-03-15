@@ -6,6 +6,7 @@ import posts_routes from './routes/posts_routes';
 import comments_routes from './routes/comments_routes';
 import auth_routes from './routes/auth_routes';
 import resource_routes from './routes/resources_routes';
+import rooms_routes from './routes/rooms_routes';
 import swaggerUi from 'swagger-ui-express';
 import loadOpenApiFile from './openapi/openapi_loader';
 import cors from 'cors';
@@ -40,5 +41,6 @@ app.use('/post', posts_routes);
 app.use('/comment', comments_routes);
 app.use('/auth', auth_routes);
 app.use('/resource', resource_routes);
+app.use('/room', rooms_routes);
 
 export { app, corsOptions };
