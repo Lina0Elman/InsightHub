@@ -20,11 +20,14 @@ const Chat: React.FC = () => {
         authorization: `Bearer ${userAuthRef.current.accessToken}`
       }
     });
-    socketRef.current.on(`${config.socketMethods.messageFromServer}/${room._id}`, (receivedMessage: string) => {
-      setRoom((prevRoom: Room) => ({
-        _id: prevRoom._id,
-        messages: [...prevRoom.messages, receivedMessage],
-      }));
+    
+    socketRef.current.on(config.socketMethods.messageFromServer, ({ roomId, message } : any) => {
+      setRoom(prevRoom => {
+        if (prevRoom && prevRoom._id === roomId) {
+          return { ...prevRoom, messages: [...prevRoom.messages, message] };
+        }
+        return prevRoom;
+      });
     });
 
     socketRef.current.on(config.socketMethods.onlineUsers, (receivedOnlineUsers: LoginResponse[]) => {
@@ -40,8 +43,10 @@ const Chat: React.FC = () => {
   }, []);
 
   const sendMessageHandler = () => {
-    socketRef.current.emit(`${config.socketMethods.messageFromClient}/${room._id}`, message);
-    setMessage('');
+    if (room._id) {
+      socketRef.current.emit(config.socketMethods.messageFromClient, { roomId: room._id, message: message });
+      setMessage('');
+    }
   };
 
   const onUserClick = (user : any) => {
@@ -50,6 +55,7 @@ const Chat: React.FC = () => {
     })
     .then((response) => {
       setRoom(response.data);
+      socketRef.current.emit(`${config.socketMethods.enterRoom}`, response.data._id);
       console.log(response.data);
     })
     .catch((error) => {

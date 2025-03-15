@@ -5,7 +5,8 @@ export const config = {
     socketMethods: {
         messageFromServer: "message-from-server",
         messageFromClient: "message-from-client",
-        onlineUsers: "online-users"
+        onlineUsers: "online-users",
+        enterRoom: "enter-room",
     },
     localStorageKeys: {
         userAuth: "userAuth"

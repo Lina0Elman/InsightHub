@@ -13,9 +13,14 @@ const initSocket = async (socketListener) => {
         }
         socketListener.sockets.emit(config.socketMethods.onlineUsers, Array.from(onlineUsers.values()));
 
-        // Chat message
-        socket.on(config.socketMethods.messageFromClient, message => {
-            socketListener.sockets.emit(config.socketMethods.messageFromServer, message);
+        // Enter Room
+        socket.on(config.socketMethods.enterRoom, (roomId) => {
+            socket.join(roomId);
+        });
+
+        // Chat Message
+        socket.on(config.socketMethods.messageFromClient, ({ roomId, message }) => {
+            socketListener.to(roomId).emit(config.socketMethods.messageFromServer, { roomId, message });
         });
 
         // Online users
