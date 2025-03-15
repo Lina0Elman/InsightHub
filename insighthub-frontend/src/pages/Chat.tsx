@@ -7,7 +7,7 @@ import DividedList from '../components/DividedList';
 
 const Chat: React.FC = () => {
   const [message, setMessage] = useState('');
-  const [allMessages, setAllMessages] = useState([] as string[]);
+  const [room, setRoom] = useState({ _id: null, messages: [] } as { _id: any; messages: string[] });
   const [onlineUsers, setOnlineUsers] = useState([] as LoginResponse[]);
   const socketRef = useRef(null as any);
   const userAuthRef = useRef(JSON.parse(localStorage.getItem(config.localStorageKeys.userAuth) as string) as LoginResponse);
@@ -19,7 +19,10 @@ const Chat: React.FC = () => {
       }
     });
     socketRef.current.on(config.socketMethods.messageFromServer, (receivedMessage: string) => {
-      setAllMessages((allMessages) => [...allMessages, receivedMessage]);
+      setRoom((prevRoom: { _id: any; messages: string[] }) => ({
+        _id: prevRoom._id,
+        messages: [...prevRoom.messages, receivedMessage],
+      }));
     });
 
     socketRef.current.on(config.socketMethods.onlineUsers, (receivedOnlineUsers: LoginResponse[]) => {
@@ -39,8 +42,8 @@ const Chat: React.FC = () => {
     setMessage('');
   };
 
-  const onUserClick = (e : any) => {
-    console.log(e);
+  const onUserClick = (user : any) => {
+    console.log(user);
   };
 
   return (
@@ -50,7 +53,7 @@ const Chat: React.FC = () => {
         <button onClick={() => sendMessageHandler()}>Send Message</button>
 
         <div className="Container">
-          {allMessages.map((m, index) => <div key={index}>{m}</div>)}
+          {room.messages.map((m: any, index: any) => <div key={index}>{m}</div>)}
         </div>
 
         <div className="Container">
