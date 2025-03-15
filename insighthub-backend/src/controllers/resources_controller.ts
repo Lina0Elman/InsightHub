@@ -3,6 +3,9 @@ import fs from 'fs';
 import path from 'path';
 import { uploadImage } from '../services/resources_service';
 import userModel from '../models/user_model';
+import { consts } from '../consts';
+import multer from 'multer';
+
 
 const createUserImageResource = async (req, res) => {
     try {
@@ -24,7 +27,13 @@ const createImageResource = async (req, res) => {
         const imageFilename = await uploadImage(req);
         return res.status(201).send(imageFilename);
     } catch (error) {
-        return res.status(500).send(error.message);
+        if (error instanceof multer.MulterError || error instanceof TypeError) {
+            return res.status(400).send(error.message);
+        } else if (error.message === consts.errorMessages.NoFileUploaded) {
+            return res.status(400).send(consts.errorMessages.NoFileUploaded);
+        } else {
+            return res.status(500).send(consts.errorMessages.internalServerError);
+        }
     }
 };
 
