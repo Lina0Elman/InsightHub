@@ -8,6 +8,7 @@ import Footer from './components/Footer';
 import Profile from './components/Profile';
 import Chat from './pages/Chat';
 import RequireAuth from './hoc/RequireAuth';
+import TopBar from './components/TopBar';
 
 const App: React.FC = () => {
   return (
@@ -17,9 +18,9 @@ const App: React.FC = () => {
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/chat" element={<Chat />} />
+          <Route path="/dashboard" element={<RequireAuth><TopBar/><Dashboard /></RequireAuth>} />
+          <Route path="/profile" element={<RequireAuth><TopBar/><Profile /></RequireAuth>} />
+          <Route path="/chat" element={<RequireAuth><TopBar/><Chat /></RequireAuth>} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Router>

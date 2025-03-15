@@ -14,7 +14,6 @@ import axios from "axios";
 import AddPost from "../components/AddPost";
 import { config } from "../config";
 import { PostType } from "../models/Post";
-import TopBar from "../components/TopBar";
 
 const Dashboard: React.FC = () => {
   const [posts, setPosts] = useState<PostType[]>([]);
@@ -50,7 +49,6 @@ const Dashboard: React.FC = () => {
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <TopBar/>
       {/* Main Layout */}
       <Box sx={{ display: "flex", flexGrow: 1, mt: "64px", px: 2 }}>
         {/* Main Content */}

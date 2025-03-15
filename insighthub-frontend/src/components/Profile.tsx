@@ -19,7 +19,6 @@ const Profile: React.FC = () => {
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-    <TopBar />
     <Box sx={{ display: 'flex', flexGrow: 1, mt: '64px', px: 2 }}>
       <Box sx={{ flexGrow: 1, maxWidth: '900px' }}>
         <Paper elevation={3} sx={{ p: 2 }}>
