@@ -1,30 +1,35 @@
-import React, { useEffect, useState } from 'react';
-import { Container, Typography, Box, Button, List, ListItem, ListItemText, Divider } from '@mui/material';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { config } from '../config';
+import {
+  Typography,
+  Box,
+  Paper,
+  CircularProgress,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+} from "@mui/material";
+import axios from "axios";
+import AddPost from "../components/AddPost";
+import { config } from "../config";
+import { Post } from "../models/Post";
+import TopBar from "../components/TopBar";
+
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<any[]>([]);
-  const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2FmYTc0MDY4ZjczNmYxMTJhZTFkNTEiLCJyYW5kb20iOjEyNzEsImlhdCI6MTc0MTA3NDQ3NSwiZXhwIjoxNzQxMDc4MDc1fQ.VQqlhKMY_Wt2rh4OussLNR0euFqQTpT345KLe5qNkj4'; // Replace with your actual access token
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+  const accessToken = localStorage.getItem(config.localStorageKeys.userAuth) as string;
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await axios.get(`${config.app.backend_url()}/post`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-        setPosts(response.data as []);
-      } catch (error) {
-        console.error('Error fetching posts:', error);
-      }
-    };
-
-    fetchPosts();
-  }, []);
 
   const handleCreatePost = () => {
     // Navigate to the "new post" page
@@ -36,18 +41,40 @@ const Dashboard: React.FC = () => {
     navigate('/login');
   };
 
+
+  const loadPosts = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await axios.get(`${config.app.backend_url()}/post`,);
+      setPosts(response.data as any[]);
+    } catch (err) {
+      setError("Failed to load posts. Please try again later.");
+      console.error("Failed to load posts:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPosts();
+  }, []);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   return (
-    <Container component="main" maxWidth="md">
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 8 }}>
-        <Typography component="h1" variant="h3" gutterBottom>
-          Dashboard
-        </Typography>
-        <Typography component="p" variant="body1" gutterBottom>
-          Welcome to the Insight Hub Dashboard!
-        </Typography>
-        <Button variant="contained" color="primary" onClick={handleLogout}>
-          Logout
-        </Button>
+    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <TopBar/>
+      {/* Main Layout */}
+      <Box sx={{ display: "flex", flexGrow: 1, mt: "64px", px: 2 }}>
+        {/* Main Content */}
+        <Box sx={{ flexGrow: 1, maxWidth: "900px" }}>
         <Button variant="contained" color="primary" onClick={handleCreatePost}>
           Create Post
         </Button>
@@ -85,9 +112,22 @@ const Dashboard: React.FC = () => {
               </React.Fragment>
             ))}
           </List>
-        </Box>
+        </Box>          
+          <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+            <DialogTitle>Create a New Post</DialogTitle>
+            <DialogContent>
+              <AddPost onPostCreated={loadPosts} />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleClose} color="primary">
+                Cancel
+              </Button>
+            </DialogActions>
+          </Dialog>
       </Box>
-    </Container>
+      </Box>
+    </Box>
+
   );
 };
 

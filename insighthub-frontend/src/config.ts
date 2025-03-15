@@ -4,5 +4,8 @@ export const config = {
     },
     resources: {
         imageMaxSize: () => 10 * 1024 * 1024 // Max file size: 10MB
+    },
+    localStorageKeys: {
+        userAuth: "userAuth"
     }
 }

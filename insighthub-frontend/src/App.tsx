@@ -5,23 +5,27 @@ import Register from './pages/Register';
 import './App.css'
 import Dashboard from './pages/Dashboard';
 import Footer from './components/Footer';
+import Profile from './components/Profile';
+import RequireAuth from './hoc/RequireAuth';
 import NewPost from './pages/NewPost';
+
 
 const App: React.FC = () => {
   return (
-    <div>
+    <>
       <Router>
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/new-post" element={<NewPost />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Router>
       <Footer/>
-    </div>
+    </>
   );
 };
 

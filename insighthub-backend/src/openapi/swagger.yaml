@@ -125,6 +125,67 @@ paths:
         '404':
           description: Not found - The postId does not exist
 
+  /post/{postId}/like:
+    put:
+      tags:
+        - Posts
+      security:
+        - BearerAuth: []
+      summary: Update like status for a specific post
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the post to like or unlike
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: boolean
+              description: Indicates whether to like (true) or unlike (false) the post
+      responses:
+        '200':
+          description: Like status updated successfully
+        '400':
+          description: Bad request - Invalid post ID or missing required fields
+          content:
+            text/plain:
+              examples:
+                default:
+                  value: "Bad Request"
+                booleanBody:
+                  value: "Bad Request. Body accepts `true` or `false` values only"
+        '401':
+          description: Unauthorized - Missing token
+        '403':
+          description: Forbidden - Invalid or expired token
+        '404':
+          description: Post not found
+
+  /post/like:
+    get:
+      tags:
+        - Posts
+      security:
+        - BearerAuth: []
+      summary: Retrieve liked posts for a specific user
+      responses:
+        '200':
+          description: A list of liked posts for the specified user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '400':
+          description: Bad request - Invalid userId
+        '401':
+          description: Unauthorized - Missing token
+
   # Comment Routes
   /comment:
     get:
@@ -309,6 +370,9 @@ paths:
               schema:
                 type: object
                 properties:
+                  email:
+                    type: string
+                    format: email
                   accessToken:
                     type: string
                   refreshToken:
