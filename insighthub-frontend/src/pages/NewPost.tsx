@@ -7,12 +7,13 @@ import FroalaEditor from 'react-froala-wysiwyg';
 import 'froala-editor/css/froala_style.min.css';
 import 'froala-editor/css/froala_editor.pkgd.min.css';
 import 'froala-editor/js/plugins/image.min.js';
+import { LoginResponse } from '../models/LoginResponse';
 
 const NewPost: React.FC = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const navigate = useNavigate();
-  const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2FmYTc0MDY4ZjczNmYxMTJhZTFkNTEiLCJyYW5kb20iOjQyNjg1MCwiaWF0IjoxNzQxMzU5MzgyLCJleHAiOjE3NDEzNjI5ODJ9.Dk9NgUxnYolbEPdtPm9waQgCW-g66CuFO-2zreMUCPE'; // Replace with your actual access token
+  const auth = JSON.parse(localStorage.getItem(config.localStorageKeys.userAuth) as string) as LoginResponse;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,10 +21,10 @@ const NewPost: React.FC = () => {
       const response = await axios.post(`${config.app.backend_url()}/post`, {
         title,
         content,
-        sender: 'your_sender_id_here', // Replace with actual sender ID
+        sender: auth._id,
       }, {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${auth.accessToken}`,
         },
       });
       navigate('/dashboard'); // Redirect to dashboard after successful post creation
@@ -40,7 +41,7 @@ const NewPost: React.FC = () => {
       const response = await axios.post(`${config.app.backend_url()}/resource/image`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${auth.accessToken}`,
         },
       });
       return response.data;
