@@ -1,24 +1,40 @@
-import multer from 'multer';
 import { config } from '../config';
 import fs from 'fs';
 import path from 'path';
 import { uploadImage } from '../services/resources_service';
+import userModel from '../models/user_model';
+import { consts } from '../consts';
+import multer from 'multer';
+
+
+const createUserImageResource = async (req, res) => {
+    try {
+        const imageFilename = await uploadImage(req);
+        const user = await userModel.findById(req.query.userId);
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+        user.imageFilename = imageFilename;
+        await user.save();
+        return res.status(201).send(user);
+    } catch (error) {
+        return res.status(500).send(error.message);
+    }
+};
 
 const createImageResource = async (req, res) => {
-    const upload = uploadImage.single('file');
-    upload(req, res, error => {
-        if (error instanceof multer.MulterError) {
+    try {
+        const imageFilename = await uploadImage(req);
+        return res.status(201).send(imageFilename);
+    } catch (error) {
+        if (error instanceof multer.MulterError || error instanceof TypeError) {
             return res.status(400).send(error.message);
-        } else if (error instanceof TypeError) {
-            return res.status(400).send(error.message);
-        } else if (!req.file) {
-            return res.status(400).send('No file uploaded.');
-        } else if (error) {
-            return res.status(500).send("Internal Server Error");
+        } else if (error.message === consts.errorMessages.NoFileUploaded) {
+            return res.status(400).send(consts.errorMessages.NoFileUploaded);
+        } else {
+            return res.status(500).send(consts.errorMessages.internalServerError);
         }
-
-        return res.status(201).send(req.file.filename);
-    })
+    }
 };
 
 const getImageResource = async (req, res) => {
@@ -36,4 +52,4 @@ const getImageResource = async (req, res) => {
     }
 };
 
-export default { createImageResource, getImageResource };
+export default { createUserImageResource, createImageResource, getImageResource };
