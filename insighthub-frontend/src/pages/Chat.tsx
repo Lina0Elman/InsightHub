@@ -13,6 +13,7 @@ const Chat: React.FC = () => {
   const [onlineUsers, setOnlineUsers] = useState([] as LoginResponse[]);
   const socketRef = useRef(null as any);
   const userAuthRef = useRef(JSON.parse(localStorage.getItem(config.localStorageKeys.userAuth) as string) as LoginResponse);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
   
   const connectHandler = () => {
     socketRef.current = io(config.app.backend_url(), {
@@ -63,6 +64,17 @@ const Chat: React.FC = () => {
     });
   };
 
+  // Scroll to the bottom of the chat messages
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [room.messages]); // Scroll whenever messages change
+
   return (
     <div className="chat-container">
       <div className="message-input">
@@ -85,6 +97,8 @@ const Chat: React.FC = () => {
             <div className="message-content">{m?.content}</div>
           </div>
         ))}
+        {/* This div will be used to scroll to the bottom */}
+        <div ref={messagesEndRef} />
       </div>
 
       <div className="online-users">
