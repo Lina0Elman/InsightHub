@@ -9,6 +9,8 @@ const initSocket = async (socketListener) => {
         // Online users
         const user = await userModel.findById({ _id: socket.userId }).lean();
         if (user) {
+            delete user.password;
+            delete user.refreshTokens;
             onlineUsers.set(socket.userId, user);
         }
         socketListener.sockets.emit(config.socketMethods.onlineUsers, Array.from(onlineUsers.values()));
