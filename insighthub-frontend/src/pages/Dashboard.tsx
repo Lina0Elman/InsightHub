@@ -11,8 +11,14 @@ import {
   CardActions,
   Avatar,
   IconButton,
+  Badge,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
-import { Favorite, Message } from '@mui/icons-material';
+import { Favorite, Message, Delete } from '@mui/icons-material';
 import axios from "axios";
 import { config } from "../config";
 import { Post } from "../models/Post";
@@ -21,20 +27,62 @@ import TopBar from "../components/TopBar";
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
+  const [commentsCount, setCommentsCount] = useState<{ [key: string]: number }>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [postIdToDelete, setPostIdToDelete] = useState<string | null>(null);
+  const auth = JSON.parse(localStorage.getItem(config.localStorageKeys.userAuth) as string);
 
   const handleCreatePost = () => {
     // Navigate to the "new post" page
     navigate('/new-post');
   };
 
+  const handleDeletePost = async () => {
+    if (postIdToDelete) {
+      try {
+        await axios.delete(`${config.app.backend_url()}/post/${postIdToDelete}`, {
+          headers: {
+            Authorization: `Bearer ${auth.accessToken}`,
+          },
+        });
+        setPosts(posts.filter(post => post._id !== postIdToDelete));
+        setOpenDialog(false);
+        setPostIdToDelete(null);
+      } catch (err) {
+        console.error("Failed to delete post:", err);
+      }
+    }
+  };
+
+  const handleOpenDialog = (postId: string) => {
+    setPostIdToDelete(postId);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setPostIdToDelete(null);
+  };
+
   const loadPosts = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await axios.get(`${config.app.backend_url()}/post`,);
-      setPosts(response.data as Post[]);
+      const response = await axios.get(`${config.app.backend_url()}/post`);
+      const postsData = response.data as Post[];
+      setPosts(postsData);
+
+      // Fetch comments count for each post
+      const commentsCountData: { [key: string]: number } = {};
+      await Promise.all(
+        postsData.map(async (post) => {
+          const commentsResponse = await axios.get(`${config.app.backend_url()}/comment/post/${post._id}`);
+          commentsCountData[post._id] = (commentsResponse.data  as Comment[]).length;
+        })
+      );
+      setCommentsCount(commentsCountData);
     } catch (err) {
       setError("Failed to load posts. Please try again later.");
       console.error("Failed to load posts:", err);
@@ -49,7 +97,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <TopBar/>
+      <TopBar />
       {/* Main Layout */}
       <Box sx={{ display: "flex", flexGrow: 1, mt: "64px", px: 2 }}>
         {/* Main Content */}
@@ -66,7 +114,8 @@ const Dashboard: React.FC = () => {
                 {posts.map((post) => (
                   <React.Fragment key={post._id}>
                     <Card sx={{ 
-                      mb: 2, 
+                      mb: 2,
+                      width: '80vh',
                       cursor: 'pointer',
                       transition: 'transform 0.2s, box-shadow 0.2s',
                       '&:hover': {
@@ -91,8 +140,15 @@ const Dashboard: React.FC = () => {
                           <Favorite />
                         </IconButton>
                         <IconButton aria-label="comments" sx={{ marginLeft: 'auto' }}>
-                          <Message />  
+                          <Badge badgeContent={commentsCount[post._id] || 0} color="primary">
+                            <Message />
+                          </Badge>
                         </IconButton>
+                        {post.sender === auth._id && (
+                          <IconButton aria-label="delete" onClick={() => handleOpenDialog(post._id)}>
+                            <Delete />
+                          </IconButton>
+                        )}
                       </CardActions>
                     </Card>
                   </React.Fragment>
@@ -105,6 +161,28 @@ const Dashboard: React.FC = () => {
           </Button>
         </Box>
       </Box>
+
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Are you sure you want to delete this post?"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDeletePost} color="primary" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
