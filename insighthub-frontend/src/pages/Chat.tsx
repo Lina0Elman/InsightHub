@@ -61,7 +61,6 @@ const Chat: React.FC = () => {
     .then((response) => {
       setRoom(response.data);
       socketRef.current.emit(`${config.socketMethods.enterRoom}`, response.data._id);
-      console.log(response.data);
     })
     .catch((error) => {
       console.error(error);
