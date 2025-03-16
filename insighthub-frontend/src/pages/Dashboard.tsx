@@ -12,8 +12,13 @@ import {
   Avatar,
   IconButton,
   Badge,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
-import { Favorite, Message } from '@mui/icons-material';
+import { Favorite, Message, Delete } from '@mui/icons-material';
 import axios from "axios";
 import { config } from "../config";
 import { Post } from "../models/Post";
@@ -25,10 +30,40 @@ const Dashboard: React.FC = () => {
   const [commentsCount, setCommentsCount] = useState<{ [key: string]: number }>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [postIdToDelete, setPostIdToDelete] = useState<string | null>(null);
+  const auth = JSON.parse(localStorage.getItem(config.localStorageKeys.userAuth) as string);
 
   const handleCreatePost = () => {
     // Navigate to the "new post" page
     navigate('/new-post');
+  };
+
+  const handleDeletePost = async () => {
+    if (postIdToDelete) {
+      try {
+        await axios.delete(`${config.app.backend_url()}/post/${postIdToDelete}`, {
+          headers: {
+            Authorization: `Bearer ${auth.accessToken}`,
+          },
+        });
+        setPosts(posts.filter(post => post._id !== postIdToDelete));
+        setOpenDialog(false);
+        setPostIdToDelete(null);
+      } catch (err) {
+        console.error("Failed to delete post:", err);
+      }
+    }
+  };
+
+  const handleOpenDialog = (postId: string) => {
+    setPostIdToDelete(postId);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setPostIdToDelete(null);
   };
 
   const loadPosts = async () => {
@@ -100,6 +135,11 @@ const Dashboard: React.FC = () => {
                             <Message />
                           </Badge>
                         </IconButton>
+                        {post.sender === auth._id && (
+                          <IconButton aria-label="delete" onClick={() => handleOpenDialog(post._id)}>
+                            <Delete />
+                          </IconButton>
+                        )}
                       </CardActions>
                     </Card>
                   </React.Fragment>
@@ -112,6 +152,28 @@ const Dashboard: React.FC = () => {
           </Button>
         </Box>
       </Box>
+
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Are you sure you want to delete this post?"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDeletePost} color="primary" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
