@@ -77,34 +77,40 @@ const Chat: React.FC = () => {
 
   return (
     <div className="chat-container">
-      <div className="message-input">
-        <input
-          type="text"
-          onChange={(e) => setMessageContent(e.target.value)}
-          value={messageContent}
-          placeholder="Type your message..."
-        />
-        <button onClick={() => sendMessageHandler()}>Send</button>
-      </div>
+        <div className="message-input">
+            <input
+                type="text"
+                onChange={(e) => setMessageContent(e.target.value)}
+                value={messageContent}
+                placeholder="Type your message..."
+            />
+            <button onClick={() => sendMessageHandler()}>Send</button>
+        </div>
 
-      <div className="chat-messages">
-        {room.messages.map((m: any, index: any) => (
-          <div key={index} className="message">
-            <div className="message-header">
-              <span className="message-user">{m?.userId}</span>
-              <span className="message-time">{new Date(m?.createdAt).toLocaleTimeString()}</span>
-            </div>
-            <div className="message-content">{m?.content}</div>
-          </div>
-        ))}
-        {/* This div will be used to scroll to the bottom */}
-        <div ref={messagesEndRef} />
-      </div>
+        <div className="chat-messages">
+            {room.messages.length === 0 ? (
+                <div className="no-messages">
+                    <p>No messages yet. Start the conversation!</p>
+                </div>
+            ) : (
+                room.messages.map((m: any, index: any) => (
+                    <div key={index} className="message">
+                        <div className="message-header">
+                            <span className="message-user">{m?.userId}</span>
+                            <span className="message-time">{new Date(m?.createdAt).toLocaleTimeString()}</span>
+                        </div>
+                        <div className="message-content">{m?.content}</div>
+                    </div>
+                ))
+            )}
+            {/* This div will be used to scroll to the bottom */}
+            <div ref={messagesEndRef} />
+        </div>
 
-      <div className="online-users">
-        <h3>Online Users:</h3>
-        <DividedList onlineUsers={onlineUsers} onUserClick={onUserClick} />
-      </div>
+        <div className="online-users">
+            <h3>Online Users:</h3>
+            <DividedList onlineUsers={onlineUsers} onUserClick={onUserClick} />
+        </div>
     </div>
   );
 };
