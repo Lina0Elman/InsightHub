@@ -1,4 +1,3 @@
-// insighthub-backend/tests/user_routes.test.ts
 import request from 'supertest';
 import app from '../app'; // Assuming your Express app is exported from this file
 
