@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { config } from '../config';
 import { Box, Paper, Typography } from '@mui/material';
 import TopBar from './TopBar';
+import api from '../serverApi';
+import {getUserAuth} from "../handlers/userAuth.ts";
 
 /// todo
 const Profile: React.FC = () => {
@@ -10,7 +10,7 @@ const Profile: React.FC = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const response = await axios.get(`${config.app.backend_url()}/auth/profile`);
+      const response = await api.get(`/user/${getUserAuth().userId}`);
       setProfile(response.data as any);
     };
     fetchProfile();

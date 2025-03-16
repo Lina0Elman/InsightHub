@@ -2,7 +2,7 @@ export interface PostType {
   id: string;
   title: string;
   content: string;
-  sender: string;
+  owner: string;
   createdAt: string;
   updatedAt?: string;
 }

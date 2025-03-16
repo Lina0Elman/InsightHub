@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { config } from '../config';
 import { Send } from 'lucide-react';
 import { TextField, Button, Box, Paper } from '@mui/material';
+import api from "../serverApi.ts";
 
 interface AddPostProps {
   onPostCreated: () => void;
@@ -19,7 +18,7 @@ const AddPost: React.FC<AddPostProps> = ({ onPostCreated }) => {
 
     setIsSubmitting(true);
     try {
-      await axios.post(`${config.app.backend_url()}/post`, { title, content });
+      await api.post(`/post`, { title, content });
       setTitle('');
       setContent('');
       onPostCreated();

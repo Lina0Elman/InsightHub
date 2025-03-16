@@ -5,6 +5,7 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import './Login.css';
 import { config } from '../config';
 import { LoginResponse } from '../models/LoginResponse';
+import {setUserAuth} from "../handlers/userAuth.ts";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -21,11 +22,9 @@ const Login: React.FC = () => {
         email,
         password,
       });
-      setEmail(response.data.email);
-
 
       // Handle successful login, e.g., save tokens, redirect, etc.
-      localStorage.setItem(config.localStorageKeys.userAuth, JSON.stringify(response.data));
+      setUserAuth(response.data)
 
       navigate('/dashboard'); // Redirect to dashboard or another page after login
 

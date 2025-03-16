@@ -10,11 +10,10 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-import axios from "axios";
 import AddPost from "../components/AddPost";
-import { config } from "../config";
 import { PostType } from "../models/Post";
 import TopBar from "../components/TopBar";
+import api from "../serverApi";
 
 const Dashboard: React.FC = () => {
   const [posts, setPosts] = useState<PostType[]>([]);
@@ -26,7 +25,7 @@ const Dashboard: React.FC = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await axios.get(`${config.app.backend_url()}/post`);
+      const response = await api.get(`/post`);
       setPosts(response.data as PostType[]);
     } catch (err) {
       setError("Failed to load posts. Please try again later.");
