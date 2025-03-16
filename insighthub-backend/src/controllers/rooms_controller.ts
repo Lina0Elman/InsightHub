@@ -41,6 +41,10 @@ const getRoomByUserIds = async (req, res) => {
                 break;
             }
         }
+        if (room.userIds[0].toString() != room.userIds[1].toString() &&
+            receiverUserId.toString() == initiatorUserId.toString()) {
+            room = null;
+        }
 
         if (room) {
             return res.status(200).send(room);
