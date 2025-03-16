@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../app';
+import { app } from '../app';
 import postsModel from '../models/posts_model'; // Adjust the path as necessary
 import userModel from '../models/user_model'; // Adjust the path as necessary
 
