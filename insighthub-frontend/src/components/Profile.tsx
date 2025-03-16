@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { config } from '../config';
 import { Box, Paper, Typography } from '@mui/material';
-import TopBar from './TopBar';
 
 /// todo
 const Profile: React.FC = () => {
