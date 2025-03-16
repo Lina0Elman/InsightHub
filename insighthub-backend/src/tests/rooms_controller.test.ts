@@ -44,10 +44,30 @@ describe('Rooms Controller', () => {
         expect(response.body.userIds).toEqual(expect.arrayContaining([receiverUser._id, initiatorUser._id]));
     });
 
+    it('should return a room with himself if it exists for the given user IDs', async () => {
+        // Create a room for testing
+        const room = await roomModel.create({
+            userIds: [initiatorUser._id, receiverUser._id]
+        });
+
+        // Create a room with himself, for testing
+        const room1 = await roomModel.create({
+            userIds: [initiatorUser._id, initiatorUser._id]
+        });
+
+        const response = await request(app)
+            .get(`/room/user/${initiatorUser._id}`)
+            .set('Authorization', `Bearer ${initiatorUser.accessToken}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty('_id', room1._id.toString());
+        expect(response.body.userIds).toEqual(expect.arrayContaining([initiatorUser._id, initiatorUser._id]));
+    });
+
     it('should create a new room if it does not exist', async () => {
         const response = await request(app)
             .get(`/room/user/${receiverUser._id}`)
-            .set('Authorization', `Bearer ${initiatorUser.accessToken}`)
+            .set('Authorization', `Bearer ${initiatorUser.accessToken}`);
 
         expect(response.status).toBe(201);
         expect(response.body).toHaveProperty('userIds');
