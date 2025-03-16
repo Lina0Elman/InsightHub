@@ -17,6 +17,8 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
 import { Favorite, Message, Delete } from '@mui/icons-material';
 import axios from "axios";
@@ -32,6 +34,7 @@ const Dashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [postIdToDelete, setPostIdToDelete] = useState<string | null>(null);
+  const [filterByUser, setFilterByUser] = useState(false);
   const auth = JSON.parse(localStorage.getItem(config.localStorageKeys.userAuth) as string);
 
   const handleCreatePost = () => {
@@ -70,7 +73,9 @@ const Dashboard: React.FC = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await axios.get(`${config.app.backend_url()}/post`);
+      const response = await axios.get(`${config.app.backend_url()}/post`, {
+        params: filterByUser ? { sender: auth._id } : {},
+      });
       const postsData = response.data as Post[];
       setPosts(postsData);
 
@@ -93,7 +98,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     loadPosts();
-  }, []);
+  }, [filterByUser]);
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -102,6 +107,21 @@ const Dashboard: React.FC = () => {
       <Box sx={{ display: "flex", flexGrow: 1, mt: "64px", px: 2 }}>
         {/* Main Content */}
         <Box sx={{ flexGrow: 1, maxWidth: "900px" }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Button variant="contained" color="primary" onClick={handleCreatePost}>
+              Create New Post
+            </Button>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={filterByUser}
+                  onChange={() => setFilterByUser(!filterByUser)}
+                  color="primary"
+                />
+              }
+              label="Show My Posts"
+            />
+          </Box>
           <Box sx={{ width: '100%', maxHeight: '60vh', overflowY: 'auto', mt: 4 }}>
             {isLoading ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
@@ -147,9 +167,6 @@ const Dashboard: React.FC = () => {
               </List>
             )}
           </Box>
-          <Button variant="contained" color="primary" onClick={handleCreatePost}>
-            Create New Post
-          </Button>
         </Box>
       </Box>
 
