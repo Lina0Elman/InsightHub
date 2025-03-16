@@ -4,6 +4,7 @@ import { Container, TextField, Button, Typography, Box, Paper, Link, Alert } fro
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import './Login.css';
 import { config } from '../config';
+import { LoginResponse } from '../models/LoginResponse';
 import { auth, googleProvider, facebookProvider } from "../firebase";
 import { signInWithPopup } from "firebase/auth";
 import { useEffect } from 'react';
@@ -16,18 +17,10 @@ const Login: React.FC = () => {
 
 
 
-  interface LoginResponse {
-    email: string; // user.email
-    _id: string; // user._id
-    accessToken: string; // tokens.accessToken
-    refreshToken: string; // tokens.refreshToken
-  }
-
-  // Handle Form Submit (Regular Login)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
 
+    try {
       const response = await axios.post<LoginResponse>(`${config.app.backend_url()}/auth/login`, {
         email,
         password,
@@ -35,10 +28,8 @@ const Login: React.FC = () => {
       setEmail(response.data.email);
 
       // Handle successful login, e.g., save tokens, redirect, etc.
-      localStorage.setItem('email', response.data.email); // Store the email in localStorage
-      localStorage.setItem('accessToken', response.data.accessToken); // Store the token in localStorage
-      localStorage.setItem('refreshToken', response.data.refreshToken); // Store the token in localStorage
-      localStorage.setItem('userId', response.data._id); // Store the user ID in localStorage 
+      localStorage.setItem(config.localStorageKeys.userAuth, JSON.stringify(response.data));
+
       navigate('/dashboard'); // Redirect to dashboard or another page after login
     } catch (error) {
       // Handle login error
@@ -108,7 +99,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="login-background">
+    <div className="login-container">
       <Container component="main" maxWidth="xs">
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 8 }}>
           <Typography component="h1" variant="h3" gutterBottom>

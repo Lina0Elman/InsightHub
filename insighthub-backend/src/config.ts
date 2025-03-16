@@ -27,5 +27,9 @@ export const config = {
     firebase: {
         apiKey: () => process.env.FIREBASE_API_KEY,
         authDomain: () => process.env.FIREBASE_AUTH_DOMAIN,
+    },
+    resources: {
+        imagesDirectoryPath: () => 'resources/images',
+        imageMaxSize: () => 10 * 1024 * 1024 // Max file size: 10MB
     }
 }

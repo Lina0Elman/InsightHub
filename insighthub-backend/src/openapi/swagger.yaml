@@ -11,6 +11,8 @@ tags:
     description: Operations related to comments on posts
   - name: Authentication
     description: Operations related to authentication tokens
+  - name: Resources
+    description: Operations related to uploading & downloading resources
 
 paths:
   # Post Routes
@@ -122,6 +124,67 @@ paths:
           description: Bad request - Invalid postId
         '404':
           description: Not found - The postId does not exist
+
+  /post/{postId}/like:
+    put:
+      tags:
+        - Posts
+      security:
+        - BearerAuth: []
+      summary: Update like status for a specific post
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the post to like or unlike
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: boolean
+              description: Indicates whether to like (true) or unlike (false) the post
+      responses:
+        '200':
+          description: Like status updated successfully
+        '400':
+          description: Bad request - Invalid post ID or missing required fields
+          content:
+            text/plain:
+              examples:
+                default:
+                  value: "Bad Request"
+                booleanBody:
+                  value: "Bad Request. Body accepts `true` or `false` values only"
+        '401':
+          description: Unauthorized - Missing token
+        '403':
+          description: Forbidden - Invalid or expired token
+        '404':
+          description: Post not found
+
+  /post/like:
+    get:
+      tags:
+        - Posts
+      security:
+        - BearerAuth: []
+      summary: Retrieve liked posts for a specific user
+      responses:
+        '200':
+          description: A list of liked posts for the specified user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '400':
+          description: Bad request - Invalid userId
+        '401':
+          description: Unauthorized - Missing token
 
   # Comment Routes
   /comment:
@@ -307,6 +370,9 @@ paths:
               schema:
                 type: object
                 properties:
+                  email:
+                    type: string
+                    format: email
                   accessToken:
                     type: string
                   refreshToken:
@@ -368,6 +434,72 @@ paths:
           description: Successfully logged out
         '401':
           description: Invalid refresh token
+
+  /resource/image:
+    post:
+      tags:
+        - Resources
+      summary: Upload an image
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Image uploaded successfully
+          content:
+            text/plain:
+              schema:
+                description: The name of the uploaded file
+                type: string                
+        '400':
+          description: Bad request
+          content:
+            text/plain:
+              examples:
+                fileTooLarge:
+                  value: "File too large"
+                invalidFileType:
+                  value: "Invalid file type. Only images are allowed: /jpeg|jpg|png|gif/"
+                noFileUploaded:
+                  value: "No file uploaded"
+        '500':
+          description: Internal server error
+
+  /resource/image/{filename}:
+    get:
+      tags:
+        - Resources
+      summary: Retrieve an image
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the image file to retrieve
+      responses:
+        '200':
+          description: Image retrieved successfully
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Image not found
+        '500':
+          description: Internal server error
 
 components:
   schemas:
