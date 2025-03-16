@@ -21,7 +21,7 @@ const App: React.FC = () => {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Router>
-      <Footer/>
+      <Footer />
     </>
   );
 };
