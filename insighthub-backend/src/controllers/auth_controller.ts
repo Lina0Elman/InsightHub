@@ -235,21 +235,29 @@ export const authMiddleware = (req, res, next: NextFunction) => {
 };
 
 // Google & Facebook Authentication (using Firebase)
-const socialAuth = async (req, res) => {
+export const socialAuth = async (req, res) => {
     try {
+        console.log("Received request body:", req.body); // Log the received request
+
         const { idToken, authProvider } = req.body;
         if (!idToken) {
+            console.error("Missing idToken"); // Debugging line
             return res.status(400).json({ message: 'Missing idToken' });
         }
         if (!authProvider) {
+            console.error("Missing authProvider"); // Debugging line
             return res.status(400).json({ message: 'Missing authProvider' });
         }
 
         // Verify the token using Firebase Admin SDK
         const decodedToken = await admin.auth().verifyIdToken(idToken);
         if (!decodedToken.email) {
+            console.error("Invalid token - No email found"); // Debugging line
             return res.status(400).json({ message: 'Invalid token' });
         }
+
+        console.log("Decoded Firebase Token:", decodedToken); // Debugging line
+
 
         const email = decodedToken.email;
         let user = await userModel.findOne({ email });
@@ -261,15 +269,15 @@ const socialAuth = async (req, res) => {
                 authProvider,
             });
         }
-
-        // Generate tokens and return
         const tokens = generateTokens(user._id.toString());
-        return res.status(200).json({ message: 'Authentication successful', tokens });
+        console.log("Sending response:", { tokens });
+
+        return res.status(200).json({ message: "Authentication successful", tokens });
     } catch (error) {
-        return res.status(400).json({ message: 'Authentication failed', error });
+        console.error("Authentication failed:", error);
+        return res.status(400).json({ message: "Authentication failed", error });
     }
 };
 
-export { socialAuth };
 
 export default { register, login, refresh, logout };

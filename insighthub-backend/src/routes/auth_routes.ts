@@ -12,6 +12,6 @@ router.post('/logout', Auth.logout);
 router.post('/refresh', Auth.refresh);
 
 // Google & Facebook authentication
-router.post('/auth/social', socialAuth);
+router.post('/social', socialAuth);
 
 export default router;

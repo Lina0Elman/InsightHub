@@ -4,6 +4,8 @@ import { Container, TextField, Button, Typography, Box, Paper, Link, Alert } fro
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import './Register.css';
 import { config } from '../config';
+import { signInWithPopup } from 'firebase/auth';
+import { auth, facebookProvider, googleProvider } from '../firebase';
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -13,6 +15,7 @@ const Register: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
+  // Handle Form Submit (Regular Registration)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -38,6 +41,61 @@ const Register: React.FC = () => {
     }
   };
 
+
+  const handleGoogleSignup = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      const idToken = await user.getIdToken();
+
+      console.log("Google ID Token:", idToken); // Debugging
+      console.log("Sending request to backend:", {
+        idToken,
+        authProvider: "google",
+      });
+
+      // Send Firebase token to backend
+      const res = await axios.post(`${config.app.backend_url()}/auth/social`, {
+        idToken,
+        authProvider: "google",
+      });
+
+      console.log("Backend Response:", res.data); // Debugging
+
+      const data = res.data as { tokens: { accessToken: string, refreshToken: string } };
+      localStorage.setItem("email", user.email!);
+      localStorage.setItem("accessToken", data.tokens.accessToken);
+      localStorage.setItem("refreshToken", data.tokens.refreshToken);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Google signup failed:", error);
+
+      setError("Google signup failed.");
+    }
+  };
+
+  // Facebook Signup
+  const handleFacebookSignup = async () => {
+    try {
+      const result = await signInWithPopup(auth, facebookProvider);
+      const user = result.user;
+      const idToken = await user.getIdToken();
+
+      // Send Firebase token to backend
+      const res = await axios.post(`${config.app.backend_url()}/auth/social`, {
+        idToken,
+        authProvider: "facebook",
+      });
+
+      const data = res.data as { tokens: { accessToken: string, refreshToken: string } };
+      localStorage.setItem("email", user.email!);
+      localStorage.setItem("accessToken", data.tokens.accessToken);
+      localStorage.setItem("refreshToken", data.tokens.refreshToken);
+      navigate("/dashboard");
+    } catch (error) {
+      setError("Facebook signup failed.");
+    }
+  };
   return (
     <div className="register-background">
       <Container component="main" maxWidth="xs">
@@ -105,6 +163,14 @@ const Register: React.FC = () => {
                   Login
                 </Link>
               </Typography>
+            </Box>
+            <Box sx={{ mt: 2, textAlign: "center" }}>
+              <Button variant="contained" color="error" fullWidth sx={{ mb: 1 }} onClick={handleGoogleSignup}>
+                Sign Up with Google
+              </Button>
+              <Button variant="contained" color="primary" fullWidth onClick={handleFacebookSignup}>
+                Sign Up with Facebook
+              </Button>
             </Box>
           </Paper>
         </Box>

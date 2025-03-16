@@ -17,7 +17,7 @@ app.use(cors({
     origin: [config.app.frontend_url(), config.app.backend_url()],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, // Allow cookies to be sent with requests
-  }));
+}));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

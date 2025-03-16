@@ -1,3 +1,15 @@
+import admin from "firebase-admin";
+import * as dotenv from "dotenv";
+import serviceAccount from "./firebase-adminsdk.json";
+
+dotenv.config();
+
+if (!admin.apps.length) {
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+    });
+}
+
 export const config = {
     mongo: {
         uri: () => process.env.DB_CONNECTION || 'mongodb://localhost:27017'

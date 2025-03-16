@@ -4,6 +4,9 @@ import { Container, TextField, Button, Typography, Box, Paper, Link, Alert } fro
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import './Login.css';
 import { config } from '../config';
+import { auth, googleProvider, facebookProvider } from "../firebase";
+import { signInWithPopup } from "firebase/auth";
+import { useEffect } from 'react';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -13,19 +16,17 @@ const Login: React.FC = () => {
 
 
 
+  interface LoginResponse {
+    email: string; // user.email
+    _id: string; // user._id
+    accessToken: string; // tokens.accessToken
+    refreshToken: string; // tokens.refreshToken
+  }
+
+  // Handle Form Submit (Regular Login)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
-
-
-
-      interface LoginResponse {
-        email: string; // user.email
-        _id: string; // user._id
-        accessToken: string; // tokens.accessToken
-        refreshToken: string; // tokens.refreshToken
-      }
 
       const response = await axios.post<LoginResponse>(`${config.app.backend_url()}/auth/login`, {
         email,
@@ -33,15 +34,12 @@ const Login: React.FC = () => {
       });
       setEmail(response.data.email);
 
-
       // Handle successful login, e.g., save tokens, redirect, etc.
       localStorage.setItem('email', response.data.email); // Store the email in localStorage
       localStorage.setItem('accessToken', response.data.accessToken); // Store the token in localStorage
       localStorage.setItem('refreshToken', response.data.refreshToken); // Store the token in localStorage
       localStorage.setItem('userId', response.data._id); // Store the user ID in localStorage 
-      
       navigate('/dashboard'); // Redirect to dashboard or another page after login
-
     } catch (error) {
       // Handle login error
       const err = error as any;
@@ -50,6 +48,62 @@ const Login: React.FC = () => {
       } else {
         setError('An error occurred. Please try again.');
       }
+    }
+  };
+
+  // Google Login
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      const idToken = await user.getIdToken(); // Get Firebase ID Token
+
+      // Send the token to the backend for authentication
+      const res = await axios.post(`${config.app.backend_url()}/auth/social`, {
+        idToken,
+        authProvider: "google",
+      });
+
+      console.log("Backend Response:", res.data); // Debugging line
+
+
+      const data = res.data as { tokens: { accessToken: string; refreshToken: string } };
+      localStorage.setItem("email", user.email!);
+      localStorage.setItem("accessToken", data.tokens.accessToken);
+      localStorage.setItem("refreshToken", data.tokens.refreshToken);
+
+
+      const token = localStorage.getItem("accessToken");
+      if (token) {
+        console.log("Redirecting to dashboard...");
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.error("Google login failed:", error);
+      setError("Google login failed.");
+    }
+  };
+
+  // Facebook Login
+  const handleFacebookLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, facebookProvider);
+      const user = result.user;
+      const idToken = await user.getIdToken(); // Get Firebase ID Token
+
+      // Send the token to the backend for authentication
+      const res = await axios.post(`${config.app.backend_url()}/auth/social`, {
+        idToken,
+        authProvider: "facebook",
+      });
+
+      const data = res.data as { tokens: { accessToken: string; refreshToken: string } };
+      localStorage.setItem("email", user.email!);
+      localStorage.setItem("accessToken", data.tokens.accessToken);
+      localStorage.setItem("refreshToken", data.tokens.refreshToken);
+      navigate("/dashboard");
+    } catch (error) {
+      setError("Facebook login failed.");
     }
   };
 
@@ -109,6 +163,15 @@ const Login: React.FC = () => {
                 </Link>
               </Typography>
             </Box>
+            <Box sx={{ mt: 2, textAlign: "center" }}>
+              <Button variant="contained" color="error" fullWidth sx={{ mb: 1 }} onClick={handleGoogleLogin}>
+                Login with Google
+              </Button>
+              <Button variant="contained" color="primary" fullWidth onClick={handleFacebookLogin}>
+                Login with Facebook
+              </Button>
+            </Box>
+
           </Paper>
         </Box>
       </Container>
