@@ -13,5 +13,9 @@ export const config = {
         salt: () => process.env.SALT || 10,
         access_token_secret: () => process.env.ACCESS_TOKEN_SECRET || 'secret',
         refresh_token_secret: () => process.env.REFRESH_TOKEN_SECRET || 'secret'
+    },
+    resources: {
+        imagesDirectoryPath: () => 'resources/images',
+        imageMaxSize: () => 10 * 1024 * 1024 // Max file size: 10MB
     }
 }

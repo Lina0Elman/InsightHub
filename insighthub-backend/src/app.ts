@@ -12,6 +12,8 @@ import cors from 'cors';
 import {config} from "./config/config";
 import validateUser from "./middleware/validateUser";
 import loadOpenApiFile from "./openapi/openapi_loader";
+import resource_routes from './routes/resources_routes';
+
 
 const specs = swaggerJsdoc(options);
 
@@ -23,14 +25,18 @@ app.use(cors({
     credentials: true, // Allow cookies to be sent with requests
 }));
 
-// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
-
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(loadOpenApiFile() as JsonObject));
 
+// Error handler for invalid JSON
+app.use((err, req, res, next) => {
+    if (err instanceof SyntaxError) {
+        return res.status(400).send('Invalid JSON syntax');
+    }
+    next(err);
+});
 
 // Add Authentication for all routes except the ones listed below
 app.use(authenticateToken.unless({
@@ -58,5 +64,7 @@ app.use('/comment', commentsRoutes);
 app.use('/post', postsRoutes);
 app.use("/user/:id", validateUser);
 app.use('/user', usersRoutes);
+app.use('/resource', resource_routes);
+
 
 export default app;
