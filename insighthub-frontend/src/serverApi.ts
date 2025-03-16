@@ -1,7 +1,8 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import axios, {AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import {config} from './config';
 import {LoginResponse} from "./models/LoginResponse.ts";
 import {getUserAuth} from "./handlers/userAuth.ts";
+
 
 // Create an Axios instance
 const api: AxiosInstance = axios.create({
@@ -9,7 +10,7 @@ const api: AxiosInstance = axios.create({
 });
 
 // Add a request interceptor
-api.interceptors.request.use((axiosConfig: AxiosRequestConfig): AxiosRequestConfig => {
+api.interceptors.request.use((axiosConfig: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
     const authData: LoginResponse = getUserAuth();
 
     if (authData) {
