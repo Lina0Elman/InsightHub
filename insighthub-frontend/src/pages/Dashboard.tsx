@@ -78,7 +78,7 @@ const Dashboard: React.FC = () => {
               <List>
                 {posts.map((post) => (
                   <React.Fragment key={post._id}>
-                    <Card sx={{ mb: 2 }}>
+                    <Card sx={{ mb: 2, width: '80vh' }}>
                       <CardContent>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                           <Avatar sx={{ mr: 2 }}>{post.sender.charAt(0)}</Avatar> {/* make the avatar either the profile pic or the curr one */}

@@ -59,7 +59,7 @@ const NewPost: React.FC = () => {
         <Typography component="h1" variant="h4" gutterBottom>
           Create New Post
         </Typography>
-        <form onSubmit={handleSubmit} style={{ width: '100%', overflowY: 'scroll', height: '60vh', marginTop: '1rem' }}>
+        <form onSubmit={handleSubmit} style={{ width: '90vh', overflowY: 'scroll', height: '60vh', marginTop: '1rem' }}>
           <input
             type="text"
             placeholder="Title"
