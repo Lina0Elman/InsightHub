@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Typography, Box, Paper, CircularProgress, TextField, Button, Avatar, Divider, IconButton, Collapse, Badge } from '@mui/material';
-import { ArrowBack, Comment as CommentIcon, ThumbUp as ThumbUpIcon } from '@mui/icons-material';
+import { ArrowBack, Comment as CommentIcon, ThumbUp as ThumbUpIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import axios from 'axios';
 import { config } from '../config';
 import { Post } from '../models/Post';
@@ -53,6 +53,19 @@ const PostDetails: React.FC = () => {
       setNewComment('');
     } catch (err) {
       console.error('Failed to add comment:', err);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      await axios.delete(`${config.app.backend_url()}/comment/${commentId}`, {
+        headers: {
+          Authorization: `Bearer ${auth.accessToken}`,
+        },
+      });
+      setComments(comments.filter(comment => comment._id !== commentId));
+    } catch (err) {
+      console.error('Failed to delete comment:', err);
     }
   };
 
@@ -109,9 +122,14 @@ const PostDetails: React.FC = () => {
                     <Box key={comment._id} sx={{ mb: 2 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                         <Avatar sx={{ mr: 2 }}>{comment.sender.charAt(0)}</Avatar>
-                        <Typography variant="body2" color="text.primary">
+                        <Typography variant="body2" color="text.primary" sx={{ flexGrow: 1 }}>
                           {comment.sender}
                         </Typography>
+                        {comment.sender === auth._id && (
+                          <IconButton aria-label="delete" onClick={() => handleDeleteComment(comment._id)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        )}
                       </Box>
                       <Typography variant="body2" color="text.secondary">
                         {comment.content}
