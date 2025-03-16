@@ -7,6 +7,8 @@ import './App.css'
 import Dashboard from './pages/Dashboard';
 import Footer from './components/Footer';
 import RequireAuth from './hoc/RequireAuth';
+import NewPost from './pages/NewPost';
+
 
 const App: React.FC = () => {
   return (
@@ -18,6 +20,7 @@ const App: React.FC = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/new-post" element={<NewPost />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Router>
