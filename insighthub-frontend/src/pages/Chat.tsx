@@ -11,6 +11,7 @@ const Chat: React.FC = () => {
   const [messageContent, setMessageContent] = useState('');
   const [room, setRoom] = useState<Room>({ _id: null, messages: [] });
   const [onlineUsers, setOnlineUsers] = useState([] as LoginResponse[]);
+  const usersMetadataCacheRef = useRef(new Set<any>());
   const socketRef = useRef(null as any);
   const userAuthRef = useRef(JSON.parse(localStorage.getItem(config.localStorageKeys.userAuth) as string) as LoginResponse);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -33,6 +34,9 @@ const Chat: React.FC = () => {
 
     socketRef.current.on(config.socketMethods.onlineUsers, (receivedOnlineUsers: LoginResponse[]) => {
       setOnlineUsers(receivedOnlineUsers);
+      receivedOnlineUsers.forEach(user => {
+        usersMetadataCacheRef.current.add(user);
+      });
     });
   };
 
@@ -96,7 +100,7 @@ const Chat: React.FC = () => {
                 room.messages.map((m: any, index: any) => (
                     <div key={index} className="message">
                         <div className="message-header">
-                            <span className="message-user">{m?.userId}</span>
+                            <span className="message-user">{Array.from(usersMetadataCacheRef.current).find(u => u._id == m?.userId)?.email}</span>
                             <span className="message-time">{new Date(m?.createdAt).toLocaleTimeString()}</span>
                         </div>
                         <div className="message-content">{m?.content}</div>
