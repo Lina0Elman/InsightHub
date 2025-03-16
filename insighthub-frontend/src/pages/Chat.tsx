@@ -65,18 +65,32 @@ const Chat: React.FC = () => {
 
   return (
     <div className="chat-container">
-        <input type="text" onChange={(e) => setMessageContent(e.target.value)} value={messageContent} />
+      <div className="message-input">
+        <input
+          type="text"
+          onChange={(e) => setMessageContent(e.target.value)}
+          value={messageContent}
+          placeholder="Type your message..."
+        />
+        <button onClick={() => sendMessageHandler()}>Send</button>
+      </div>
 
-        <button onClick={() => sendMessageHandler()}>Send Message</button>
+      <div className="chat-messages">
+        {room.messages.map((m: any, index: any) => (
+          <div key={index} className="message">
+            <div className="message-header">
+              <span className="message-user">{m?.userId}</span>
+              <span className="message-time">{new Date(m?.createdAt).toLocaleTimeString()}</span>
+            </div>
+            <div className="message-content">{m?.content}</div>
+          </div>
+        ))}
+      </div>
 
-        <div className="Container">
-          {room.messages.map((m: any, index: any) => <div key={index}>[{m?.userId}]:[{m?.createdAt}] {m?.content}</div>)}
-        </div>
-
-        <div className="Container">
-          <h3>Online Users: </h3>
-          <DividedList onlineUsers={onlineUsers} onUserClick={onUserClick} />
-        </div>
+      <div className="online-users">
+        <h3>Online Users:</h3>
+        <DividedList onlineUsers={onlineUsers} onUserClick={onUserClick} />
+      </div>
     </div>
   );
 };
