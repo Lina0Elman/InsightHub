@@ -1,10 +1,11 @@
 import multer from 'multer';
-import { config } from '../config';
+import { config } from '../config/config';
 import fs from 'fs';
 import path from 'path';
 import { uploadImage } from '../services/resources_service';
+import { Request, Response } from 'express';
 
-const createImageResource = async (req, res) => {
+const createImageResource = async (req: Request, res: Response) => {
     const upload = uploadImage.single('file');
     upload(req, res, error => {
         if (error instanceof multer.MulterError) {
@@ -21,7 +22,7 @@ const createImageResource = async (req, res) => {
     })
 };
 
-const getImageResource = async (req, res) => {
+const getImageResource = async (req: Request, res: Response) => {
     try {
         const { filename } = req.params;
         const imagePath = path.resolve(config.resources.imagesDirectoryPath(), filename);

@@ -4,6 +4,7 @@ import {ClientSession, Document} from 'mongoose';
 import * as mongoose from 'mongoose';
 import * as commentsService from './comments_service';
 import {UserModel} from "../models/user_model";
+import likeModel from "../models/like_model";
 
 
 const postToPostData = (post: Document<unknown, {}, IPost> & IPost): PostData => {
@@ -115,3 +116,57 @@ export const postExists = async (postId: string): Promise<boolean> => {
     const post = await PostModel.exists({ _id: postId }).exec();
     return post !== null;
 };
+
+export const updatePostLike = async (postId: string, booleanValue: string, userId: string): Promise<void> => {
+    const post = await getPostById(postId);
+    if(post != null) {
+        if (booleanValue == "true") {
+            // Upsert
+            await likeModel.updateOne({
+                    userId: new mongoose.Types.ObjectId(userId),
+                    postId: post?.id
+                },
+                {},
+                {upsert: true}
+            );
+        } else {
+            // Delete like document if exists
+            await likeModel.findOneAndDelete({
+                userId: new mongoose.Types.ObjectId(userId),
+                postId: post?.id
+            });
+        }
+    }
+    else{
+        throw new Error("Post not found")
+    }
+}
+
+export const getLikedPostsByUser = async (userId: string) => {
+    const likedPostsByUserId = await likeModel.aggregate([
+        {
+            $match: {
+                userId: new mongoose.Types.ObjectId(userId)
+            }
+        },
+        {
+            $lookup: {
+                from: 'posts',
+                localField: 'postId',
+                foreignField: '_id',
+                as: 'post'
+            }
+        },
+        {
+            $unwind: {
+                path: '$post'
+            }
+        },
+        {
+            $replaceRoot: {
+                newRoot: '$post'
+            }
+        }
+    ]);
+    return likedPostsByUserId;
+}

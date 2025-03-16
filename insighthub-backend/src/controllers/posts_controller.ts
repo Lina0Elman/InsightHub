@@ -5,9 +5,8 @@ import {CustomRequest} from "types/customRequest";
 import {PostData} from "types/post_types";
 import likeModel from '../models/like_model';
 import mongoose from 'mongoose';
-import postModel from '../models/posts_model';
+import {getLikedPostsByUser, postExists, updatePostLike} from "../services/posts_service";
 
-import {getPostsByUsername} from "../services/posts_service";
 
 export const addPost = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
@@ -93,71 +92,37 @@ export const updatePost = async (req: CustomRequest, res: Response): Promise<voi
     }
 };
 
-const updateLikeByPostId = async (req, res) => {
+export const updateLikeByPostId = async (req: CustomRequest, res: Response): Promise<void> => {
+    const userId = req.user.id;
     const id = req.params.id;
-    const booleanValue = req.body;
+    // TODO - change to json with a boolean value
+    const booleanValue: any = req.body;
     try {
-        if (booleanValue != "false" && booleanValue != "true") {
-            return res.status(400).send("Bad Request. Body accepts `true` or `false` values only");
+        if (booleanValue instanceof String && booleanValue != "false" && booleanValue != "true") {
+            res.status(400).send("Bad Request. Body accepts `true` or `false` values only");
         }
-        const oldPost = await postModel.findById(id);
+
+        const oldPost = await postExists(id);
         if (oldPost == null) {
-            return res.status(404).send('Post not found');
+            res.status(404).send('Post not found');
         }
 
-        if (booleanValue == "true") {
-            // Upsert
-            await likeModel.updateOne({
-                    userId: new mongoose.Types.ObjectId(req.query.userId),
-                    postId: oldPost._id
-                },
-                {},
-                { upsert: true }
-            );
-        } else {
-            // Delete document if exists
-            await likeModel.findOneAndDelete({
-                userId: new mongoose.Types.ObjectId(req.query.userId),
-                postId: oldPost._id
-            });
-        }
+        await updatePostLike(id, booleanValue, userId)
 
-        return res.status(200).send("Success");
-    } catch(error) {
-        res.status(400).send("Bad Request");
+        res.status(200).send("Success");
+    } catch(err) {
+        handleError(err, res);
     }
 }
-const getLikedPosts =  async (req, res) => {
-    try {
-        const likedPostsByUserId = await likeModel.aggregate([
-            {
-                $match: {
-                    userId: new mongoose.Types.ObjectId(req.query.userId)
-                }
-            },
-            {
-                $lookup: {
-                    from: 'posts',
-                    localField: 'postId',
-                    foreignField: '_id',
-                    as: 'post'
-                }
-            },
-            {
-                $unwind: {
-                    path: '$post'
-                }
-            },
-            {
-                $replaceRoot: {
-                    newRoot: '$post'
-                }
-            }
-        ]);
 
-        return res.status(200).send(likedPostsByUserId);
-    } catch(error){
-        res.status(400).send("Bad Request");
+export const getLikedPosts =  async (req: CustomRequest, res: Response): Promise<void> => {
+    try {
+        const userId = req.user.id;
+        const likedPostsByUserId = await  getLikedPostsByUser(userId)
+
+        res.status(200).send(likedPostsByUserId);
+    } catch(err){
+        handleError(err, res);
     }
 }
 
@@ -177,4 +142,4 @@ export const deletePostById = async (req: Request, res: Response): Promise<void>
     }
 };
 
-export default {getAllPosts, getLikedPosts, createPost, getPostById, updatePostById, updateLikeByPostId};
+

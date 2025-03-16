@@ -27,7 +27,7 @@ describe('loadOpenApiFile', () => {
 
         // Assert: Check if the error is returned
         expect(result).toBeInstanceOf(Error);
-        expect(result.message).toBe('File not found');
+        expect((result as Error).message).toBe('File not found');
     });
 
 }); 

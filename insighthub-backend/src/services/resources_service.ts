@@ -1,4 +1,4 @@
-import { config } from '../config';
+import { config } from '../config/config';
 import multer from 'multer';
 import path from 'path';
 import { randomUUID } from 'crypto';
@@ -23,6 +23,7 @@ const createImagesStorage = () => {
         }
     });
 
+    // TODO - consider to make a Promise
     const uploadImage = multer({
         storage: imagesStorage,
         limits: {

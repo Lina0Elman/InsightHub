@@ -30,13 +30,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(loadOpenApiFile() as JsonObject));
 
-// Error handler for invalid JSON
-app.use((err, req, res, next) => {
-    if (err instanceof SyntaxError) {
-        return res.status(400).send('Invalid JSON syntax');
-    }
-    next(err);
-});
 
 // Add Authentication for all routes except the ones listed below
 app.use(authenticateToken.unless({
@@ -49,7 +42,8 @@ app.use(authenticateToken.unless({
         { url: /^\/comment\/[^\/]+$/, methods: ['GET'] },  // Match /comment/{anything} for GET
         { url: /^\/comment\/post\/[^\/]+$/, methods: ['GET'] },  // Match /comment/post/{anything} for GET
         { url: '/comment', methods: ['GET'] },
-        { url: '/post', methods: ['GET'] }  // Allow GET to /post
+        { url: '/post', methods: ['GET'] },  // Allow GET to /post
+        { url: /^\/image\/[^\/]+$/, methods: ['GET'] },  // Allow GET to /image/{anything}
     ]
 }));
 
