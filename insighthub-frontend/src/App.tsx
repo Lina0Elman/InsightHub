@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Footer from './components/Footer';
 import RequireAuth from './hoc/RequireAuth';
 import NewPost from './pages/NewPost';
+import PostDetails from './pages/PostDetails';
 
 
 const App: React.FC = () => {
@@ -21,6 +22,7 @@ const App: React.FC = () => {
           <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/new-post" element={<NewPost />} />
+          <Route path="/post/:postId" element={<PostDetails />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Router>

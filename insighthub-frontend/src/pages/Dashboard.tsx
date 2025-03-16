@@ -59,7 +59,8 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleOpenDialog = (postId: string) => {
+  const handleOpenDialog = (e: React.FormEvent, postId: string) => {
+    e.stopPropagation();
     setPostIdToDelete(postId);
     setOpenDialog(true);
   };
@@ -133,7 +134,16 @@ const Dashboard: React.FC = () => {
               <List>
                 {posts.map((post) => (
                   <React.Fragment key={post._id}>
-                    <Card sx={{ mb: 2, width: '80vh' }}>
+                    <Card sx={{ 
+                      mb: 2,
+                      width: '80vh',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s, box-shadow 0.2s',
+                      '&:hover': {
+                        boxShadow: 3,
+                        backgroundColor: 'rgba(0, 0, 0, 0.03)',
+                      },
+                    }} onClick={() => navigate(`/post/${post._id}`)}>
                       <CardContent>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                           <Avatar sx={{ mr: 2 }}>{post.sender.charAt(0)}</Avatar> {/* make the avatar either the profile pic or the curr one */}
@@ -156,7 +166,7 @@ const Dashboard: React.FC = () => {
                           </Badge>
                         </IconButton>
                         {post.sender === auth._id && (
-                          <IconButton aria-label="delete" onClick={() => handleOpenDialog(post._id)}>
+                          <IconButton aria-label="delete" onClick={(e) => handleOpenDialog(e, post._id)}>
                             <Delete />
                           </IconButton>
                         )}
