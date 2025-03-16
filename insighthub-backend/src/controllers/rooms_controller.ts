@@ -47,9 +47,15 @@ const getRoomByUserIds = async (req, res) => {
         }
 
         // Room not found, create one.
-        const newRoom = await roomModel.create(
-            { userIds: [new mongoose.Types.ObjectId(receiverUserId), initiatorUserId]});
-        room = {...newRoom, messages: []};
+        const newRoom = await roomModel.create({
+            userIds: [
+                new mongoose.Types.ObjectId(receiverUserId),
+                new mongoose.Types.ObjectId(initiatorUserId)
+            ]
+        });
+
+        room = newRoom.toObject();
+        room.messages = [];
         return res.status(201).send(room);
     }catch(error){
         res.status(400).send("Bad Request");
