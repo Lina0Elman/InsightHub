@@ -2,10 +2,10 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Profile from './pages/Profile';
 import './App.css'
 import Dashboard from './pages/Dashboard';
 import Footer from './components/Footer';
-import Profile from './components/Profile';
 import RequireAuth from './hoc/RequireAuth';
 
 const App: React.FC = () => {

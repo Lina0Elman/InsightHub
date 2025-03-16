@@ -44,6 +44,21 @@ const createImagesStorage = () => {
     return uploadImage;
 };
 
-const uploadImage = createImagesStorage();
+const uploadImage = (req) : Promise<string> => {
+    return new Promise<string>((resolve, reject) => {
+        createImagesStorage().single('file')(req, {}, (error) => {
+            if (error) {
+                if (error instanceof multer.MulterError || error instanceof TypeError) {
+                    return reject(error);
+                } else if (!req.file) {
+                    return reject(new TypeError('No file uploaded.'));
+                } else {
+                    return reject(new Error('Internal Server Error'));
+                }
+            }
+            resolve(req.file.filename);
+        });
+    });
+};
 
 export { uploadImage };

@@ -13,6 +13,9 @@ const userSchema = new Schema({
         type: String,
         required: true
     },
+    imageFilename: {
+        type: String
+    },
     refreshTokens: {
         type: [String],
         default: [] // refresh tokens per user

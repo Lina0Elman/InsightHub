@@ -3,4 +3,5 @@ export interface LoginResponse {
     _id: string;
     accessToken: string;
     refreshToken: string;
+    imageFilename: string;
 }
