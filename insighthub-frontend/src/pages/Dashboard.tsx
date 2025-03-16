@@ -56,7 +56,8 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleOpenDialog = (postId: string) => {
+  const handleOpenDialog = (e: React.FormEvent, postId: string) => {
+    e.stopPropagation();
     setPostIdToDelete(postId);
     setOpenDialog(true);
   };
@@ -145,7 +146,7 @@ const Dashboard: React.FC = () => {
                           </Badge>
                         </IconButton>
                         {post.sender === auth._id && (
-                          <IconButton aria-label="delete" onClick={() => handleOpenDialog(post._id)}>
+                          <IconButton aria-label="delete" onClick={(e) => handleOpenDialog(e, post._id)}>
                             <Delete />
                           </IconButton>
                         )}
