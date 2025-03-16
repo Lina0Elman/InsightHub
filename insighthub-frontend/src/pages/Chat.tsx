@@ -8,7 +8,7 @@ import { Room } from '../models/Room';
 import axios from 'axios';
 
 const Chat: React.FC = () => {
-  const [message, setMessage] = useState('');
+  const [messageContent, setMessageContent] = useState('');
   const [room, setRoom] = useState<Room>({ _id: null, messages: [] });
   const [onlineUsers, setOnlineUsers] = useState([] as LoginResponse[]);
   const socketRef = useRef(null as any);
@@ -44,8 +44,8 @@ const Chat: React.FC = () => {
 
   const sendMessageHandler = () => {
     if (room._id) {
-      socketRef.current.emit(config.socketMethods.messageFromClient, { roomId: room._id, message: message });
-      setMessage('');
+      socketRef.current.emit(config.socketMethods.messageFromClient, { roomId: room._id, messageContent: messageContent });
+      setMessageContent('');
     }
   };
 
@@ -65,12 +65,12 @@ const Chat: React.FC = () => {
 
   return (
     <div className="chat-container">
-        <input type="text" onChange={(e) => setMessage(e.target.value)} value={message} />
+        <input type="text" onChange={(e) => setMessageContent(e.target.value)} value={messageContent} />
 
         <button onClick={() => sendMessageHandler()}>Send Message</button>
 
         <div className="Container">
-          {room.messages.map((m: any, index: any) => <div key={index}>{m}</div>)}
+          {room.messages.map((m: any, index: any) => <div key={index}>[{m?.userId}]:[{m?.createdAt}] {m?.content}</div>)}
         </div>
 
         <div className="Container">

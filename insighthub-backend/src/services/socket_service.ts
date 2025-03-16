@@ -1,5 +1,6 @@
 import { config } from "../config";
 import userModel from "../models/user_model";
+import messageModel from "../models/message_model";
 
 const onlineUsers = new Map();
 
@@ -21,8 +22,14 @@ const initSocket = async (socketListener) => {
         });
 
         // Chat Message
-        socket.on(config.socketMethods.messageFromClient, ({ roomId, message }) => {
-            socketListener.to(roomId).emit(config.socketMethods.messageFromServer, { roomId, message });
+        socket.on(config.socketMethods.messageFromClient, async ({ roomId, messageContent }) => {
+            // Persist message in db
+            const messageToInsert = { userId: socket.userId, roomId: roomId, content: messageContent, createdAt: new Date().toISOString() };
+            await new messageModel(messageToInsert).validate();
+            const insertedMessage = await messageModel.create(messageToInsert);
+
+            // Emit mesage
+            socketListener.to(roomId).emit(config.socketMethods.messageFromServer, { roomId, message: insertedMessage });
         });
 
         // Online users
