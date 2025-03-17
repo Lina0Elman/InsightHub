@@ -602,6 +602,60 @@ paths:
           $ref: '#/components/responses/UserNotFound'
 
 
+  /resource/image/user:
+    post:
+      tags:
+        - Resources
+      summary: Upload an image for a user
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Image uploaded successfully and associated with the user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    description: The unique identifier of the user
+                  email:
+                    type: string
+                    description: The email of the user
+                  imageFilename:
+                    type: string
+                    description: The filename of the uploaded image
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+        '400':
+          description: Bad request
+          content:
+            text/plain:
+              examples:
+                fileTooLarge:
+                  value: "File too large"
+                invalidFileType:
+                  value: "Invalid file type. Only images are allowed: /jpeg|jpg|png|gif/"
+                noFileUploaded:
+                  value: "No file uploaded"
+        '404':
+          description: User not found
+        '500':
+          description: Internal server error
+
   /resource/image:
     post:
       tags:

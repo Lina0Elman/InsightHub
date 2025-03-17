@@ -14,6 +14,9 @@ const userSchema: Schema = new Schema({
         type: String,
         required: true
     }, // Store hashed passwords
+    imageFilename: {
+        type: String
+    },
     createdAt: {
         type: Date,
         default: Date.now

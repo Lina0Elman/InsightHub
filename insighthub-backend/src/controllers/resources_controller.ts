@@ -22,6 +22,21 @@ const createImageResource = async (req: Request, res: Response) => {
     })
 };
 
+const createUserImageResource = async (req, res) => {
+    try {
+        const imageFilename = await uploadImage(req);
+        const user = await userModel.findById(req.query.userId);
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+        user.imageFilename = imageFilename;
+        await user.save();
+        return res.status(201).send(user);
+    } catch (error) {
+        return res.status(500).send(error.message);
+    }
+};
+
 const getImageResource = async (req: Request, res: Response) => {
     try {
         const { filename } = req.params;
@@ -37,4 +52,4 @@ const getImageResource = async (req: Request, res: Response) => {
     }
 };
 
-export default { createImageResource, getImageResource };
+export default { createUserImageResource, createImageResource, getImageResource };
