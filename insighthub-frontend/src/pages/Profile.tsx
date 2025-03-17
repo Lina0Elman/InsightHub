@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Typography, Box, Button, Alert, TextField, Collapse } from '@mui/material';
 import { ExpandMore, ExpandLess } from '@mui/icons-material';
 import TopBar from '../components/TopBar';
-import {getUserAuth, setUserAuth} from "../handlers/userAuth.ts";
+import {getUserAuth} from "../handlers/userAuth.ts";
 import api from "../serverApi.ts";
 import {UserProfile} from "../models/UserProfile.ts";
 
@@ -16,7 +16,7 @@ const Profile: React.FC = () => {
   const [password, setPassword] = useState('');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const auth = getUserAuth();
-  const [profile, setProfile] = useState<UserProfile>();
+  // const [profile, setProfile] = useState<UserProfile>();
 
   useEffect(() => {
     const fetchProfileImage = async (profile: UserProfile) => {
@@ -34,28 +34,13 @@ const Profile: React.FC = () => {
     const fetchProfile = async () => {
       const response = await api.get(`/user/${getUserAuth().userId}`);
       const userProfile = response.data as UserProfile;
-      setProfile(userProfile);
+      // setProfile(userProfile);
       setUserName(userProfile.username);
       setEmail(userProfile.email);
       return userProfile;
     };
     fetchProfile().then((profile) => fetchProfileImage(profile));
   }, []);
-
-  // useEffect(() => {
-  //   const fetchProfileImage = async () => {
-  //     try {
-  //       const response = await api.get(`/resource/image/${auth.imageFilename}`, {
-  //           responseType: 'blob',
-  //         });
-  //       const imageUrl = URL.createObjectURL(response.data as Blob);
-  //         setImage(imageUrl);
-  //     } catch (error) {
-  //       setError('Error fetching profile image.');
-  //     }
-  //   };
-  //   fetchProfileImage();
-  // }, [auth.imageFilename]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
