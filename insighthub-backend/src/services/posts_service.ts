@@ -20,6 +20,9 @@ export const addPost = async (postData: PostData): Promise<PostData> => {
     const newPost = new PostModel(postData);
     await newPost.save();
     return postToPostData(newPost);
+    // TODO - add a comment using the AIChat, only if a flag is set to true
+    // It will also be async anyway
+    // Need to implement in the client that it will try to retrieve the comments every some time
 };
 
 /***

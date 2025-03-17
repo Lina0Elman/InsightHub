@@ -1,34 +1,45 @@
-import axios from 'axios';
+import axios from "axios";
+
+const cleanResponse = (response: string): string => {
+    return response.replace(/\\boxed{(.*?)}/g, "$1"); // Removes \boxed{}
+}
+
+const API_URL = "https://openrouter.ai/api/v1/chat/completions";
+const API_KEY = process.env.OPENROUTER_API_KEY; // Replace with your actual OpenRouter API key
+
+export const chatWithAI = async (inputUserMessage: string)=> {
+    try {
+
+        const systemMessage = {
+            role: 'system',
+            content: 'You are an AI assistant tasked with providing the first comment on forum posts. Your responses should be relevant, engaging, and encourage further discussion, also must be short, and you must answer if you know the answer. Ensure your comments are appropriate for the content and tone of the post. Also must answer in the language of the user post. answer short answers. dont ask questions to follow up'
+        };
+
+        const userMessage = {
+            role: 'user',
+            content: inputUserMessage
+        };
 
 
-const API_TOKEN = "your_hugging_face_api_token_here";
-const API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-large"; // Use flan-t5-large or falcon-7b-instruct
+        const response = await axios.post(
+            API_URL,
+            {
+                model: "google/gemma-3-27b-it:free",
+                messages: [ systemMessage, userMessage ],
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${API_KEY}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
 
-// Define the pre-context
-const preContext = `You are a helpful assistant on a question-and-answer forum. Your goal is to provide clear, concise, and accurate answers to user questions. If you don't know the answer, politely admit it and encourage other users to contribute. Keep your responses friendly and professional.`;
-
-// Define the user's post (this would come from your app's input)
-const userPost = "What are some good tips for improving productivity?";
-
-// Combine the pre-context and user's post
-const inputText = `${preContext}\n\nUser: ${userPost}`;
-
-// Define the payload for the API request
-const payload = {
-    inputs: inputText,
-};
-
-// Define the headers with your API token
-const headers = {
-    Authorization: `Bearer ${API_TOKEN}`,
-};
-
-// Make the API request
-axios.post(API_URL, payload, { headers })
-    .then((response) => {
-        const generatedText = response.data[0]?.generated_text || "No response generated.";
-        console.log("Chatbot Response:", generatedText);
-    })
-    .catch((error) => {
-        console.error("Error:", error.response ? error.response.data : error.message);
-    });
+        const answer = response.data.choices[0].message.content;
+        const cleanedAnswer = cleanResponse(answer);
+        return cleanedAnswer;
+    } catch (error) {
+        console.error("Error communicating with OpenRouter:", error);
+        return "Sorry, an error occurred.";
+    }
+}
