@@ -1,86 +1,103 @@
-import postModel from '../models/posts_model';
-import commentModel from '../models/comments_model';
-import mongoose from 'mongoose';
+import { Request, Response } from 'express';
+import * as commentsService from '../services/comments_service';
+import * as postsService from '../services/posts_service';
+import { handleError } from '../utils/handle_error';
+import {CommentData} from "types/comment_types";
+import {CustomRequest} from "types/customRequest";
 
-const createComment = async (req, res) => {
-    const comment = req.body;
-    try{
-        if (!comment.postId || !mongoose.Types.ObjectId.isValid(comment.postId)) {
-            return res.status(400).send("Invalid post ID");
-        }
-
-        const post = await postModel.findById(comment.postId);
-        if (!post) {
-            return res.status(404).send('Post not found');
-        }
-        
-        const utcNow = new Date().toISOString();
-        comment.createdAt = utcNow;
-        comment.updatedAt = utcNow;
-        const newComment = await commentModel.create(comment);
-        return res.status(201).send(newComment);
-    } catch(error) {
-        return res.status(400).send("Bad Request");
-    }
-}
-
-const updateCommentById = async (req, res) => {
-    const id = req.params.id;
-    const comment = req.body;
+export const addComment = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
-        const oldComment = await commentModel.findById(id);
-        if (oldComment == null) {
-            return res.status(404).send('Comment not found');
+        const { postId, content } = req.body;
+        const owner = req.user.id;
+
+        // Validate if the post exists
+        const postExists = await postsService.getPostById(postId);
+        if (!postExists) {
+            res.status(404).json({ message: "Post not found: " + postId });
+            return;
         }
-        
-        comment.postId = oldComment.postId;
-        comment.updatedAt = new Date().toISOString();
-        comment.createdAt = oldComment.createdAt;
-        await new commentModel(comment).validate();
-        await commentModel.findByIdAndUpdate(id, comment);
 
-        comment._id = oldComment._id;
-        return res.status(201).send(comment);
-    } catch(error) {
-        return res.status(400).send("Bad Request");
+        const commentData: CommentData = { postId, owner, content };
+        const savedComment = await commentsService.addComment(commentData);
+        res.status(201).json(savedComment);
+    } catch (err) {
+        handleError(err, res);
     }
-}
+};
 
-const getByPostId = async (req, res) => {
-    const postId = req.params.postId;
+
+export const getCommentById = async (req: Request, res: Response): Promise<void> => {
     try {
-        const post = await postModel.findById(postId);
-        if (post == null) {
-            return res.status(400).send('Post not found');
+        const comment = await commentsService.getCommentById(req.params.commentId);
+        if (!comment) {
+            res.status(404).json({ message: "Comment not found: " + req.params.commentId });
+            return;
+        } else {
+            res.json(comment);
         }
-        const comments = await commentModel.find({ postId: post._id });
-        return res.status(200).send(comments);
-    } catch(error) {
-        return res.status(400).send("Bad Request");
+    } catch (err) {
+        handleError(err, res);
     }
-}
+};
 
-const deleteCommentById = async (req, res) => {
-    const id = req.params.id;
+
+
+export const getCommentsByPostId = async (req: Request, res: Response): Promise<void> => {
     try {
-        const comment = await commentModel.findById(id);
-        if (comment == null) {
-            return res.status(404).send('Comment not found');
+        const postExists = await postsService.getPostById(req.params.postId);
+        if (!postExists) {
+            res.status(400).json({ message: "Post not found: " + req.params.postId });
+            return;
         }
-        const deletedComment = await commentModel.findByIdAndDelete(id);
-        return res.status(200).send(deletedComment);
-    } catch(error) {
-        return res.status(400).send("Bad Request");
-    }
-}
 
-const getAllComments = async (req, res) => {
+        const comments = await commentsService.getCommentsByPostId(req.params.postId);
+        if (comments.length === 0) {
+            res.status(200).json([]);
+        } else {
+            res.json(comments);
+        }
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+export const getAllComments = async (req: Request, res: Response): Promise<void> => {
     try {
-        const comments = await commentModel.find();
-        return res.status(200).send(comments || []);
-    } catch(error) {
-        return res.status(400).send("Bad Request");
+        const comments = await commentsService.getAllComments();
+        if (comments.length === 0) {
+            res.status(200).json([]);
+        } else {
+            res.json(comments);
+        }
+    } catch (err) {
+        handleError(err, res);
     }
-}
+};
 
-export default {createComment, getByPostId, updateCommentById, deleteCommentById, getAllComments};
+// TODO - make different functions for updating comment and updating comment content
+export const updateComment = async (req: Request, res: Response): Promise<void> => {
+    try {
+        // TODO - parse the body before sending to server
+        const updatedComment = await commentsService.updateComment(req.params.commentId, req.body);
+        if (!updatedComment) {
+            res.status(404).json({ message: 'Comment not found' });
+        } else {
+            res.json(updatedComment);
+        }
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+export const deleteComment = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const deletedComment = await commentsService.deleteComment(req.params.commentId);
+        if (!deletedComment) {
+            res.status(404).json({ message: 'Comment not found' });
+        } else {
+            res.json({ message: 'Comment deleted successfully' });
+        }
+    } catch (err) {
+        handleError(err, res);
+    }
+};

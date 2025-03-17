@@ -11,6 +11,7 @@ describe('Authentication Status Code Tests', () => {
         // Register and login to get valid access token
         const user = {
             email: "test@status.com",
+            username: "TestUser",
             password: "123456"
         };
         await request(app).post('/auth/register').send(user);
@@ -30,7 +31,7 @@ describe('Authentication Status Code Tests', () => {
                 title: "Test Post",
                 content: "Test Content"
             });
-        postId = postResponse.body._id;
+        postId = postResponse.body.id;
 
         // Create a comment for testing
         const commentResponse = await request(app)
@@ -41,17 +42,21 @@ describe('Authentication Status Code Tests', () => {
                 sender: "TestUser",
                 content: "Test Comment"
             });
-        commentId = commentResponse.body._id;
+        commentId = commentResponse.body.id;
     });
 
     describe('200 Success Status Tests', () => {
         it('should return 200 on successful GET posts', async () => {
-            const res = await request(app).get('/post');
+            const res = await request(app)
+                .get('/post')
+                .set('Authorization', `jwt ${validAccessToken}`);
             expect(res.status).toBe(200);
         });
 
         it('should return 200 on successful GET comments', async () => {
-            const res = await request(app).get('/comment');
+            const res = await request(app)
+                .get('/comment')
+                .set('Authorization', `jwt ${validAccessToken}`);
             expect(res.status).toBe(200);
         });
 
@@ -105,7 +110,7 @@ describe('Authentication Status Code Tests', () => {
                 .post('/comment')
                 .set('Authorization', `jwt ${validAccessToken}`)
                 .send({
-                    postId: "invalid_id",
+                    postId: "invalidid",
                     sender: "TestUser",
                     content: "Test Comment"
                 });
@@ -166,7 +171,8 @@ describe('Authentication Status Code Tests', () => {
             // Use a valid ObjectId format that doesn't exist in the database
             const nonExistentId = '507f1f77bcf86cd799439011';
             const res = await request(app)
-                .get(`/post/${nonExistentId}`);
+                .get(`/post/${nonExistentId}`)
+                .set('Authorization', `jwt ${validAccessToken}`);
             expect(res.status).toBe(404);
         });
 

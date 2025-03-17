@@ -10,8 +10,9 @@ describe('Resources Service - Upload Image', () => {
     beforeAll(async () => {
         // Register and login to get access token
         const user = {
-            email: "test@resources.com",
-            password: "123456"
+            email: "testing111@resources.com",
+            password: "123456",
+            username: "testing111"
         };
         await request(app).post('/auth/register').send(user);
         const loginResponse = await request(app).post('/auth/login').send(user);

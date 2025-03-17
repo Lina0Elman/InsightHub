@@ -1,41 +1,77 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import dotenvExpand from 'dotenv-expand';
+import express, {Request, Response, NextFunction} from 'express';
+import authRoutes from './routes/auth_routes';
+import commentsRoutes from './routes/comments_routes';
+import postsRoutes from './routes/posts_routes';
+import usersRoutes from './routes/users_routes';
+import swaggerUi, {JsonObject} from 'swagger-ui-express';
+import swaggerJsdoc from 'swagger-jsdoc';
+import options from './docs/swagger_options';
+import {authenticateToken, authenticateTokenForParams} from "./middleware/auth";
 import bodyParser from 'body-parser';
-import posts_routes from './routes/posts_routes';
-import comments_routes from './routes/comments_routes';
-import auth_routes from './routes/auth_routes';
-import resource_routes from './routes/resources_routes';
-import swaggerUi from 'swagger-ui-express';
-import loadOpenApiFile from './openapi/openapi_loader';
 import cors from 'cors';
-import { config } from './config';
+import {config} from "./config/config";
+import validateUser from "./middleware/validateUser";
+import loadOpenApiFile from "./openapi/openapi_loader";
+import resource_routes from './routes/resources_routes';
 
-dotenvExpand.expand(dotenv.config());
+
+const specs = swaggerJsdoc(options);
+
 const app = express();
 
 app.use(cors({
     origin: [config.app.frontend_url(), config.app.backend_url()],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, // Allow cookies to be sent with requests
-  }));
+}));
+
+const removeUndefinedFields = (req: Request, res: Response, next: NextFunction) => {
+    if (req.body && typeof req.body === 'object') {
+        for (const key in req.body) {
+            if (req.body[key] === undefined) {
+                delete req.body[key];
+            }
+        }
+    }
+    next();
+};
 
 app.use(bodyParser.json());
+app.use(removeUndefinedFields);
 app.use(bodyParser.urlencoded({ extended: true }));
-// Error handler for invalid JSON
-app.use((err, req, res, next) => {
-    if (err instanceof SyntaxError) {
-        return res.status(400).send('Invalid JSON syntax');
-    }
-    next(err);
-});
+
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(loadOpenApiFile() as JsonObject));
+
+
+// Add Authentication for all routes except the ones listed below
+app.use(authenticateToken.unless({
+    path: [
+        { url: '/auth/login' },
+        { url: '/auth/register' },
+        { url: '/auth/refresh' },
+        { url: '/auth/logout' },
+        { url: /^\/post\/[^\/]+$/, methods: ['GET'] },  // Match /post/{anything} for GET
+        { url: /^\/comment\/[^\/]+$/, methods: ['GET'] },  // Match /comment/{anything} for GET
+        { url: /^\/comment\/post\/[^\/]+$/, methods: ['GET'] },  // Match /comment/post/{anything} for GET
+        { url: '/comment', methods: ['GET'] },
+        { url: '/post', methods: ['GET'] },  // Allow GET to /post
+        { url: /^\/image\/[^\/]+$/, methods: ['GET'] },  // Allow GET to /image/{anything}
+    ]
+}));
+
+// Add AUTH middleware for params queries
+// To block queries without Authentication
+app.use(authenticateTokenForParams);
 
 
 
-app.use('/swagger', swaggerUi.serve, swaggerUi.setup(loadOpenApiFile()));
-app.use('/post', posts_routes);
-app.use('/comment', comments_routes);
-app.use('/auth', auth_routes);
+app.use('/auth', authRoutes);
+app.use('/comment', commentsRoutes);
+app.use('/post', postsRoutes);
+app.use("/user/:id", validateUser);
+app.use('/user', usersRoutes);
 app.use('/resource', resource_routes);
+
 
 export default app;

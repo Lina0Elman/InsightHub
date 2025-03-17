@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
-import mongoose from 'mongoose';
+import mongoose, {ConnectOptions} from 'mongoose';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 dotenvExpand.expand(dotenv.config());
 
 
@@ -20,6 +21,10 @@ dotenvExpand.expand(dotenv.config());
 dotenvExpand.expand(dotenv.config());
 
 
+
+let mongoServer: MongoMemoryServer;
+
+
 /**
  * Before each test suite:
  *
@@ -27,24 +32,11 @@ dotenvExpand.expand(dotenv.config());
  * - Connect to the database.
  */
 global.beforeAll(async () => {
-    const DBNAME = process.env.DB_CONNECTION.split('/')[3].split('?')[0];
-    const newDBNAME = "tests";
-
-    const dbConnectionUntilDBNAME =
-    process.env.DB_CONNECTION.substring(0, process.env.DB_CONNECTION.indexOf(DBNAME));
-    const dbConnectionAfterDBNAME =
-    process.env.DB_CONNECTION.substring(process.env.DB_CONNECTION.indexOf(DBNAME) + DBNAME.length);
-    const newDbConnection = dbConnectionUntilDBNAME + newDBNAME + dbConnectionAfterDBNAME;
-    process.env.DB_CONNECTION = newDbConnection;
-
-    console.log(`Connecting to ${process.env.DB_CONNECTION}`)
-    mongoose.connect(process.env.DB_CONNECTION)
-    const db = mongoose.connection;
-    db.on('error', (error) => console.error(error));
-    db.once('open', () => console.log("Connected to DataBase"));
-
-    console.log("Dropping DB...");
-    await mongoose.connection.dropDatabase();
+    mongoServer = await MongoMemoryServer.create();
+    await mongoose.connect(mongoServer.getUri(), {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+    } as ConnectOptions);
 });
 
 /**
@@ -54,5 +46,6 @@ global.beforeAll(async () => {
  * - Close the connection to the database.
  */
 global.afterAll(async () => {
-    await mongoose.connection.close();
+    await mongoose.disconnect();
+    await mongoServer.stop();
 });

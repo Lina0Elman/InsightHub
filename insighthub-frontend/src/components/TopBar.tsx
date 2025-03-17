@@ -2,20 +2,19 @@ import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppBar, Toolbar, IconButton, Tooltip, Box } from '@mui/material';
 import { Home, Person, Message, Logout } from '@mui/icons-material';
-import { config } from '../config';
-import axios from 'axios';
-import { LoginResponse } from '../models/LoginResponse';
+import {getUserAuth, removeUserAuth} from "../handlers/userAuth.ts";
+import api from "../serverApi.ts";
 
 const TopBar: React.FC = () => {
-  const userAuthRef = useRef(JSON.parse(localStorage.getItem(config.localStorageKeys.userAuth) as string) as LoginResponse);
+  const userAuthRef = useRef(getUserAuth());
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     if (userAuthRef.current) {
-      await axios.post(`${config.app.backend_url()}/auth/logout`, {
+      await api.post(`/auth/logout`, {
         refreshToken: userAuthRef.current.refreshToken,
       });
-      localStorage.removeItem(config.localStorageKeys.userAuth);
+      removeUserAuth();
     }
     navigate('/logout');
   };

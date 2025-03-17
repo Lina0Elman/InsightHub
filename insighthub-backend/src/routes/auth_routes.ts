@@ -1,15 +1,22 @@
+import express, { Request, Response, Router } from 'express';
+import * as authController from '../controllers/auth_controller';
+import {
+    handleValidationErrors,
+    validateLogin,
+    validateRefreshToken,
+    validateUserRegister,
+} from "../middleware/validation";
+import {authenticateLogoutToken} from "../middleware/auth";
+import {CustomRequest} from "types/customRequest";
 
-import express from 'express';
-import Auth from '../controllers/auth_controller';
+const router: Router = express.Router();
 
-const router = express.Router();
+router.post('/login', validateLogin, handleValidationErrors, (req: Request, res: Response) => authController.loginUser(req, res));
 
-router.post('/register', Auth.register);
+router.post('/logout', authenticateLogoutToken as unknown as express.RequestHandler, (req: Request, res: Response) => authController.logoutUser(req as CustomRequest, res));
 
-router.post('/login', Auth.login);
+router.post('/register', validateUserRegister, handleValidationErrors, (req: Request, res: Response) => authController.registerUser(req, res));
 
-router.post('/logout', Auth.logout);
-
-router.post('/refresh', Auth.refresh);
+router.post('/refresh', validateRefreshToken, handleValidationErrors, (req: Request, res: Response) => authController.refreshToken(req, res));
 
 export default router;

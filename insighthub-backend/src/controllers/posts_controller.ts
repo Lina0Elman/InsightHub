@@ -1,133 +1,143 @@
-import likeModel from '../models/like_model';
-import postModel from '../models/posts_model';
-import mongoose from 'mongoose';
+import { Request, Response } from 'express';
+import * as postsService from '../services/posts_service';
+import { handleError } from '../utils/handle_error';
+import {CustomRequest} from "types/customRequest";
+import {PostData} from "types/post_types";
+import {getLikedPostsByUser, postExists, updatePostLike} from "../services/posts_service";
 
-const getAllPosts =  async (req, res) => {
-    const senderFilter = req.query.sender;
-    try{
-        if(senderFilter){
-            const posts = await postModel.find({sender: senderFilter});
-            res.status(200).send(posts);
-            
-        } else{
-            const posts = await postModel.find();
-            res.status(200).send(posts);
+
+export const addPost = async (req: CustomRequest, res: Response): Promise<void> => {
+    try {
+        const postData: PostData = {
+            title: req.body.title,
+            content: req.body.content,
+            owner: req.user.id
+        };
+
+        const savedPost: PostData = await postsService.addPost(postData);
+
+        res.status(201).json(savedPost);
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+export const getPosts = async (req: Request, res: Response): Promise<void> => {
+    try {
+        let posts;
+        if (req.query.owner) {
+            posts = await postsService.getPosts(req.query.owner as string);
+        } else if (req.query.username)
+        {
+            posts = await postsService.getPostsByUsername(req.query.username as string);
         }
-    } catch(error){
-        res.status(400).send("Bad Request");
+        else {
+            posts = await postsService.getPosts();
+        }
+
+        if (posts.length === 0) {
+            res.status(200).json([]);
+        } else {
+            res.json(posts);
+        }
+    } catch (err) {
+        handleError(err, res);
     }
+};
 
-}
-
-const getLikedPosts =  async (req, res) => {
+export const getPostById = async (req: Request, res: Response): Promise<void> => {
     try {
-        const likedPostsByUserId = await likeModel.aggregate([
-            {
-                $match: {
-                  userId: new mongoose.Types.ObjectId(req.query.userId)
-                }
-            },
-            {
-                $lookup: {
-                    from: 'posts',
-                    localField: 'postId',
-                    foreignField: '_id',
-                    as: 'post'
-                }
-            },
-            {
-                $unwind: {
-                    path: '$post'
-                }
-            },
-            {
-                $replaceRoot: {
-                  newRoot: '$post'
-                }
-            }
-        ]);
-
-        return res.status(200).send(likedPostsByUserId);
-    } catch(error){
-        res.status(400).send("Bad Request");
-    }
-}
-
-const createPost = async (req, res) => {
-    const post = req.body;
-    try{
-        const newPost = await postModel.create(post);
-        res.status(201).send(newPost);
-
-    }catch(error){
-        res.status(400).send("Bad Request");
-
-    }
-}
-
-const getPostById = async (req, res) => {
-    const id = req.params.id;
-    try {
-        const post = await postModel.findById(id);
+        const post = await postsService.getPostById(req.params.postId);
         if (!post) {
-            return res.status(404).send('Post not found');
+            res.status(404).json({ message: 'Post not found' });
+        } else {
+            res.json(post);
         }
-        return res.status(200).send(post);
-    } catch(error) {
-        return res.status(400).send("Bad Request");
+    } catch (err) {
+        handleError(err, res);
     }
-}
+};
 
-const updatePostById = async (req, res) => {
-    const id = req.params.id;
-    const post = req.body;
+// TODO - create a difference between PUT and PATCH
+export const updatePost = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
-        await new postModel(post).validate();
-        const oldPost = await postModel.findByIdAndUpdate(id, post);
+        const owner = req.user.id;
+        const postId = req.params.postId;
+        const postData: PostData = {
+            title: req.body.title,
+            content: req.body.content,
+            owner
+        };
+
+        if (await postsService.postExists(postId)) {
+
+            if (await postsService.isPostOwnedByUser(postId, owner)) {
+
+                const updatedPost = await postsService.updatePost(postId, postData);
+                if (!updatedPost) {
+                    res.status(404).json({message: 'Post not found'});
+                } else {
+                    res.status(200).json(updatedPost);
+                }
+            } else { // If someone not the owner
+                res.status(403).json({message: 'Forbidden'});
+            }
+        } else { // If someone  try to update post that doesn't exist
+            res.status(404).json({ message: 'Post not found' });
+        }
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+export const updateLikeByPostId = async (req: CustomRequest, res: Response): Promise<void> => {
+    const userId = req.user.id;
+    const id = req.params.id;
+    // TODO - change to json with a boolean value
+    const booleanValue: any = req.body;
+    try {
+        if (booleanValue instanceof String && booleanValue != "false" && booleanValue != "true") {
+            res.status(400).send("Bad Request. Body accepts `true` or `false` values only");
+        }
+
+        const oldPost = await postExists(id);
         if (oldPost == null) {
             res.status(404).send('Post not found');
-        } else {
-            post._id = oldPost._id;
-            res.status(201).send(post);
-        }        
-    } catch(error) {
-        res.status(400).send("Bad Request");
+        }
+
+        await updatePostLike(id, booleanValue, userId)
+
+        res.status(200).send("Success");
+    } catch(err) {
+        handleError(err, res);
     }
 }
 
-const updateLikeByPostId = async (req, res) => {
-    const id = req.params.id;
-    const booleanValue = req.body;
+export const getLikedPosts =  async (req: CustomRequest, res: Response): Promise<void> => {
     try {
-        if (booleanValue != "false" && booleanValue != "true") {
-            return res.status(400).send("Bad Request. Body accepts `true` or `false` values only");
-        }
-        const oldPost = await postModel.findById(id);
-        if (oldPost == null) {
-            return res.status(404).send('Post not found');
-        }
+        const userId = req.user.id;
+        const likedPostsByUserId = await  getLikedPostsByUser(userId)
 
-        if (booleanValue == "true") {
-            // Upsert
-            await likeModel.updateOne({
-                    userId: new mongoose.Types.ObjectId(req.query.userId),
-                    postId: oldPost._id
-                },
-                {},
-                { upsert: true }
-            );
-        } else {
-            // Delete document if exists
-            await likeModel.findOneAndDelete({
-                userId: new mongoose.Types.ObjectId(req.query.userId),
-                postId: oldPost._id
-            });
-        }
-
-        return res.status(200).send("Success");
-    } catch(error) {
-        res.status(400).send("Bad Request");
+        res.status(200).send(likedPostsByUserId);
+    } catch(err){
+        handleError(err, res);
     }
 }
 
-export default {getAllPosts, getLikedPosts, createPost, getPostById, updatePostById, updateLikeByPostId};
+
+export const deletePostById = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const postId = req.params.postId;
+        const post = await postsService.getPostById(postId);
+        if (!post) {
+            res.status(404).json({ message: 'Post not found' });
+        } else {
+            await postsService.deletePostById(postId);
+            res.json({ message: 'Post and associated comments deleted successfully' });
+        }
+    } catch (err) {
+        handleError(err, res);
+    }
+};
+
+

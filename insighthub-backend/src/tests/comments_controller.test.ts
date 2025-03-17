@@ -1,25 +1,34 @@
 import request from 'supertest';
 import app from '../app';
+import {PostData} from "types/post_types";
+import {CommentData} from "types/comment_types";
 
-let existingPost1 = null;
-let existingPost2 = null;
-let existingComment = null;
-let accessToken = null;
+let existingPost1: PostData;
+let existingPost2:PostData;
+let existingComment:CommentData;
+let accessToken: string;
+
+const user = {
+    email: "test2@test.com",
+    password: "123456",
+    username: "test2",
+    id: undefined
+};
 
 beforeAll(async () => {
     // Register and login to get access token
-    const user = {
-        email: "test2@test.com",
-        password: "123456"
-    };
+
     await request(app).post('/auth/register').send(user);
     const loginResponse = await request(app).post('/auth/login').send(user);
+    user.id = loginResponse.body.userId;
     accessToken = loginResponse.body.accessToken;
 });
 
 describe('given db empty of comments when http request GET /comment', () => {
     it('then should return empty list', async () => {
-        const res = await request(app).get('/comment');
+        const res = await request(app)
+            .get('/comment')
+            .set('Authorization', `jwt ${accessToken}`);
         expect(res.statusCode).toBe(200);
         expect(res.body).toEqual([]);
     });
@@ -33,7 +42,6 @@ describe('when http request POST /post', () => {
     it('then should add post to the db', async () => {
         // Post 1
         const body1 = {
-            "sender": "USERNAME1",
             "title": "POST1 TITLE",
             "content": "POST1 CONTENT"
         };
@@ -46,7 +54,6 @@ describe('when http request POST /post', () => {
 
         // Post 2
         const body2 = {
-            "sender": "USERNAME1",
             "title": "POST2 TITLE",
             "content": "POST2 CONTENT"
         };
@@ -63,22 +70,6 @@ describe('when http request POST /comment to an unknown post', () => {
     it('then should return 400 bad request http status', async () => {
         const body = {
             "postId": "UNKNOWN",
-            "sender": "USERNAME1",
-            "content": "COMMENT1 CONTENT"
-        };
-        const res = await request(app)
-            .post('/comment')
-            .set('Authorization', `jwt ${accessToken}`)
-            .send(body);
-
-        expect(res.statusCode).toBe(400);
-    });
-});
-
-describe('when http request POST /comment to an existing post without required sender field', () => {
-    it('then should return 400 bad request http status', async () => {
-        const body = {
-            "postId": `${existingPost1._id}`,
             "content": "COMMENT1 CONTENT"
         };
         const res = await request(app)
@@ -93,7 +84,6 @@ describe('when http request POST /comment to an existing post without required s
 describe('when http request POST /comment without required postId field', () => {
     it('then should return 400 bad request http status', async () => {
         const body = {
-            "sender": "USERNAME1",
             "content": "COMMENT1 CONTENT"
         };
         const res = await request(app)
@@ -108,17 +98,19 @@ describe('when http request POST /comment without required postId field', () => 
 describe('when http request POST /comment  to an existing post', () => {
     it('then should add comment to the db', async () => {
         const body = {
-            "postId": `${existingPost1._id}`,
-            "sender": "USERNAME1",
-            "content": "COMMENT1 CONTENT"
+            "postId": `${existingPost1.id}`,
+            "content": "COMMENT1 CONTENT",
+            owner: undefined
         };
         const res = await request(app)
             .post('/comment')
             .set('Authorization', `jwt ${accessToken}`)
             .send(body);
+
+        body.owner = user.id;
         const resBody = res.body;
         existingComment = { ...resBody };
-        delete resBody._id;
+        delete resBody.id;
         delete resBody.createdAt;
         delete resBody.updatedAt;
 
@@ -135,8 +127,7 @@ describe('when http request POST /comment  to an existing post', () => {
     it('then should add comment to the db', async () => {
         // Comment 1
         const body1 = {
-            "postId": `${existingPost1._id}`,
-            "sender": "USERNAME1",
+            "postId": `${existingPost1.id}`,
             "content": "COMMENT1 CONTENT"
         };
         await request(app)
@@ -146,8 +137,7 @@ describe('when http request POST /comment  to an existing post', () => {
 
         // Comment 2
         const body2 = {
-            "postId": `${existingPost1._id}`,
-            "sender": "USERNAME2",
+            "postId": `${existingPost1.id}`,
             "content": "COMMENT2 CONTENT"
         };
         await request(app)
@@ -157,8 +147,7 @@ describe('when http request POST /comment  to an existing post', () => {
 
         // Comment 3
         const body3 = {
-            "postId": `${existingPost1._id}`,
-            "sender": "USERNAME3",
+            "postId": `${existingPost1.id}`,
             "content": "COMMENT3 CONTENT"
         };
         await request(app)
@@ -170,40 +159,64 @@ describe('when http request POST /comment  to an existing post', () => {
 
 describe('given db initialized with comments when http request GET /comment', () => {
     it('then should return all coments in the db', async () => {
-        const res = await request(app).get('/comment');
+        const res = await request(app)
+            .get('/comment')
+            .set('Authorization', `jwt ${accessToken}`);
         expect(res.statusCode).toBe(200);
         expect(res.statusCode).not.toEqual([]);
     });
 });
 
+
+
+describe('Check the private and public route for the auth need', () => {
+    it('should allow GET /comment without authentication', async () => {
+        const response = await request(app).get('/comment');
+        expect(response.status).toBe(200);
+    });
+
+    it('should allow GET /comment/:id without authentication', async () => {
+        const response = await request(app).get(`/comment/${existingComment.id}`);
+        expect(response.status).toBe(200);
+    });
+
+    it('should not allow GET /comment?owner without authentication', async () => {
+        const response = await request(app).get(`/comment?owner=${existingComment.owner}`);
+        expect(response.status).toBe(401);
+    });
+
+    it('should allow GET /comment/:id without authentication', async () => {
+        const response = await request(app).get(`/comment/post/${existingComment.postId}`);
+        expect(response.status).toBe(200);
+    });
+});
+
 describe('when http request PUT /comment/id of unknown post', () => {
-    it('then should return 201 created http status', async () => {
+    it('then should return 200 for update http status', async () => {
         const body = {
             "postId": "UNKNOWN",
-            "sender": "UPDATED USERNAME",
             "content": "UPDATED COMMENT CONTENT"
         };
         const res = await request(app)
-            .put(`/comment/${existingComment._id}`)
+            .put(`/comment/${existingComment.id}`)
             .set('Authorization', `jwt ${accessToken}`)
             .send(body);
         const resBody = res.body;
 
-        expect(res.statusCode).toBe(201);
+        expect(res.statusCode).toBe(200);
         expect(new Date(resBody.updatedAt).getTime())
             .toBeGreaterThan(new Date(resBody.createdAt).getTime());
-        delete resBody._id;
+        delete resBody.id;
         delete resBody.createdAt;
         delete resBody.updatedAt;
-        expect(resBody.postId).toEqual(existingPost1._id);
+        expect(resBody.postId).toEqual(existingPost1.id);
     });
 });
 
 describe('when http request PUT /comment/id of unknown comment', () => {
     it('then should return 400 bad request http status', async () => {
         const body = {
-            "postId": `${existingPost1._id}`,
-            "sender": "UPDATED USERNAME",
+            "postId": `${existingPost1.id}`,
             "content": "UPDATED COMMENT CONTENT"
         };
         const res = await request(app)
@@ -216,86 +229,75 @@ describe('when http request PUT /comment/id of unknown comment', () => {
 });
 
 describe('when http request PUT /comment/id without required postId field', () => {
-    it('then should return 201 created http status', async () => {
+    it('then should return 200 created http status', async () => {
         const body = {
-            "sender": "UPDATED USERNAME",
             "content": "UPDATED COMMENT CONTENT"
         };
         const res = await request(app)
-            .put(`/comment/${existingComment._id}`)
+            .put(`/comment/${existingComment.id}`)
             .set('Authorization', `jwt ${accessToken}`)
             .send(body);
         const resBody = res.body;
 
-        expect(res.statusCode).toBe(201);
+        expect(res.statusCode).toBe(200);
         expect(new Date(resBody.updatedAt).getTime())
             .toBeGreaterThan(new Date(resBody.createdAt).getTime());
-        delete resBody._id;
+        delete resBody.id;
         delete resBody.createdAt;
         delete resBody.updatedAt;
-        expect(resBody.postId).toEqual(existingPost1._id);
+        expect(resBody.postId).toEqual(existingPost1.id);
     });
 });
 
-describe('when http request PUT /comment/id without required sender field', () => {
-    it('then should return 400 bad request http status', async () => {
-        const body = {
-            "postId": `${existingPost1._id}`,
-            "content": "UPDATED COMMENT CONTENT"
-        };
-        const res = await request(app)
-            .put(`/comment/${existingComment._id}`)
-            .set('Authorization', `jwt ${accessToken}`)
-            .send(body);
-
-        expect(res.statusCode).toBe(400);
-    });
-});
 
 describe('when http request PUT /comment/id of existing post and comment', () => {
     it('then should update comment in the db', async () => {
         const body = {
-            "postId": `${existingPost1._id}`,
-            "sender": "UPDATED USERNAME",
+            "postId": `${existingPost1.id}`,
             "content": "UPDATED COMMENT CONTENT"
         };
         const res = await request(app)
-            .put(`/comment/${existingComment._id}`)
+            .put(`/comment/${existingComment.id}`)
             .set('Authorization', `jwt ${accessToken}`)
             .send(body);
         const resBody = res.body;
 
-        expect(res.statusCode).toBe(201);
+        expect(res.statusCode).toBe(200);
         expect(new Date(resBody.updatedAt).getTime())
             .toBeGreaterThan(new Date(resBody.createdAt).getTime());
-        delete resBody._id;
+        delete resBody.id;
         delete resBody.createdAt;
-        delete resBody.updatedAt;    
+        delete resBody.updatedAt;
+        delete resBody.owner;
         expect(resBody).toEqual(body);
     });
 });
 
 describe('given existing post when http request GET /comment/post/id', () => {
     it('then should return its comments only', async () => {
-        const res = await request(app).get(`/comment/post/${existingPost1._id}`);
+        const res = await request(app)
+            .get(`/comment/post/${existingPost1.id}`)
+            .set('Authorization', `jwt ${accessToken}`);
         expect(res.statusCode).toBe(200);
-        
+
         const resBody = res.body;
         expect(Array.isArray(resBody)).toBe(true);
-        
+
         if (resBody.length > 0) {
-            const postIds = resBody.map((comment) => comment.postId);
+            const postIds: string[] = resBody.map((comment: CommentData) => comment.postId);
             const uniquePostIds = [...new Set(postIds)];
             expect(uniquePostIds.length).toBe(1);
-            expect(uniquePostIds[0]).toEqual(existingPost1._id);
+            expect(uniquePostIds[0]).toEqual(existingPost1.id);
         }
     });
 });
 
 describe('given unknown post when http request GET /comment/post/id', () => {
     it('then should return 400 bad request http status', async () => {
-        const res = await request(app).get(`/comment/post/UNKNOWN`);
-    
+        const res = await request(app)
+            .get(`/comment/post/UNKNOWN`)
+            .set('Authorization', `jwt ${accessToken}`);
+
         expect(res.statusCode).toBe(400);
     });
 });
@@ -303,8 +305,9 @@ describe('given unknown post when http request GET /comment/post/id', () => {
 describe('given existing post without any comments when http request GET /comment/post/id', () => {
     it('then should return empty list', async () => {
         const res = await request(app)
-            .get(`/comment/post/${existingPost2._id}`);
-    
+            .get(`/comment/post/${existingPost2.id}`)
+            .set('Authorization', `jwt ${accessToken}`);
+
         expect(res.statusCode).toBe(200);
         expect(Array.isArray(res.body)).toBe(true);
         expect(res.body).toHaveLength(0);
@@ -328,12 +331,11 @@ describe('given existing comment when http request DELETE /comment/id', () => {
             .post('/comment')
             .set('Authorization', `jwt ${accessToken}`)
             .send({
-                postId: existingPost1._id,
-                sender: "USERNAME1",
+                postId: existingPost1.id,
                 content: "Comment to delete"
             });
-        
-        const commentId = createComment.body._id;
+
+        const commentId = createComment.body.id;
         
         const res = await request(app)
             .delete(`/comment/${commentId}`)

@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
-  title: Post and Comment API
-  description: API for managing posts and comments.
+  title: InsightHub API
+  description: API for managing all the abilities.
   version: 1.0.0
 
 tags:
@@ -11,11 +11,12 @@ tags:
     description: Operations related to comments on posts
   - name: Authentication
     description: Operations related to authentication tokens
+  - name: Users
+    description: Operations related to users
   - name: Resources
     description: Operations related to uploading & downloading resources
 
 paths:
-  # Post Routes
   /post:
     get:
       tags:
@@ -23,10 +24,10 @@ paths:
       summary: Retrieve all posts
       parameters:
         - in: query
-          name: sender
+          name: owner
           schema:
             type: string
-          description: Filter posts by sender
+          description: Filter posts by owner (requires authentication if provided)
       responses:
         '200':
           description: List of posts retrieved successfully
@@ -36,6 +37,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Post'
+        '401':
+          description: Unauthorized - Missing token -> when owner is provided
+        '403':
+          description: Forbidden - Invalid or expired token -> when owner is provided
 
     post:
       tags:
@@ -57,19 +62,42 @@ paths:
               schema:
                 $ref: '#/components/schemas/Post'
         '400':
-          description: Bad request - Missing required fields
+          $ref: '#/components/responses/BadRequest'
         '401':
-          description: Unauthorized - Missing token
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden - Invalid or expired token
+          $ref: '#/components/responses/Forbidden'
 
   /post/{postId}:
+    get:
+      tags:
+        - Posts
+      summary: Retrieve all posts
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of posts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/PostNotFound'
     put:
       tags:
         - Posts
       security:
         - BearerAuth: []
-      summary: Update a post
+      summary: Update a post entirely - will replace the existing post
       parameters:
         - name: postId
           in: path
@@ -90,40 +118,71 @@ paths:
               schema:
                 $ref: '#/components/schemas/Post'
         '400':
-          description: Bad request - Invalid post ID or missing required fields
+          $ref: '#/components/responses/BadRequest'
         '401':
-          description: Unauthorized - Missing token
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden - Invalid or expired token
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Post not found
+          $ref: '#/components/responses/PostNotFound'
 
-  /post/{postId}/comment:
-    get:
+    patch:
       tags:
         - Posts
-      summary: Retrieve comments for a specific post
-      operationId: getCommentsByPostId
+      security:
+        - BearerAuth: [ ]
+      summary: Update a post
       parameters:
         - name: postId
           in: path
           required: true
-          description: The ID of the post to fetch comments for
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostRequestPartial'
+      responses:
+        '201':
+          description: Post updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/PostNotFound'
+
+    delete:
+      tags:
+        - Posts
+      security:
+        - BearerAuth: [ ]
+      summary: Delete a post
+      parameters:
+        - name: postId
+          in: path
+          required: true
           schema:
             type: string
       responses:
         '200':
-          description: A list of comments for the specified post
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Comment'
+          description: Post deleted successfully
         '400':
-          description: Bad request - Invalid postId
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Not found - The postId does not exist
+          $ref: '#/components/responses/PostNotFound'
 
   /post/{postId}/like:
     put:
@@ -159,11 +218,11 @@ paths:
                 booleanBody:
                   value: "Bad Request. Body accepts `true` or `false` values only"
         '401':
-          description: Unauthorized - Missing token
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden - Invalid or expired token
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Post not found
+          $ref: '#/components/responses/PostNotFound'
 
   /post/like:
     get:
@@ -222,13 +281,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Comment'
         '400':
-          description: Bad request - Missing required fields or invalid post ID
+          $ref: '#/components/responses/BadRequest'
         '401':
-          description: Unauthorized - Missing token
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden - Invalid or expired token
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Post not found
+          $ref: '#/components/responses/PostNotFound'
 
   /comment/{commentId}:
     put:
@@ -250,20 +309,54 @@ paths:
             schema:
               $ref: '#/components/schemas/CommentRequest'
       responses:
-        '201':
+        '200':
           description: Comment updated successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Comment'
         '400':
-          description: Bad request - Invalid comment ID or missing required fields
+          $ref: '#/components/responses/BadRequest'
         '401':
-          description: Unauthorized - Missing token
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden - Invalid or expired token
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Comment not found
+          $ref: '#/components/responses/CommentNotFound'
+
+    patch:
+      tags:
+        - Comments
+      security:
+        - BearerAuth: [ ]
+      summary: Update a comment
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentRequestPartial'
+      responses:
+        '200':
+          description: Comment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/CommentNotFound'
 
     delete:
       tags:
@@ -281,13 +374,13 @@ paths:
         '200':
           description: Comment deleted successfully
         '400':
-          description: Bad request - Invalid comment ID
+          $ref: '#/components/responses/BadRequest'
         '401':
-          description: Unauthorized - Missing token
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden - Invalid or expired token
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Comment not found
+          $ref: '#/components/responses/CommentNotFound'
 
   /comment/post/{postId}:
     get:
@@ -310,9 +403,9 @@ paths:
                 items:
                   $ref: '#/components/schemas/Comment'
         '400':
-          description: Bad request - Invalid post ID
+          $ref: '#/components/responses/BadRequest'
         '404':
-          description: Post not found
+          $ref: '#/components/responses/PostNotFound'
 
   # Authentication Routes
   /auth/register:
@@ -325,22 +418,12 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - email
-                - password
-              properties:
-                email:
-                  type: string
-                  format: email
-                password:
-                  type: string
-                  minLength: 6
+              $ref: '#/components/schemas/RegisterRequest'
       responses:
-        '200':
+        '201':
           description: User successfully registered
         '400':
-          description: Bad request - Invalid input
+          $ref: '#/components/responses/BadRequest'
 
   /auth/login:
     post:
@@ -352,33 +435,14 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - email
-                - password
-              properties:
-                email:
-                  type: string
-                  format: email
-                password:
-                  type: string
+              $ref: '#/components/schemas/LoginRequest'
       responses:
         '200':
           description: Successfully logged in
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  email:
-                    type: string
-                    format: email
-                  accessToken:
-                    type: string
-                  refreshToken:
-                    type: string
-                  _id:
-                    type: string
+                $ref: '#/components/schemas/LoginResponse'
         '401':
           description: Invalid credentials
 
@@ -392,12 +456,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - refreshToken
-              properties:
-                refreshToken:
-                  type: string
+              $ref: '#/components/schemas/RefreshTokenRequest'
       responses:
         '200':
           description: New tokens generated
@@ -417,6 +476,8 @@ paths:
     post:
       tags:
         - Authentication
+      security:
+        - BearerAuth: [ ]
       summary: Logout user
       requestBody:
         required: true
@@ -434,6 +495,166 @@ paths:
           description: Successfully logged out
         '401':
           description: Invalid refresh token
+
+  /user:
+    get:
+      tags:
+        - Users
+      security:
+        - BearerAuth: [ ]
+      summary: Retrieve all users
+      responses:
+        '200':
+          description: List of users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /user/{userId}:
+    get:
+      tags:
+        - Users
+      summary: Retrieve a user by ID
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/UserNotFound'
+
+    patch:
+      tags:
+        - Users
+      security:
+        - BearerAuth: [ ]
+      summary: Update a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditUserRequest'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/UserNotFound'
+
+    delete:
+      tags:
+        - Users
+      security:
+        - BearerAuth: [ ]
+      summary: Delete a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User deleted successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/UserNotFound'
+
+
+  /resource/image/user:
+    post:
+      tags:
+        - Resources
+      summary: Upload an image for a user
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Image uploaded successfully and associated with the user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    description: The unique identifier of the user
+                  email:
+                    type: string
+                    description: The email of the user
+                  imageFilename:
+                    type: string
+                    description: The filename of the uploaded image
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+        '400':
+          description: Bad request
+          content:
+            text/plain:
+              examples:
+                fileTooLarge:
+                  value: "File too large"
+                invalidFileType:
+                  value: "Invalid file type. Only images are allowed: /jpeg|jpg|png|gif/"
+                noFileUploaded:
+                  value: "No file uploaded"
+        '404':
+          description: User not found
+        '500':
+          description: Internal server error
 
   /resource/image:
     post:
@@ -459,7 +680,7 @@ paths:
             text/plain:
               schema:
                 description: The name of the uploaded file
-                type: string                
+                type: string
         '400':
           description: Bad request
           content:
@@ -506,70 +727,72 @@ components:
     Post:
       type: object
       required:
-        - _id
-        - sender
+        - id
+        - owner
         - title
         - content
         - createdAt
         - updatedAt
       properties:
-        _id:
+        id:
           type: string
-          description: The unique identifier of the post
-        sender:
-          type: string
-          description: The sender of the post
+          description: The post ID
         title:
           type: string
           description: The title of the post
         content:
           type: string
           description: The content of the post
+        owner:
+          type: string
+          description: The ID of the user who owns the post
         createdAt:
           type: string
           format: date-time
-          description: The timestamp when the post was created
+          description: Timestamp when the post was created
         updatedAt:
           type: string
           format: date-time
-          description: The timestamp when the post was last updated
+          description: Timestamp when the post was last updated
 
-    PostRequest:
+    PostRequestPartial:
       type: object
-      required:
-        - sender
-        - title
-        - content
+      required: []
       properties:
-        sender:
-          type: string
-          description: The sender of the post
         title:
           type: string
           description: The title of the post
         content:
           type: string
           description: The content of the post
+
+    PostRequest:
+      allOf:
+        - $ref: '#/components/schemas/PostRequestPartial'
+        - type: object
+          required:
+            - title
+            - content
 
     Comment:
       type: object
       required:
-        - _id
+        - id
         - postId
-        - sender
+        - owner
         - content
         - createdAt
         - updatedAt
       properties:
-        _id:
+        id:
           type: string
           description: The unique identifier of the comment
         postId:
           type: string
           description: The ID of the post the comment belongs to
-        sender:
+        owner:
           type: string
-          description: The sender of the comment
+          description: The owner of the comment
         content:
           type: string
           description: The content of the comment
@@ -582,44 +805,114 @@ components:
           format: date-time
           description: The timestamp when the comment was last updated
 
-    CommentRequest:
+    CommentRequestPartial:
       type: object
-      required:
-        - postId
-        - sender
-        - content
+      required: []
       properties:
         postId:
           type: string
           description: The ID of the post the comment should belong to
-        sender:
-          type: string
-          description: The sender of the comment
         content:
           type: string
           description: The content of the comment
 
-    AuthResponse:
+    CommentRequest:
+      allOf:
+        - $ref: '#/components/schemas/CommentRequestPartial'
+        - type: object
+          required:
+            - postId
+            - content
+
+    RefreshResponse:
       type: object
       properties:
         accessToken:
           type: string
         refreshToken:
           type: string
-        _id:
-          type: string
 
-    LoginRequest:
+    LoginResponse:
+      allOf:
+        - $ref: '#/components/schemas/RefreshResponse'
+        - type: object
+          required:
+            - userId
+          properties:
+            userId:
+              type: string
+
+
+    LoginRequestPartial:
       type: object
-      required:
-        - email
-        - password
+      required: [ ]
       properties:
         email:
           type: string
           format: email
         password:
           type: string
+
+    LoginRequest:
+        allOf:
+          - $ref: '#/components/schemas/LoginRequestPartial'
+          - type: object
+            required:
+              - email
+              - password
+
+    RegisterRequestPartial:
+      allOf:
+        - type: object
+          required: []
+          properties:
+            username:
+              type: string
+        - $ref: '#/components/schemas/LoginRequestPartial'
+
+    RegisterRequest:
+      allOf:
+        - $ref: '#/components/schemas/RegisterRequestPartial'
+        - type: object
+          required:
+            - email
+            - username
+            - -password
+
+    EditUserRequest:
+      allOf:
+        - $ref: '#/components/schemas/RegisterRequestPartial'
+        - type: object
+          required: [ ]
+
+
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - username
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: The user ID
+        email:
+          type: string
+          format: email
+          description: The email of the user
+        username:
+          type: string
+          description: The username of the user
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the user was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the user was last updated
 
     RefreshTokenRequest:
       type: object
@@ -635,3 +928,17 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: JWT token obtained from /auth/login endpoint
+
+  responses:
+    BadRequest:
+      description: Bad request - Missing or bad required fields
+    Unauthorized:
+      description: Unauthorized - Missing token
+    Forbidden:
+      description: Forbidden - Invalid or expired token
+    PostNotFound:
+        description: Post not found
+    CommentNotFound:
+        description: Comment not found
+    UserNotFound:
+        description: User not found

@@ -1,57 +1,72 @@
 import request from 'supertest';
 import app from '../app';
-import postsModel from '../models/posts_model'; // Adjust the path as necessary
-import userModel from '../models/user_model'; // Adjust the path as necessary
+import {PostModel} from '../models/posts_model'; // Adjust the path as necessary
+import {UserModel} from '../models/user_model';
+import {UserData} from "types/user_types";
+import {PostData} from "types/post_types"; // Adjust the path as necessary
 
-let existingPost = null;
+let existingPost: PostData = undefined;
 
-type UserInfo = {
-    email: string;
-    password: string;
+interface UserInfo extends UserData {
+    id?: string;
     accessToken?: string;
-    _id?: string;
+    password: string;
 }
 const userInfo:UserInfo = {
-    email: "berrebimevo@gmail.com",
+    email: "user1@gmail.com",
+    username: "user1",
+    password: "123456"
+}
+
+const userInfo2:UserInfo = {
+    email: "user2@gmail.com",
+    username: "user2",
     password: "123456"
 }
 
 const testPost1 = {
-    "sender": "USERNAME1",
     "title": "POST1 TITLE",
     "content": "POST1 CONTENT"
 };
 const testPost2 = {
-    "sender": "USERNAME2",
     "title": "POST2 TITLE",
     "content": "POST2 CONTENT"
 };
 const testPost3 = {
-    "sender": "USERNAME2",
-    "title": "POST2 TITLE",
-    "content": "POST2 CONTENT"
+    "title": "POST3 TITLE",
+    "content": "POST3 CONTENT"
 };
 const testUpdatedPost = {
-    "sender": "UPDATED USERNAME",
     "title": "UPDATED POST TITLE",
     "content": "UPDATED POST CONTENT"
 };
 
-beforeAll(async () => {
-    // Clear the DB
-    await postsModel.deleteMany();
-    await userModel.deleteMany();	
-    // Register and login to get access token
+const testPost4 = {
+    "title": "POST4 TITLE",
+    "content": "POST4 CONTENT"
+}
+
+const addUser = async (userInfo: UserInfo) => {
     await request(app).post('/auth/register').send(userInfo);
     const loginResponse = await request(app).post('/auth/login').send(userInfo);
-
     userInfo.accessToken = loginResponse.body.accessToken;
-    userInfo._id = loginResponse.body._id;
+    userInfo.id = loginResponse.body.userId;
+}
+
+beforeAll(async () => {
+    // Clear the DB
+    await PostModel.deleteMany();
+    await UserModel.deleteMany();
+
+    await addUser(userInfo);
+    await addUser(userInfo2);
 });
 
 describe('given db empty of posts when http request GET /post', () => {
     it('then should return empty list', async () => {
-        const res = await request(app).get('/post');
+        const res = await request(app)
+            .get('/post')
+            .set('Authorization', `jwt ` + userInfo.accessToken);
         expect(res.statusCode).toBe(200);
         expect(res.body).toEqual([]);
     });
@@ -59,18 +74,20 @@ describe('given db empty of posts when http request GET /post', () => {
 
 describe('when http request POST /post', () => {
     it('then should add post to the db', async () => {
-        
+
+        const currentTime = Date.now();
         const res = await request(app)
             .post('/post')
             .set('Authorization', `jwt ` + userInfo.accessToken)
             .send(testPost1);
         const resBody = res.body;
         existingPost = { ...resBody };
-        delete resBody._id;
-        // i need to understand why resBody isEqual to testPost1
-        // but the sender "USERNAME1" is not equal to "userInfo._id"
+
         expect(res.statusCode).toBe(201);
-        expect(resBody).toEqual(testPost1);
+        expect(resBody.title).toEqual(testPost1.title);
+        expect(resBody.content).toEqual(testPost1.content);
+        expect(resBody.owner).toEqual(userInfo.id);
+        expect(new Date(resBody.createdAt).getTime()).toBeGreaterThan(currentTime);
         
     });
 });
@@ -97,54 +114,97 @@ describe('when http request POST /post', () => {
             .post('/post')
             .set('Authorization', `jwt ` + userInfo.accessToken)
             .send(testPost3);
-    });
-});
 
-describe('when http request POST /post without required sender field', () => {
-    it('then should return 400 bad request http status', async () => {
-        const tempPostTest = {
-            "title": "POST1 TITLE",
-            "content": "POST1 CONTENT"
-        };
-        const res = await request(app)
+        // Post 4 another owner
+        await request(app)
             .post('/post')
-            .set('Authorization', `jwt ` + userInfo.accessToken)
-            .send(tempPostTest);
-
-        expect(res.statusCode).toBe(400);
+            .set('Authorization', `jwt ` + userInfo2.accessToken)
+            .send(testPost4);
     });
 });
 
 describe('given db initialized with posts when http request GET /post', () => {
     it('then should return all posts in the db', async () => {
-        const res = await request(app).get('/post');
+        const res = await request(app)
+            .get('/post')
+            .set('Authorization', `jwt ` + userInfo.accessToken);
         expect(res.statusCode).toBe(200);
-        expect(res.statusCode).not.toEqual([]);
+        expect(res.body).not.toEqual([]);
+        expect(res.body.length).toBeGreaterThan(1);
     });
 });
 
-describe('given unknown username when http request GET /post?sender', () => {
+describe('Check the private and public route for the auth need', () => {
+    it('should allow GET /post without authentication', async () => {
+        const response = await request(app).get('/post');
+        expect(response.status).toBe(200);
+    });
+
+    it('should allow GET /post/:id without authentication', async () => {
+        const response = await request(app).get(`/post/${existingPost.id}`);
+        expect(response.status).toBe(200);
+    });
+
+    it('should not allow GET /post?owner without authentication', async () => {
+        const response = await request(app).get(`/post?owner${existingPost.owner}`);
+        expect(response.status).toBe(401);
+    });
+});
+
+// TODO - change th test to get posts by owner.username
+describe('given username when http request GET /post?username', () => {
+    it('then should return a post', async () => {
+        const res = await request(app)
+            .get(`/post?username=${userInfo.username}`)
+            .set('Authorization', `jwt ` + userInfo.accessToken);
+
+        expect(res.statusCode).toBe(200);
+        res.body.forEach((post: PostData) => {
+            expect(post.owner).toEqual(userInfo.id);
+        });
+    });
+});
+
+describe('given unknown userId when http request GET /post?owner', () => {
     it('then should return empty list', async () => {
-        const res = await request(app).get('/post?sender=UNKNOWN');
+        const res = await request(app)
+            .get('/post?owner=67c8975b8a05aa910017a481')
+            .set('Authorization', `jwt ` + userInfo.accessToken);
 
         expect(res.statusCode).toBe(200);
         expect(res.body).toEqual([]);
     });
 });
 
-describe('given existing username when http request GET /post?sender', () => {
+
+describe('given existing username when http request GET /post?owner', () => {
     it('then should return his posts only', async () => {
-        const res = await request(app).get('/post?sender=USERNAME1');
-        const resBody = res.body;
-        const senderList = resBody.map((post) => post.sender);
+        // Fetch all posts
+        const resAllPosts = await request(app)
+            .get('/post')
+            .set('Authorization', `jwt ` + userInfo.accessToken);
+        const allPosts = resAllPosts.body;
 
-        // Use filter and return array with unique values
-        const uniqueSenderList = senderList.filter(
-            (e, i, self) => i === self.indexOf(e));
+        // Fetch posts by specific user
+        const resUserPosts = await request(app)
+            .get(`/post?owner=${userInfo2.id}`)
+            .set('Authorization', `jwt ` + userInfo.accessToken);
+        const userPosts = resUserPosts.body;
 
-        expect(res.statusCode).toBe(200);
-        expect(uniqueSenderList.length).toBe(1);
-        expect(uniqueSenderList[0]).toEqual(resBody[0].sender);
+        // Check that the response status is 200
+        expect(resUserPosts.statusCode).toBe(200);
+
+        // Check that the user posts are a subset of all posts
+        const userPostIds = userPosts.map((post: { id: string; }) => post.id);
+        const allPostIds = allPosts.map((post: { id: string; }) => post.id);
+        userPostIds.forEach((id: string) => {
+            expect(allPostIds).toContain(id);
+        });
+
+        // Check that all posts belong to the user
+        userPosts.forEach((post: PostData) => {
+            expect(post.owner).toEqual(userInfo2.id);
+        });
     });
 });
 
@@ -161,29 +221,56 @@ describe('when http request PUT /post/id of unknown post', () => {
 
 describe('when http request PUT /post/id of existing post', () => {
     it('then should update post in the db', async () => {
+        const resOldPost = await request(app)
+            .get(`/post/${existingPost.id}`)
+            .set('Authorization', `jwt ` + userInfo.accessToken)
+
+        const oldPost = resOldPost.body;
         const res = await request(app)
-            .put(`/post/${existingPost._id}`)
+            .put(`/post/${existingPost.id}`)
             .set('Authorization', `jwt ` + userInfo.accessToken)
             .send(testUpdatedPost);
-        const resBody = res.body;
-        delete resBody._id;
+        const updatedPost = res.body;
 
-        expect(res.statusCode).toBe(201);
-        expect(resBody).toEqual(testUpdatedPost);
+        expect(res.statusCode).toBe(200);
+
+        expect(updatedPost.title).toEqual(testUpdatedPost.title);
+        expect(updatedPost.content).toEqual(testUpdatedPost.content);
+        expect(updatedPost.owner).toEqual(oldPost.owner);
+        expect(updatedPost.createdAt).toEqual(oldPost.createdAt);
+        expect((new Date(updatedPost.updatedAt)).getTime()).toBeGreaterThan((new Date(oldPost.updatedAt)).getTime());
+
     });
 });
 
-describe('when http request PUT /post/id of existing post but without required sender field', () => {
-    it('then should return 400 bad request http status', async () => {
+
+// TODO - Change to another authenticated user instead of sender
+describe('when http request PUT /post/id of existing post but without being the owner', () => {
+    it('then should return 403 forbidden http status', async () => {
         const body = {
             "title": "UPDATED POST TITLE",
             "content": "UPDATED POST CONTENT"
         };
         const res = await request(app)
-            .put(`/post/${existingPost._id}`)
+            .put(`/post/${existingPost.id}`)
+            .set('Authorization', `jwt ` + userInfo2.accessToken)
+            .send(body);
+
+        expect(res.statusCode).toBe(403);
+    });
+});
+
+describe('when http request PUT /post/id of non existing post', () => {
+    it('then should return 404 forbidden http status', async () => {
+        const body = {
+            "title": "UPDATED POST TITLE",
+            "content": "UPDATED POST CONTENT"
+        };
+        const res = await request(app)
+            .put(`/post/67c8a86f81a290f10000e313`)
             .set('Authorization', `jwt ` + userInfo.accessToken)
             .send(body);
 
-        expect(res.statusCode).toBe(400);
+        expect(res.statusCode).toBe(404);
     });
 });

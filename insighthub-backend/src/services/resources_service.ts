@@ -1,11 +1,11 @@
-import { config } from '../config';
+import { config } from '../config/config';
 import multer from 'multer';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import fs from 'fs';
 
 const createImagesStorage = () => {
-    
+
     // Ensure the directory exists
     const imagesResourcesDir = config.resources.imagesDirectoryPath();
     if (!fs.existsSync(imagesResourcesDir)) {
@@ -23,6 +23,7 @@ const createImagesStorage = () => {
         }
     });
 
+    // TODO - consider to make a Promise
     const uploadImage = multer({
         storage: imagesStorage,
         limits: {
@@ -44,6 +45,24 @@ const createImagesStorage = () => {
     return uploadImage;
 };
 
-const uploadImage = createImagesStorage();
+// TODO - fix the type here
+// @ts-ignore
+const uploadImage = (req) : Promise<string> => {
+    return new Promise<string>((resolve, reject) => {
+        // @ts-ignore
+        createImagesStorage().single('file')(req, {}, (error) => {
+            if (error) {
+                if (error instanceof multer.MulterError || error instanceof TypeError) {
+                    return reject(error);
+                } else if (!req.file) {
+                    return reject(new TypeError('No file uploaded.'));
+                } else {
+                    return reject(new Error('Internal Server Error'));
+                }
+            }
+            resolve(req.file.filename);
+        });
+    });
+};
 
 export { uploadImage };
