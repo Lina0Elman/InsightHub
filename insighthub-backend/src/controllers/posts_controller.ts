@@ -3,8 +3,6 @@ import * as postsService from '../services/posts_service';
 import { handleError } from '../utils/handle_error';
 import {CustomRequest} from "types/customRequest";
 import {PostData} from "types/post_types";
-import likeModel from '../models/like_model';
-import mongoose from 'mongoose';
 import {getLikedPostsByUser, postExists, updatePostLike} from "../services/posts_service";
 
 

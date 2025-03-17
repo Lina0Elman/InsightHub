@@ -21,11 +21,10 @@ import {
   FormControlLabel,
 } from "@mui/material";
 import { Favorite, Message, Delete } from '@mui/icons-material';
-import axios from "axios";
-import { config } from "../config";
-import { PostType } from "../models/Post";
+import { Post } from "../models/Post";
 import TopBar from "../components/TopBar";
 import api from "../serverApi";
+import {getUserAuth} from "../handlers/userAuth.ts";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -36,7 +35,7 @@ const Dashboard: React.FC = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [postIdToDelete, setPostIdToDelete] = useState<string | null>(null);
   const [filterByUser, setFilterByUser] = useState(false);
-  const auth = JSON.parse(localStorage.getItem(config.localStorageKeys.userAuth) as string);
+  const auth = getUserAuth();
 
   const handleCreatePost = () => {
     // Navigate to the "new post" page
@@ -46,12 +45,12 @@ const Dashboard: React.FC = () => {
   const handleDeletePost = async () => {
     if (postIdToDelete) {
       try {
-        await axios.delete(`${config.app.backend_url()}/post/${postIdToDelete}`, {
+        await api.delete(`/post/${postIdToDelete}`, {
           headers: {
             Authorization: `Bearer ${auth.accessToken}`,
           },
         });
-        setPosts(posts.filter(post => post._id !== postIdToDelete));
+        setPosts(posts.filter(post => post.id !== postIdToDelete));
         setOpenDialog(false);
         setPostIdToDelete(null);
       } catch (err) {
@@ -75,18 +74,18 @@ const Dashboard: React.FC = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await axios.get(`${config.app.backend_url()}/post`, {
-        params: filterByUser ? { sender: auth._id } : {},
+      const response = await api.get(`/post`, {
+        params: filterByUser ? { owner: auth.userId } : {},
       });
-      const postsData = response.data as PostType[];
+      const postsData = response.data as Post[];
       setPosts(postsData);
 
       // Fetch comments count for each post
       const commentsCountData: { [key: string]: number } = {};
       await Promise.all(
         postsData.map(async (post) => {
-          const commentsResponse = await axios.get(`${config.app.backend_url()}/comment/post/${post._id}`);
-          commentsCountData[post._id] = (commentsResponse.data  as Comment[]).length;
+          const commentsResponse = await api.get(`/comment/post/${post.id}`);
+          commentsCountData[post.id] = (commentsResponse.data  as Comment[]).length;
         })
       );
       setCommentsCount(commentsCountData);
@@ -134,7 +133,7 @@ const Dashboard: React.FC = () => {
             ) : (
               <List>
                 {posts.map((post) => (
-                  <React.Fragment key={post._id}>
+                  <React.Fragment key={post.id}>
                     <Card sx={{
                       mb: 2,
                       width: '80vh',
@@ -144,11 +143,11 @@ const Dashboard: React.FC = () => {
                         boxShadow: 3,
                         backgroundColor: 'rgba(0, 0, 0, 0.03)',
                       },
-                    }} onClick={() => navigate(`/post/${post._id}`)}>
+                    }} onClick={() => navigate(`/post/${post.id}`)}>
                       <CardContent>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                          <Avatar sx={{ mr: 2 }}>{post.sender.charAt(0)}</Avatar> {/* make the avatar either the profile pic or the curr one */}
-                          <Typography variant="h6">{post.sender}</Typography>
+                          <Avatar sx={{ mr: 2 }}>{post.owner.charAt(0)}</Avatar> {/* make the avatar either the profile pic or the curr one */}
+                          <Typography variant="h6">{post.owner}</Typography>
                         </Box>
                         <Typography variant="h5" component="div">
                           {post.title}
@@ -162,12 +161,12 @@ const Dashboard: React.FC = () => {
                           <Favorite />
                         </IconButton>
                         <IconButton aria-label="comments" sx={{ marginLeft: 'auto' }}>
-                          <Badge badgeContent={commentsCount[post._id] || 0} color="primary">
+                          <Badge badgeContent={commentsCount[post.id] || 0} color="primary">
                             <Message />
                           </Badge>
                         </IconButton>
-                        {post.sender === auth._id && (
-                          <IconButton aria-label="delete" onClick={(e) => handleOpenDialog(e, post._id)}>
+                        {post.owner === auth.userId && (
+                          <IconButton aria-label="delete" onClick={(e) => handleOpenDialog(e, post.id)}>
                             <Delete />
                           </IconButton>
                         )}

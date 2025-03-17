@@ -1,39 +1,36 @@
-import multer from 'multer';
+import { Request, Response } from 'express';
 import { config } from '../config/config';
 import fs from 'fs';
 import path from 'path';
 import { uploadImage } from '../services/resources_service';
-import { Request, Response } from 'express';
+import multer from 'multer';
+import {CustomRequest} from "types/customRequest";
+import {updateUserById} from "../services/users_service";
+import {handleError} from "../utils/handle_error";
 
-const createImageResource = async (req: Request, res: Response) => {
-    const upload = uploadImage.single('file');
-    upload(req, res, error => {
-        if (error instanceof multer.MulterError) {
-            return res.status(400).send(error.message);
-        } else if (error instanceof TypeError) {
-            return res.status(400).send(error.message);
-        } else if (!req.file) {
-            return res.status(400).send('No file uploaded.');
-        } else if (error) {
-            return res.status(500).send("Internal Server Error");
-        }
 
-        return res.status(201).send(req.file.filename);
-    })
-};
-
-const createUserImageResource = async (req, res) => {
+const createUserImageResource = async (req: CustomRequest, res: Response) => {
     try {
         const imageFilename = await uploadImage(req);
-        const user = await userModel.findById(req.query.userId);
-        if (!user) {
-            return res.status(404).send("User not found");
-        }
-        user.imageFilename = imageFilename;
-        await user.save();
-        return res.status(201).send(user);
+
+        const updatedUser = updateUserById(req.user.id, {imageFilename});
+
+        return res.status(201).send(updatedUser);
     } catch (error) {
-        return res.status(500).send(error.message);
+        handleError(error, res);
+    }
+};
+
+const createImageResource = async (req: Request, res: Response) => {
+    try {
+        const imageFilename = await uploadImage(req);
+        return res.status(201).send(imageFilename);
+    } catch (error) {
+        if (error instanceof multer.MulterError || error instanceof TypeError) {
+            return res.status(400).send(error.message);
+        } else {
+            handleError(error, res);
+        }
     }
 };
 
@@ -48,7 +45,7 @@ const getImageResource = async (req: Request, res: Response) => {
 
         res.sendFile(imagePath);
     } catch (error) {
-        res.status(500).send('Internal Server Error');
+        handleError(error, res);
     }
 };
 

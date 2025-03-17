@@ -1,4 +1,4 @@
-import express from 'express';
+import express, {Request, Response, NextFunction} from 'express';
 import authRoutes from './routes/auth_routes';
 import commentsRoutes from './routes/comments_routes';
 import postsRoutes from './routes/posts_routes';
@@ -25,8 +25,21 @@ app.use(cors({
     credentials: true, // Allow cookies to be sent with requests
 }));
 
+const removeUndefinedFields = (req: Request, res: Response, next: NextFunction) => {
+    if (req.body && typeof req.body === 'object') {
+        for (const key in req.body) {
+            if (req.body[key] === undefined) {
+                delete req.body[key];
+            }
+        }
+    }
+    next();
+};
+
 app.use(bodyParser.json());
+app.use(removeUndefinedFields);
 app.use(bodyParser.urlencoded({ extended: true }));
+
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(loadOpenApiFile() as JsonObject));
 

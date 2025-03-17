@@ -1,38 +1,61 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Box, Button, Alert, TextField, Collapse } from '@mui/material';
 import { ExpandMore, ExpandLess } from '@mui/icons-material';
-import axios from 'axios';
-import { config } from '../config';
 import TopBar from '../components/TopBar';
-import { LoginResponse } from '../models/LoginResponse';
+import {getUserAuth, setUserAuth} from "../handlers/userAuth.ts";
+import api from "../serverApi.ts";
+import {UserProfile} from "../models/UserProfile.ts";
 
 const Profile: React.FC = () => {
   const [image, setImage] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [name, setName] = useState('');
+  const [username, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const auth = JSON.parse(localStorage.getItem(config.localStorageKeys.userAuth) as string) as LoginResponse;
+  const auth = getUserAuth();
+  const [profile, setProfile] = useState<UserProfile>();
 
   useEffect(() => {
-    const fetchProfileImage = async () => {
+    const fetchProfileImage = async (profile: UserProfile) => {
       try {
-        //setName(userData.name); todo
-        setEmail(auth.email);
-        const response = await axios.get(`${config.app.backend_url()}/resource/image/${auth.imageFilename}`, {
-            responseType: 'blob',
-          });
+        const response = await api.get(`/resource/image/${profile?.imageFilename}`, {
+          responseType: 'blob',
+        });
         const imageUrl = URL.createObjectURL(response.data as Blob);
-          setImage(imageUrl);
+        setImage(imageUrl);
       } catch (error) {
         setError('Error fetching profile image.');
       }
     };
-    fetchProfileImage();
-  }, [auth.imageFilename]);
+
+    const fetchProfile = async () => {
+      const response = await api.get(`/user/${getUserAuth().userId}`);
+      const userProfile = response.data as UserProfile;
+      setProfile(userProfile);
+      setUserName(userProfile.username);
+      setEmail(userProfile.email);
+      return userProfile;
+    };
+    fetchProfile().then((profile) => fetchProfileImage(profile));
+  }, []);
+
+  // useEffect(() => {
+  //   const fetchProfileImage = async () => {
+  //     try {
+  //       const response = await api.get(`/resource/image/${auth.imageFilename}`, {
+  //           responseType: 'blob',
+  //         });
+  //       const imageUrl = URL.createObjectURL(response.data as Blob);
+  //         setImage(imageUrl);
+  //     } catch (error) {
+  //       setError('Error fetching profile image.');
+  //     }
+  //   };
+  //   fetchProfileImage();
+  // }, [auth.imageFilename]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -52,23 +75,23 @@ const Profile: React.FC = () => {
     formData.append('file', selectedFile);
 
     try {
-      const response = await axios.post(`${config.app.backend_url()}/resource/image/user`, formData, {
+      const response = await api.post(`/resource/image/user`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${auth.accessToken}`,
+          'Content-Type': 'multipart/form-data'
         },
       });
 
-      localStorage.setItem(config.localStorageKeys.userAuth, JSON.stringify({
-        ...auth,
-        imageFilename: (response.data as LoginResponse).imageFilename,
-      }));
-      setSuccess(true);
-      setError('');
-      setTimeout(() => {
-        setSuccess(false);
-        window.location.reload();
-      }, 3000);
+      // setUserAuth({...auth, imageFilename: (response.data as LoginResponse).imageFilename})
+      if (response.status === 201) {
+        setSuccess(true);
+        setError('');
+        setTimeout(() => {
+          setSuccess(false);
+          window.location.reload();
+        }, 3000);
+      } else {
+        setError('Error uploading image. Please try again.');
+      }
     } catch (err) {
       setError('Error uploading image. Please try again.');
     }
@@ -78,14 +101,10 @@ const Profile: React.FC = () => {
   const handleUpdateProfile = async () => {
     // todo route doesnt exist
     try {
-      await axios.put(`${config.app.backend_url()}/user/${auth._id}`, {
-        name,
+      await api.patch(`/user/${auth.userId}`, {
+        username,
         email,
         password,
-      }, {
-        headers: {
-          'Authorization': `Bearer ${auth.accessToken}`,
-        },
       });
       setSuccess(true);
       setError('');
@@ -137,8 +156,8 @@ const Profile: React.FC = () => {
               variant="outlined"
               fullWidth
               margin="normal"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={username}
+              onChange={(e) => setUserName(e.target.value)}
             />
             <TextField
               label="Email"

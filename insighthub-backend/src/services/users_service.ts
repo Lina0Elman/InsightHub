@@ -78,7 +78,7 @@ const generateTokens = (id: string): { accessToken: string, refreshToken: string
 
 
 
-export const loginUser = async (email: string, password: string): Promise<{ accessToken: string, refreshToken: string, userId: string } | null> => {
+export const loginUser = async (email: string, password: string): Promise<{ accessToken: string, refreshToken: string, userId: string, imageFilename?: string } | null> => {
     const user = await getUserByEmail(email);
     if (!user || !(await bcrypt.compare(password, user.password))) {
         return null;
@@ -88,7 +88,7 @@ export const loginUser = async (email: string, password: string): Promise<{ acce
 
     await new RefreshTokenModel({ userId: user.id, token: refreshToken, accessToken: accessToken }).save();
 
-    return { accessToken, refreshToken, userId: user.id };
+    return { accessToken, refreshToken, userId: user.id, imageFilename: user.imageFilename };
 };
 
 export const refreshToken = async (refreshToken: string): Promise<{ newRefreshToken: string; accessToken: string }> => {

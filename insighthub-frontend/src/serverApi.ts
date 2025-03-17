@@ -1,13 +1,31 @@
 import axios, {AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import {config} from './config';
 import {LoginResponse} from "./models/LoginResponse.ts";
-import {getUserAuth} from "./handlers/userAuth.ts";
+import {getUserAuth, removeUserAuth, setUserAuth} from "./handlers/userAuth.ts";
 
 
 // Create an Axios instance
 const api: AxiosInstance = axios.create({
     baseURL: config.app.backend_url(),
 });
+
+// Function to refresh the token
+const refreshToken = async (): Promise<LoginResponse | null> => {
+    try {
+        const authData = getUserAuth();
+        const response = await axios.post(`${config.app.backend_url()}/auth/refresh`, {
+            refreshToken: authData.refreshToken,
+        });
+        const newAuthData = response.data as LoginResponse;
+        setUserAuth(newAuthData);
+        return newAuthData;
+    } catch (error) {
+        removeUserAuth();
+        window.location.href = '/login';
+        return null;
+    }
+};
+
 
 // Add a request interceptor
 api.interceptors.request.use((axiosConfig: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
@@ -17,7 +35,7 @@ api.interceptors.request.use((axiosConfig: InternalAxiosRequestConfig): Internal
         const accessToken = authData.accessToken;
         if (accessToken) {
             // Attach the token to the Authorization header
-            axiosConfig.headers.Authorization = `jwt ${accessToken}`;
+            axiosConfig.headers.Authorization = `Bearer ${accessToken}`;
         }
     }
 
@@ -30,13 +48,24 @@ api.interceptors.response.use(
     (response: AxiosResponse) => {
         return response;
     },
-    (error) => {
-
-        // TODO - fix it - need to redirect to login if there is no refresh to use, if there is - need to refresh the accessToken
+    async (error) => {
+        const originalRequest = error.config;
+        if (error.response.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+            const newAuthData = await refreshToken();
+            if (newAuthData) {
+                const currUserAuth = getUserAuth()
+                currUserAuth.accessToken = newAuthData.accessToken;
+                currUserAuth.refreshToken = newAuthData.refreshToken;
+                setUserAuth(currUserAuth);
+                originalRequest.headers.Authorization = `Bearer ${newAuthData.accessToken}`;
+                return api(originalRequest);
+            }
+        }
+        // If refresh token fails, redirect to login
         if (error.response.status === 401) {
-            // Handle unauthorized access (e.g., redirect to login)
-            localStorage.removeItem(config.localStorageKeys.userAuth);
-            window.location.href = '/login'; // Redirect to login page
+            removeUserAuth();
+            window.location.href = '/login';
         }
         return Promise.reject(error);
     }

@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto';
 import fs from 'fs';
 
 const createImagesStorage = () => {
-    
+
     // Ensure the directory exists
     const imagesResourcesDir = config.resources.imagesDirectoryPath();
     if (!fs.existsSync(imagesResourcesDir)) {
@@ -45,8 +45,11 @@ const createImagesStorage = () => {
     return uploadImage;
 };
 
+// TODO - fix the type here
+// @ts-ignore
 const uploadImage = (req) : Promise<string> => {
     return new Promise<string>((resolve, reject) => {
+        // @ts-ignore
         createImagesStorage().single('file')(req, {}, (error) => {
             if (error) {
                 if (error instanceof multer.MulterError || error instanceof TypeError) {

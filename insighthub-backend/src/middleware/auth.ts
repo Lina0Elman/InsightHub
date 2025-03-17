@@ -1,4 +1,3 @@
-// auth.ts
 import {Response, NextFunction} from 'express';
 import jwt from 'jsonwebtoken';
 import {config} from '../config/config';
@@ -38,25 +37,17 @@ const authenticateTokenHandler: any & { unless: typeof unless } = async (req: Cu
     req.user = user;
     next();
 
-  } catch (err) {
-    res.status(403).json({ message: 'Invalid token' });
+  } catch (err: any) {
+    if (err.name === 'TokenExpiredError') {
+      res.status(401).json({ message: 'Token expired' });
+    } else {
+      res.status(403).json({ message: 'Invalid token' });
+    }
   }
 };
 
 
 // Middleware to authenticate token for all requests
-/**
- * @swagger
- * components:
- *   securitySchemes:
- *     BearerAuth:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
- *
- * security:
- *   - BearerAuth: []
- */
 const authenticateToken: any & { unless: typeof unless } = async (req: CustomRequest, res: Response, next: NextFunction): Promise<void> => {
   authenticateTokenHandler(req, res, next, false)
 }

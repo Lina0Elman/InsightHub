@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Typography, Box, Paper, CircularProgress, TextField, Button, Avatar, Divider, IconButton, Collapse, Badge, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { ArrowBack, Comment as CommentIcon, ThumbUp as ThumbUpIcon, Delete as DeleteIcon, Edit as EditIcon, Check as CheckIcon, Cancel as CancelIcon } from '@mui/icons-material';
-import axios from 'axios';
-import { config } from '../config';
 import { Post as PostModel } from '../models/Post';
 import { Comment } from '../models/Comment';
 import TopBar from '../components/TopBar';
-import { LoginResponse } from '../models/LoginResponse';
+import {getUserAuth} from "../handlers/userAuth.ts";
+import api from "../serverApi.ts";
 
 const PostDetails: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -22,18 +21,18 @@ const PostDetails: React.FC = () => {
   const [editedTitle, setEditedTitle] = useState('');
   const [editedContent, setEditedContent] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
-  const auth = JSON.parse(localStorage.getItem(config.localStorageKeys.userAuth) as string) as LoginResponse;
+  const auth = getUserAuth();
 
   const loadPostDetails = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const postResponse = await axios.get(`${config.app.backend_url()}/post/${postId}`);
+      const postResponse = await api.get(`/post/${postId}`);
       setPost(postResponse.data as PostModel);
       setEditedTitle((postResponse.data as PostModel).title);
       setEditedContent((postResponse.data as PostModel).content);
       try {
-        const commentsResponse = await axios.get(`${config.app.backend_url()}/comment/post/${postId}`);
+        const commentsResponse = await api.get(`/comment/post/${postId}`);
         setComments(commentsResponse.data as Comment[]);
       } catch (err) {
         console.log('Failed to load comments:', err);
@@ -47,14 +46,10 @@ const PostDetails: React.FC = () => {
 
   const handleAddComment = async () => {
     try {
-      const response = await axios.post(`${config.app.backend_url()}/comment`, {
+      const response = await api.post(`/comment`, {
         content: newComment,
         postId,
-        sender: auth._id,
-      }, {
-        headers: {
-            Authorization: `Bearer ${auth.accessToken}`,
-      },});
+      });
       setComments([...comments, response.data as Comment]);
       setNewComment('');
     } catch (err) {
@@ -64,12 +59,8 @@ const PostDetails: React.FC = () => {
 
   const handleDeleteComment = async (commentId: string) => {
     try {
-      await axios.delete(`${config.app.backend_url()}/comment/${commentId}`, {
-        headers: {
-          Authorization: `Bearer ${auth.accessToken}`,
-        },
-      });
-      setComments(comments.filter(comment => comment._id !== commentId));
+      await api.delete(`/comment/${commentId}`);
+      setComments(comments.filter(comment => comment.id !== commentId));
     } catch (err) {
       console.error('Failed to delete comment:', err);
     }
@@ -87,13 +78,9 @@ const PostDetails: React.FC = () => {
 
   const handleSaveEdit = async () => {
     try {
-      const response = await axios.put(`${config.app.backend_url()}/post/${postId}`, {
+      const response = await api.put(`/post/${postId}`, {
         title: editedTitle,
         content: editedContent,
-      }, {
-        headers: {
-          Authorization: `Bearer ${auth.accessToken}`,
-        },
       });
       setPost(response.data as PostModel);
       setIsEditing(false);
@@ -104,11 +91,7 @@ const PostDetails: React.FC = () => {
 
   const handleDeletePost = async () => {
     try {
-      await axios.delete(`${config.app.backend_url()}/post/${postId}`, {
-        headers: {
-          Authorization: `Bearer ${auth.accessToken}`,
-        },
-      });
+      await api.delete(`/post/${postId}`);
       navigate('/dashboard');
     } catch (err) {
       console.error('Failed to delete post:', err);
@@ -138,7 +121,7 @@ const PostDetails: React.FC = () => {
             <Typography variant="h4" gutterBottom sx={{ flexGrow: 1 }}>
               Post Details
             </Typography>
-            {post?.sender === auth._id && !isEditing && (
+            {post?.owner === auth.userId && !isEditing && (
               <>
                 <IconButton color="primary" onClick={handleEditPost}>
                   <EditIcon />
@@ -167,8 +150,8 @@ const PostDetails: React.FC = () => {
           post && (
             <Paper sx={{ p: 4, width: '100%' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Avatar sx={{ mr: 2 }}>{post.sender.charAt(0)}</Avatar>
-                <Typography variant="h6">{post.sender}</Typography>
+                <Avatar sx={{ mr: 2 }}>{post.owner.charAt(0)}</Avatar>
+                <Typography variant="h6">{post.owner}</Typography>
               </Box>
               {isEditing ? (
                 <>
@@ -218,14 +201,14 @@ const PostDetails: React.FC = () => {
                 </Typography>
                 <Box sx={{ maxHeight: '300px', overflowY: 'auto', mb: 2 }}>
                   {comments.map((comment) => (
-                    <Box key={comment._id} sx={{ mb: 2 }}>
+                    <Box key={comment.id} sx={{ mb: 2 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                        <Avatar sx={{ mr: 2 }}>{comment.sender.charAt(0)}</Avatar>
+                        <Avatar sx={{ mr: 2 }}>{comment.owner.charAt(0)}</Avatar>
                         <Typography variant="body2" color="text.primary" sx={{ flexGrow: 1 }}>
-                          {comment.sender}
+                          {comment.owner}
                         </Typography>
-                        {comment.sender === auth._id && (
-                          <IconButton aria-label="delete" onClick={() => handleDeleteComment(comment._id)}>
+                        {comment.owner === auth.userId && (
+                          <IconButton aria-label="delete" onClick={() => handleDeleteComment(comment.id)}>
                             <DeleteIcon />
                           </IconButton>
                         )}

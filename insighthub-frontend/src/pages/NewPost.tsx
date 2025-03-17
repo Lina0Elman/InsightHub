@@ -1,32 +1,25 @@
 import React, { useState } from 'react';
 import { Container, Button, Typography, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { config } from '../config';
 import FroalaEditor from 'react-froala-wysiwyg';
 import 'froala-editor/css/froala_style.min.css';
 import 'froala-editor/css/froala_editor.pkgd.min.css';
 import 'froala-editor/js/plugins/image.min.js';
-import { LoginResponse } from '../models/LoginResponse';
 import TopBar from '../components/TopBar';
+import api from "../serverApi.ts";
 
 const NewPost: React.FC = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const navigate = useNavigate();
-  const auth = JSON.parse(localStorage.getItem(config.localStorageKeys.userAuth) as string) as LoginResponse;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post(`${config.app.backend_url()}/post`, {
+      await api.post(`/post`, {
         title,
         content,
-        sender: auth._id,
-      }, {
-        headers: {
-          Authorization: `Bearer ${auth.accessToken}`,
-        },
       });
       navigate('/dashboard'); // Redirect to dashboard after successful post creation
     } catch (error) {
@@ -39,10 +32,9 @@ const NewPost: React.FC = () => {
     formData.append('file', file);
 
     try {
-      const response = await axios.post(`${config.app.backend_url()}/resource/image`, formData, {
+      const response = await api.post(`/resource/image`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${auth.accessToken}`,
         },
       });
       return response.data;
