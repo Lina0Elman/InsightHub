@@ -24,7 +24,7 @@ const corsOptions = {
     origin: [config.app.frontend_url(), config.app.backend_url()],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, // Allow cookies to be sent with requests
-}));
+};
 
 const removeUndefinedFields = (req: Request, res: Response, next: NextFunction) => {
     if (req.body && typeof req.body === 'object') {
