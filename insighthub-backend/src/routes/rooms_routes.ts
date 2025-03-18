@@ -1,10 +1,10 @@
 
-import express from 'express';
-import Room from '../controllers/rooms_controller';
-import  {authMiddleware} from '../controllers/auth_controller';
+import express, {Request, Response} from 'express';
+import * as roomsController from '../controllers/rooms_controller';
+import { CustomRequest } from 'types/customRequest';
 
 const router = express.Router();
 
-router.get('/user/:receiverUserId', authMiddleware, Room.getRoomByUserIds);
+router.get('/user/:receiverUserId', (req: Request, res: Response) => roomsController.getRoomByUserIds(req as CustomRequest, res));
 
 export default router;

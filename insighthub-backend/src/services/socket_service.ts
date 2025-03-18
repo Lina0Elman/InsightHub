@@ -1,18 +1,18 @@
-import { config } from "../config";
-import userModel from "../models/user_model";
+import { Server } from "socket.io";
+import { config } from "../config/config";
 import messageModel from "../models/message_model";
 
 const onlineUsers = new Map();
 
-const initSocket = async (socketListener) => {
+const initSocket = async (socketListener: Server) => {
     socketListener.on("connection", async socket => {
 
         // Online users
-        const user = await userModel.findById({ _id: socket.userId }).lean();
+        const user = (socket as any).user;
         if (user) {
             delete user.password;
             delete user.refreshTokens;
-            onlineUsers.set(socket.userId, user);
+            onlineUsers.set(user.id, user);
         }
         socketListener.sockets.emit(config.socketMethods.onlineUsers, Array.from(onlineUsers.values()));
 
@@ -24,7 +24,7 @@ const initSocket = async (socketListener) => {
         // Chat Message
         socket.on(config.socketMethods.messageFromClient, async ({ roomId, messageContent }) => {
             // Persist message in db
-            const messageToInsert = { userId: socket.userId, roomId: roomId, content: messageContent, createdAt: new Date().toISOString() };
+            const messageToInsert = { userId: user.id, roomId: roomId, content: messageContent, createdAt: new Date().toISOString() };
             await new messageModel(messageToInsert).validate();
             const insertedMessage = await messageModel.create(messageToInsert);
 
@@ -34,7 +34,7 @@ const initSocket = async (socketListener) => {
 
         // Online users
         socket.on("disconnect", () => {
-            onlineUsers.delete(socket.userId);
+            onlineUsers.delete(user.id);
             socketListener.sockets.emit(config.socketMethods.onlineUsers, Array.from(onlineUsers.values()));
         });
     });

@@ -1,10 +1,12 @@
 import mongoose from "mongoose";
 import roomModel from "../models/room_model";
+import { CustomRequest } from "types/customRequest";
+import { Response } from "express";
 
 
-const getRoomByUserIds = async (req, res) => {
-    const receiverUserId = req.params.receiverUserId;
-    const initiatorUserId = req.query.userId;
+export const getRoomByUserIds = async (req: CustomRequest, res: Response): Promise<void> => {
+    const receiverUserId = req.params.receiverUserId as string;
+    const initiatorUserId = req.user.id as string;
     try {
         let roomDocuments: any[] = await roomModel.aggregate(
             [
@@ -47,7 +49,8 @@ const getRoomByUserIds = async (req, res) => {
         }
 
         if (room) {
-            return res.status(200).send(room);
+            res.status(200).send(room);
+            return;
         }
 
         // Room not found, create one.
@@ -59,11 +62,10 @@ const getRoomByUserIds = async (req, res) => {
         });
 
         room = newRoom.toObject();
-        room.messages = [];
-        return res.status(201).send(room);
-    }catch(error){
+        (room as any).messages = [];
+        res.status(201).send(room);
+        return;
+    } catch(error){
         res.status(400).send("Bad Request");
     }
 };
-
-export default { getRoomByUserIds };

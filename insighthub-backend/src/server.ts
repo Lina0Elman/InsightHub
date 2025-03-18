@@ -4,7 +4,7 @@ import { config } from './config/config';
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
 import { Server } from 'socket.io';
-import { socketAuthMiddleware } from './controllers/auth_controller';
+import { socketAuthMiddleware } from './middleware/socket_auth';
 import { initSocket } from './services/socket_service';
 // Configure environment variables, and allow expand.
 dotenvExpand.expand(dotenv.config());
