@@ -23,6 +23,7 @@ const Register: React.FC = () => {
         username,
         email,
         password,
+        authProvider: 'local',
       });
       // Handle successful registration
       console.log(response.data);
@@ -51,7 +52,7 @@ const Register: React.FC = () => {
       console.log("Google ID Token:", idToken); // Debugging
       console.log("Sending request to backend:", {
         idToken,
-        authProvider: "google",
+        authProvider: 'google',
       });
 
       // Send Firebase token to backend
