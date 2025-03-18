@@ -273,25 +273,25 @@ const Dashboard: React.FC = () => {
                     </React.Fragment>
                   ))}
                 </List>
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                  <Button
-                    variant="outlined"
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </Button>
-                  <Typography sx={{ mx: 2 }}>{`Page ${currentPage} of ${totalPages}`}</Typography>
-                  <Button
-                    variant="outlined"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </Button>
-                </Box>
               </>
             )}
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <Typography sx={{ mx: 2 }}>{`Page ${currentPage} of ${totalPages}`}</Typography>
+            <Button
+              variant="outlined"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
           </Box>
         </Box>
       </Box>
