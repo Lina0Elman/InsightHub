@@ -9,13 +9,14 @@ import likeModel from "../models/like_model";
 
 const postToPostData = async (post: Document<unknown, {}, IPost> & IPost): Promise<PostData> => {
     // Fetch the owner's profile image
-    const user = await UserModel.findById(post.owner).select('imageFilename').lean();
+    const user = await UserModel.findById(post.owner).lean();
     const profileImage = user?.imageFilename
 
     return { 
         ...post.toJSON(), 
         owner: post.owner.toString(),
-        ownerProfileImage: profileImage // Add the profile image to the post data
+        ownerProfileImage: profileImage, // Add the profile image to the post data
+        ownerUsername: user?.username
     };
 }
 
