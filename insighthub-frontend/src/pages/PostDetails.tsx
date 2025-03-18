@@ -5,8 +5,9 @@ import { ArrowBack, Comment as CommentIcon, ThumbUp as ThumbUpIcon, Delete as De
 import { Post as PostModel } from '../models/Post';
 import { Comment } from '../models/Comment';
 import TopBar from '../components/TopBar';
-import {getUserAuth} from "../handlers/userAuth.ts";
+import { getUserAuth } from "../handlers/userAuth.ts";
 import api from "../serverApi.ts";
+import defaultProfileImage from '../assets/defaultProfileImage.jpg'; // Import the default profile image
 
 const PostDetails: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -21,16 +22,39 @@ const PostDetails: React.FC = () => {
   const [editedTitle, setEditedTitle] = useState('');
   const [editedContent, setEditedContent] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
+  const [profileImage, setProfileImage] = useState<string>(defaultProfileImage); // State for profile image
   const auth = getUserAuth();
+
+  const fetchProfileImage = async (imageFilename: string | null) => {
+    try {
+      if (!imageFilename) {
+        return defaultProfileImage;
+      }
+      const response = await api.get(`/resource/image/${imageFilename}`, {
+        responseType: 'blob',
+      });
+      return URL.createObjectURL(response.data as Blob);
+    } catch (error) {
+      console.error('Error fetching profile image:', error);
+      return defaultProfileImage;
+    }
+  };
 
   const loadPostDetails = async () => {
     try {
       setIsLoading(true);
       setError(null);
       const postResponse = await api.get(`/post/${postId}`);
-      setPost(postResponse.data as PostModel);
-      setEditedTitle((postResponse.data as PostModel).title);
-      setEditedContent((postResponse.data as PostModel).content);
+      const postData = postResponse.data as PostModel;
+      setPost(postData);
+      setEditedTitle(postData.title);
+      setEditedContent(postData.content);
+
+      // Fetch the profile image for the post owner
+      const imageUrl = await fetchProfileImage(postData.ownerProfileImage as string);
+      setProfileImage(imageUrl);
+
+      // Fetch comments
       try {
         const commentsResponse = await api.get(`/comment/post/${postId}`);
         setComments(commentsResponse.data as Comment[]);
@@ -118,29 +142,29 @@ const PostDetails: React.FC = () => {
           <IconButton color="primary" onClick={() => navigate('/dashboard')}>
             <ArrowBack />
           </IconButton>
-            <Typography variant="h4" gutterBottom sx={{ flexGrow: 1 }}>
-              Post Details
-            </Typography>
-            {post?.owner === auth.userId && !isEditing && (
-              <>
-                <IconButton color="primary" onClick={handleEditPost}>
-                  <EditIcon />
-                </IconButton>
-                <IconButton color="secondary" onClick={handleOpenDialog}>
-                  <DeleteIcon />
-                </IconButton>
-              </>
-            )}
-            {isEditing && (
-              <>
-                <IconButton color="primary" onClick={handleSaveEdit}>
-                  <CheckIcon style={{ color: 'green' }} />
-                </IconButton>
-                <IconButton color="secondary" onClick={handleCancelEdit}>
-                  <CancelIcon />
-                </IconButton>
-              </>
-            )}
+          <Typography variant="h4" gutterBottom sx={{ flexGrow: 1 }}>
+            Post Details
+          </Typography>
+          {post?.owner === auth.userId && !isEditing && (
+            <>
+              <IconButton color="primary" onClick={handleEditPost}>
+                <EditIcon />
+              </IconButton>
+              <IconButton color="secondary" onClick={handleOpenDialog}>
+                <DeleteIcon />
+              </IconButton>
+            </>
+          )}
+          {isEditing && (
+            <>
+              <IconButton color="primary" onClick={handleSaveEdit}>
+                <CheckIcon style={{ color: 'green' }} />
+              </IconButton>
+              <IconButton color="secondary" onClick={handleCancelEdit}>
+                <CancelIcon />
+              </IconButton>
+            </>
+          )}
         </Box>
         {isLoading ? (
           <CircularProgress />
@@ -150,7 +174,7 @@ const PostDetails: React.FC = () => {
           post && (
             <Paper sx={{ p: 4, width: '100%' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Avatar sx={{ mr: 2 }}>{post.owner.charAt(0)}</Avatar>
+                <Avatar src={profileImage} sx={{ mr: 2 }} />
                 <Typography variant="h6">{post.owner}</Typography>
               </Box>
               {isEditing ? (
