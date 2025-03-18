@@ -23,6 +23,7 @@ const DividedList: React.FC<any> = ({ onlineUsers, onUserClick }) => {
             <div key={user._id} id={user._id} onClick={() => handleUserClick(user)}>
               {index !== 0 && <ListDivider />}
               <ListItem
+                key={user._id}
                 sx={{
                   cursor: 'pointer',
                   backgroundColor: user._id === selectedUserId ? 'var(--color-1)' : 'transparent',
