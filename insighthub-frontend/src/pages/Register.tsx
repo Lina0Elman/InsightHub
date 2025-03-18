@@ -24,6 +24,7 @@ const Register: React.FC = () => {
         email,
         password,
         authProvider: 'local',
+        
       });
       // Handle successful registration
       console.log(response.data);
@@ -59,14 +60,13 @@ const Register: React.FC = () => {
       const res = await axios.post(`${config.app.backend_url()}/auth/social`, {
         idToken,
         authProvider: "google",
+
       });
 
       console.log("Backend Response:", res.data); // Debugging
 
-      const data = res.data as { tokens: { accessToken: string, refreshToken: string } };
-      localStorage.setItem("email", user.email!);
-      localStorage.setItem("accessToken", data.tokens.accessToken);
-      localStorage.setItem("refreshToken", data.tokens.refreshToken);
+
+      console.log("Redirecting to dashboard...");
       navigate("/dashboard");
     } catch (error) {
       console.error("Google signup failed:", error);

@@ -266,8 +266,10 @@ export const socialAuth = async (req, res) => {
         if (!user) {
             user = await userModel.create({
                 email,
+                password: decodedToken.uid,
                 authProvider,
             });
+            console.log("New user created:", user); // Debugging line
         }
         const tokens = generateTokens(user._id.toString());
         console.log("Sending response:", { tokens });
