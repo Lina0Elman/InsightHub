@@ -3,7 +3,7 @@ import * as postsService from '../services/posts_service';
 import { handleError } from '../utils/handle_error';
 import {CustomRequest} from "types/customRequest";
 import {PostData} from "types/post_types";
-import {getLikedPostsByUser, postExists, updatePostLike} from "../services/posts_service";
+import {getLikedPostsByUser, getPostLikesCount, postExists, updatePostLike} from "../services/posts_service";
 
 
 export const addPost = async (req: CustomRequest, res: Response): Promise<void> => {
@@ -92,9 +92,8 @@ export const updatePost = async (req: CustomRequest, res: Response): Promise<voi
 
 export const updateLikeByPostId = async (req: CustomRequest, res: Response): Promise<void> => {
     const userId = req.user.id;
-    const id = req.params.id;
-    // TODO - change to json with a boolean value
-    const booleanValue: any = req.body;
+    const id = req.params.postId;
+    const booleanValue: any = req.body.value;
     try {
         if (booleanValue instanceof String && booleanValue != "false" && booleanValue != "true") {
             res.status(400).send("Bad Request. Body accepts `true` or `false` values only");
@@ -112,6 +111,17 @@ export const updateLikeByPostId = async (req: CustomRequest, res: Response): Pro
         handleError(err, res);
     }
 }
+
+export const getLikesByPostId = async (req: Request, res: Response): Promise<void> => {
+    const postId = req.params.postId;
+
+    try {
+        const likesCount = await getPostLikesCount(postId);
+        res.status(200).json({ count: likesCount });
+    } catch (error) {
+        handleError(error, res);
+    }
+};
 
 export const getLikedPosts =  async (req: CustomRequest, res: Response): Promise<void> => {
     try {

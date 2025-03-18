@@ -128,7 +128,7 @@ export const postExists = async (postId: string): Promise<boolean> => {
 export const updatePostLike = async (postId: string, booleanValue: string, userId: string): Promise<void> => {
     const post = await getPostById(postId);
     if(post != null) {
-        if (booleanValue == "true") {
+        if (booleanValue) {
             // Upsert
             await likeModel.updateOne({
                     userId: new mongoose.Types.ObjectId(userId),
@@ -149,6 +149,17 @@ export const updatePostLike = async (postId: string, booleanValue: string, userI
         throw new Error("Post not found")
     }
 }
+
+export const getPostLikesCount = async (postId: string): Promise<number> => {
+    try {
+        // Count the number of likes for the given post ID
+        const likesCount = await likeModel.countDocuments({ postId: new mongoose.Types.ObjectId(postId) }).exec();
+        return likesCount;
+    } catch (error) {
+        console.error(`Error fetching likes count for post ${postId}:`, error);
+        throw new Error('Failed to fetch likes count');
+    }
+};
 
 export const getLikedPostsByUser = async (userId: string) => {
     const likedPostsByUserId = await likeModel.aggregate([

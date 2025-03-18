@@ -20,7 +20,7 @@ import {
   Switch,
   FormControlLabel,
 } from "@mui/material";
-import { Favorite, Message, Delete } from '@mui/icons-material';
+import { ThumbUp, Message, Delete } from '@mui/icons-material';
 import { Post } from "../models/Post";
 import TopBar from "../components/TopBar";
 import api from "../serverApi";
@@ -32,6 +32,7 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [commentsCount, setCommentsCount] = useState<{ [key: string]: number }>({});
+  const [likesCount, setLikesCount] = useState<{ [key: string]: number }>({}); // Track likes count
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
@@ -41,7 +42,6 @@ const Dashboard: React.FC = () => {
   const auth = getUserAuth();
 
   const handleCreatePost = () => {
-    // Navigate to the "new post" page
     navigate('/new-post');
   };
 
@@ -76,7 +76,7 @@ const Dashboard: React.FC = () => {
   const fetchProfileImage = async (imageFilename: string | null) => {
     try {
       if (!imageFilename) {
-        return defaultProfileImage; // Return default image if no filename exists
+        return defaultProfileImage;
       }
       const response = await api.get(`/resource/image/${imageFilename}`, {
         responseType: 'blob',
@@ -84,9 +84,38 @@ const Dashboard: React.FC = () => {
       return URL.createObjectURL(response.data as Blob);
     } catch (error) {
       console.error('Error fetching profile image:', error);
-      return defaultProfileImage; // Return default image on error
+      return defaultProfileImage;
     }
   };
+
+  const handleLikePost = async (e: React.FormEvent, postId: string) => {
+    e.stopPropagation();
+    try {
+      // Determine whether to add or remove the like based on the current state
+      const isLiked = likesCount[postId] > 0;
+      const value = !isLiked; // Toggle the like state
+  
+      // Send the request to update the like
+      await api.put(
+        `/post/${postId}/like`,
+        { value }, // Send true to add a like, false to remove it
+        {
+          headers: {
+            Authorization: `Bearer ${auth.accessToken}`,
+          },
+        }
+      );
+  
+      // Update the likes count locally
+      setLikesCount((prev) => ({
+        ...prev,
+        [postId]: value ? (prev[postId] || 0) + 1 : Math.max((prev[postId] || 0) - 1, 0),
+      }));
+    } catch (err) {
+      console.error("Failed to toggle like for post:", err);
+    }
+  };
+  
 
   const loadPosts = async () => {
     try {
@@ -113,10 +142,25 @@ const Dashboard: React.FC = () => {
       await Promise.all(
         postsData.map(async (post) => {
           const commentsResponse = await api.get(`/comment/post/${post.id}`);
-          commentsCountData[post.id] = (commentsResponse.data  as Comment[]).length;
+          commentsCountData[post.id] = (commentsResponse.data as Comment[]).length;
         })
       );
       setCommentsCount(commentsCountData);
+
+      // Fetch likes count for each post
+      const likesCountData: { [key: string]: number } = {};
+      await Promise.all(
+        postsData.map(async (post) => {
+          try {
+            const likesResponse = await api.get(`/post/${post.id}/like`);
+            likesCountData[post.id] = likesResponse.data.count;
+          } catch (error) {
+            console.error(`Failed to fetch likes for post ${post.id}:`, error);
+            likesCountData[post.id] = 0; // Default to 0 likes if there's an error
+          }
+        })
+      );
+      setLikesCount(likesCountData);
     } catch (err) {
       setError("Failed to load posts. Please try again later.");
       console.error("Failed to load posts:", err);
@@ -132,9 +176,7 @@ const Dashboard: React.FC = () => {
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <TopBar />
-      {/* Main Layout */}
       <Box sx={{ display: "flex", flexGrow: 1, mt: "64px", px: 2 }}>
-        {/* Main Content */}
         <Box sx={{ flexGrow: 1, maxWidth: "900px" }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Button variant="contained" color="primary" onClick={handleCreatePost} sx={{ mr: 5 }}>
@@ -188,8 +230,10 @@ const Dashboard: React.FC = () => {
                         </Typography>
                       </CardContent>
                       <CardActions disableSpacing>
-                        <IconButton aria-label="add to favorites">
-                          <Favorite />
+                        <IconButton aria-label="add to favorites" onClick={(e) => handleLikePost(e, post.id)}>
+                          <Badge badgeContent={likesCount[post.id] || 0} color="primary">
+                            <ThumbUp />
+                          </Badge>
                         </IconButton>
                         <IconButton aria-label="comments" sx={{ marginLeft: 'auto' }}>
                           <Badge badgeContent={commentsCount[post.id] || 0} color="primary">

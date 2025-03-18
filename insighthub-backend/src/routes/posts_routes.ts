@@ -20,6 +20,8 @@ router.get('/like', (req: Request, res: Response) => postsController.getLikedPos
 
 router.put('/:postId', validatePostIdParam, validatePostData, handleValidationErrors, (req: Request, res: Response) => postsController.updatePost(req as CustomRequest, res));
 
+// todo - swagger and stuff
+router.get('/:postId/like', validatePostIdParam, handleValidationErrors, (req: Request, res: Response) => postsController.getLikesByPostId(req, res));
 
 router.patch('/:postId', validatePostIdParam, validatePostDataOptional, handleValidationErrors, (req: Request, res: Response) => postsController.updatePost(req as CustomRequest, res));
 
