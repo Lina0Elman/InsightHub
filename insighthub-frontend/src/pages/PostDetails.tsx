@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Typography, Box, Paper, CircularProgress, TextField, Button, Avatar, Divider, IconButton, Collapse, Badge, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { Container, Typography, Box, Paper, CircularProgress, Button, Avatar, Divider, IconButton, Collapse, Badge, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@mui/material';
 import { ArrowBack, Comment as CommentIcon, ThumbUp as ThumbUpIcon, Delete as DeleteIcon, Edit as EditIcon, Check as CheckIcon, Cancel as CancelIcon } from '@mui/icons-material';
+import FroalaEditor from 'react-froala-wysiwyg';
+import 'froala-editor/css/froala_style.min.css';
+import 'froala-editor/css/froala_editor.pkgd.min.css';
+import 'froala-editor/js/plugins/image.min.js';
 import { Post as PostModel } from '../models/Post';
 import { Comment } from '../models/Comment';
 import TopBar from '../components/TopBar';
 import { getUserAuth } from "../handlers/userAuth.ts";
 import api from "../serverApi.ts";
-import defaultProfileImage from '../assets/defaultProfileImage.jpg'; // Import the default profile image
+import defaultProfileImage from '../assets/defaultProfileImage.jpg';
+import { config } from '../config.ts';
 
 const PostDetails: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -15,17 +20,16 @@ const PostDetails: React.FC = () => {
   const [post, setPost] = useState<PostModel | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentProfileImages, setCommentProfileImages] = useState<{ [key: string]: string }>({});
-  const [newComment, setNewComment] = useState('');
+  const [newComment, setNewComment] = useState(''); // Froala Editor content for the new comment
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
-  const [editedContent, setEditedContent] = useState('');
+  const [editedContent, setEditedContent] = useState(''); // Froala Editor content for editing the post
   const [openDialog, setOpenDialog] = useState(false);
   const [isLiked, setIsLiked] = useState(false); // State for like icon
   const [likesCount, setLikesCount] = useState(0); // State for likes count
-  const [isCommentsToggled, setIsCommentsToggled] = useState(false); // State for comment icon
   const [profileImage, setProfileImage] = useState<string>(defaultProfileImage); // State for profile image
   const auth = getUserAuth();
 
@@ -91,7 +95,7 @@ const PostDetails: React.FC = () => {
       setIsLoading(false);
     }
   };
-  
+
   const handleLikeToggle = async () => {
     try {
       const value = !isLiked; // Toggle the like state
@@ -127,7 +131,7 @@ const PostDetails: React.FC = () => {
         [newCommentData.id]: imageUrl,
       }));
 
-      setNewComment('');
+      setNewComment(''); // Clear the Froala Editor content
     } catch (err) {
       console.error('Failed to add comment:', err);
     }
@@ -183,7 +187,6 @@ const PostDetails: React.FC = () => {
   };
 
   const handleCommentToggle = () => {
-    setIsCommentsToggled(!isCommentsToggled); // Toggle the comment icon state
     setCommentsOpen(!commentsOpen); // Open or close the comments section
   };
 
@@ -231,11 +234,11 @@ const PostDetails: React.FC = () => {
           post && (
             <Paper sx={{ p: 4, width: '100%' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Avatar
-                src={profileImage}
-                sx={{ mr: 2 }}
-              />
-              <Typography variant="h6">{auth.username}</Typography>
+                <Avatar
+                  src={profileImage}
+                  sx={{ mr: 2 }}
+                />
+                <Typography variant="h6">{auth.username}</Typography>
               </Box>
               {isEditing ? (
                 <>
@@ -247,15 +250,52 @@ const PostDetails: React.FC = () => {
                     onChange={(e) => setEditedTitle(e.target.value)}
                     sx={{ mb: 2 }}
                   />
-                  <TextField
-                    label="Content"
-                    variant="outlined"
-                    fullWidth
-                    multiline
-                    rows={4}
-                    value={editedContent}
-                    onChange={(e) => setEditedContent(e.target.value)}
-                    sx={{ mb: 2 }}
+                  <FroalaEditor
+                    tag="textarea"
+                    model={editedContent}
+                    onModelChange={setEditedContent}
+                    config={{
+                      placeholderText: "Edit your content here...",
+                      charCounterCount: false,
+                      toolbarButtons: [
+                        "bold",
+                        "italic",
+                        "underline",
+                        "insertImage",
+                        "insertLink",
+                        "paragraphFormat",
+                      ],
+                      imageUploadRemoteUrls: true,
+                      imageAllowedTypes: ["jpeg", "jpg", "png", "gif"],
+                      events: {
+                        "image.beforeUpload": async function (fileList: File[]) {
+                          const editor = this as any;
+                          const firstFile = fileList[0];
+
+                          if (firstFile) {
+                            const formData = new FormData();
+                            formData.append("file", firstFile);
+
+                            try {
+                              const response = await api.post(`/resource/image`, formData, {
+                                headers: {
+                                  "Content-Type": "multipart/form-data",
+                                  Authorization: `Bearer ${auth.accessToken}`,
+                                },
+                              });
+
+                              const imageUrl = `${config.app.backend_url()}/resources/images/${response.data}`;
+                              editor.image.insert(imageUrl, null, null, editor.image.get());
+                            } catch (error) {
+                              console.error("Error uploading image:", error);
+                            }
+                          }
+
+                          return false; // Prevent Froala's default upload mechanism
+                        },
+                      },
+                      pluginsEnabled: ["image", "link", "paragraphFormat"],
+                    }}
                   />
                 </>
               ) : (
@@ -279,7 +319,7 @@ const PostDetails: React.FC = () => {
                   </Badge>
                 </IconButton>
                 <IconButton
-                  color={isCommentsToggled ? 'primary' : 'default'}
+                  color={commentsOpen ? 'primary' : 'default'}
                   onClick={handleCommentToggle}
                 >
                   <Badge badgeContent={comments.length} color="primary">
@@ -309,23 +349,60 @@ const PostDetails: React.FC = () => {
                         )}
                       </Box>
                       <Typography variant="body2" color="text.secondary">
-                        {comment.content}
+                        <span dangerouslySetInnerHTML={{ __html: comment.content }} />
                       </Typography>
                       <Divider sx={{ my: 2 }} />
                     </Box>
                   ))}
                 </Box>
-                <TextField
-                  label="Add a comment"
-                  variant="outlined"
-                  fullWidth
-                  multiline
-                  rows={4}
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  sx={{ mb: 2 }}
+                <FroalaEditor
+                  tag="textarea"
+                  model={newComment}
+                  onModelChange={setNewComment}
+                  config={{
+                    placeholderText: "Write a comment...",
+                    charCounterCount: false,
+                    toolbarButtons: [
+                      "bold",
+                      "italic",
+                      "underline",
+                      "insertImage",
+                      "insertLink",
+                      "paragraphFormat",
+                    ],
+                    imageUploadRemoteUrls: true,
+                    imageAllowedTypes: ["jpeg", "jpg", "png", "gif"],
+                    events: {
+                      "image.beforeUpload": async function (fileList: File[]) {
+                        const editor = this as any;
+                        const firstFile = fileList[0];
+
+                        if (firstFile) {
+                          const formData = new FormData();
+                          formData.append("file", firstFile);
+
+                          try {
+                            const response = await api.post(`/resource/image`, formData, {
+                              headers: {
+                                "Content-Type": "multipart/form-data",
+                                Authorization: `Bearer ${auth.accessToken}`,
+                              },
+                            });
+
+                            const imageUrl = `${config.app.backend_url()}/resources/images/${response.data}`;
+                            editor.image.insert(imageUrl, null, null, editor.image.get());
+                          } catch (error) {
+                            console.error("Error uploading image:", error);
+                          }
+                        }
+
+                        return false; // Prevent Froala's default upload mechanism
+                      },
+                    },
+                    pluginsEnabled: ["image", "link", "paragraphFormat"],
+                  }}
                 />
-                <Button variant="contained" color="primary" onClick={handleAddComment}>
+                <Button variant="contained" color="primary" onClick={handleAddComment} sx={{ mt: 2 }}>
                   Add Comment
                 </Button>
               </Collapse>
