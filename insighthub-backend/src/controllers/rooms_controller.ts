@@ -43,7 +43,7 @@ export const getRoomByUserIds = async (req: CustomRequest, res: Response): Promi
                 break;
             }
         }
-        if (room.userIds[0].toString() != room.userIds[1].toString() &&
+        if (room && room.userIds[0].toString() != room.userIds[1].toString() &&
             receiverUserId.toString() == initiatorUserId.toString()) {
             room = null;
         }

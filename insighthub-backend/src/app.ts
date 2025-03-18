@@ -26,10 +26,12 @@ const corsOptions = {
     credentials: true, // Allow cookies to be sent with requests
 };
 
-const removeUndefinedFields = (req: Request, res: Response, next: NextFunction) => {
+app.use(cors(corsOptions));
+
+const removeUndefinedOrEmptyFields = (req: Request, res: Response, next: NextFunction) => {
     if (req.body && typeof req.body === 'object') {
         for (const key in req.body) {
-            if (req.body[key] === undefined) {
+            if (req.body[key] === undefined || req.body[key] === null || req.body[key] === '') {
                 delete req.body[key];
             }
         }
@@ -38,7 +40,7 @@ const removeUndefinedFields = (req: Request, res: Response, next: NextFunction) 
 };
 
 app.use(bodyParser.json());
-app.use(removeUndefinedFields);
+app.use(removeUndefinedOrEmptyFields);
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
