@@ -24,6 +24,9 @@ dotenvExpand.expand(dotenv.config());
 
 let mongoServer: MongoMemoryServer;
 
+// Mock the chatWithAI function globally
+jest.mock('../services/chat_api_service');
+
 
 /**
  * Before each test suite:

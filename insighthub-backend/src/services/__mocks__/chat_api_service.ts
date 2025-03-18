@@ -1,0 +1,1 @@
+export const chatWithAI = jest.fn().mockResolvedValue("Mocked response");

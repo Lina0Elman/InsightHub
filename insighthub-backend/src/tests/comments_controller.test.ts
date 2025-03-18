@@ -303,14 +303,15 @@ describe('given unknown post when http request GET /comment/post/id', () => {
 });
 
 describe('given existing post without any comments when http request GET /comment/post/id', () => {
-    it('then should return empty list', async () => {
+    it('then should return list with mocked aiChat comment', async () => {
         const res = await request(app)
             .get(`/comment/post/${existingPost2.id}`)
             .set('Authorization', `jwt ${accessToken}`);
 
         expect(res.statusCode).toBe(200);
         expect(Array.isArray(res.body)).toBe(true);
-        expect(res.body).toHaveLength(0);
+        expect(res.body).toHaveLength(1);
+        expect(res.body[0].content).toBe("Mocked response");
     });
 });
 
