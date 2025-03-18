@@ -22,6 +22,9 @@ const PostDetails: React.FC = () => {
   const [editedTitle, setEditedTitle] = useState('');
   const [editedContent, setEditedContent] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
+  const [isLiked, setIsLiked] = useState(false); // State for like icon
+  const [likesCount, setLikesCount] = useState(0); // State for likes count
+  const [isCommentsToggled, setIsCommentsToggled] = useState(false); // State for comment icon
   const [profileImage, setProfileImage] = useState<string>(defaultProfileImage); // State for profile image
   const auth = getUserAuth();
 
@@ -50,9 +53,17 @@ const PostDetails: React.FC = () => {
       setEditedTitle(postData.title);
       setEditedContent(postData.content);
 
-      // Fetch the profile image for the post owner
+      // Fetch profile image for the post owner
       const imageUrl = await fetchProfileImage(postData.ownerProfileImage as string);
       setProfileImage(imageUrl);
+
+      // Fetch likes count
+      try {
+        const likesResponse = await api.get(`/post/${postId}/like`);
+        setLikesCount(likesResponse.data.count);
+      } catch (err) {
+        console.error('Failed to fetch likes:', err);
+      }
 
       // Fetch comments
       try {
@@ -65,6 +76,25 @@ const PostDetails: React.FC = () => {
       setError('Failed to load post details. Please try again later.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleLikeToggle = async () => {
+    try {
+      const value = !isLiked; // Toggle the like state
+      await api.put(
+        `/post/${postId}/like`,
+        { value },
+        {
+          headers: {
+            Authorization: `Bearer ${auth.accessToken}`,
+          },
+        }
+      );
+      setIsLiked(value); // Update the like state
+      setLikesCount((prev) => (value ? prev + 1 : Math.max(prev - 1, 0))); // Update the likes count
+    } catch (err) {
+      console.error('Failed to toggle like:', err);
     }
   };
 
@@ -130,6 +160,11 @@ const PostDetails: React.FC = () => {
     setOpenDialog(false);
   };
 
+  const handleCommentToggle = () => {
+    setIsCommentsToggled(!isCommentsToggled); // Toggle the comment icon state
+    setCommentsOpen(!commentsOpen); // Open or close the comments section
+  };
+
   useEffect(() => {
     loadPostDetails();
   }, [postId]);
@@ -174,8 +209,11 @@ const PostDetails: React.FC = () => {
           post && (
             <Paper sx={{ p: 4, width: '100%' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Avatar src={profileImage} sx={{ mr: 2 }} />
-                <Typography variant="h6">{post.owner}</Typography>
+              <Avatar
+                src={profileImage}
+                sx={{ mr: 2 }}
+              />
+              <Typography variant="h6">{auth.username}</Typography>
               </Box>
               {isEditing ? (
                 <>
@@ -210,10 +248,18 @@ const PostDetails: React.FC = () => {
               )}
               <Divider sx={{ my: 4 }} />
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <IconButton color="primary">
-                  <ThumbUpIcon />
+                <IconButton
+                  color={isLiked ? 'primary' : 'default'}
+                  onClick={handleLikeToggle}
+                >
+                  <Badge badgeContent={likesCount} color="primary">
+                    <ThumbUpIcon />
+                  </Badge>
                 </IconButton>
-                <IconButton color="primary" onClick={() => setCommentsOpen(!commentsOpen)}>
+                <IconButton
+                  color={isCommentsToggled ? 'primary' : 'default'}
+                  onClick={handleCommentToggle}
+                >
                   <Badge badgeContent={comments.length} color="primary">
                     <CommentIcon />
                   </Badge>

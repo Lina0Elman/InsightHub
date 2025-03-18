@@ -220,7 +220,7 @@ const Dashboard: React.FC = () => {
                             src={profileImages[post.owner] || defaultProfileImage}
                             sx={{ mr: 2 }}
                           />
-                          <Typography variant="h6">{post.owner}</Typography>
+                          <Typography variant="h6">{auth.username}</Typography>
                         </Box>
                         <Typography variant="h5" component="div">
                           {post.title}
