@@ -77,18 +77,18 @@ export const getPostById = async (postId: string): Promise<PostData | null> => {
  * @param postId
  */
 export const deletePostById = async (postId: string): Promise<PostData | null> => {
-    const session: ClientSession = await mongoose.startSession();
-    session.startTransaction();
     try {
-        await commentsService.deleteCommentsByPostId(postId, session );
-        const post = await PostModel.findByIdAndDelete(postId, { session }).exec();
-        await session.commitTransaction();
-        return post ? postToPostData(post) : null;
+        // Delete comments associated with the post
+        await commentsService.deleteCommentsByPostId(postId);
+
+        // Delete the post
+        const post = await PostModel.findByIdAndDelete(postId).exec();
+
+        // Return the deleted post data
+        return post ? await postToPostData(post) : null;
     } catch (error) {
-        await session.abortTransaction();
+        console.error("Error deleting post:", error);
         throw error;
-    } finally {
-        await session.endSession();
     }
 };
 

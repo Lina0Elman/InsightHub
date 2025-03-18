@@ -44,6 +44,6 @@ export const getCommentById = async (commentId: string): Promise<CommentData | n
     return comment ? commentToCommentData(comment) : null;
 };
 
-export const deleteCommentsByPostId = async (postId: string, session: ClientSession): Promise<void> => {
-    await CommentModel.deleteMany({ postId }).session(session).exec();
+export const deleteCommentsByPostId = async (postId: string): Promise<void> => {
+    await CommentModel.deleteMany({ postId }).exec();
 };
