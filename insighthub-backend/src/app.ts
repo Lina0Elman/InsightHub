@@ -8,6 +8,7 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import options from './docs/swagger_options';
 import {authenticateToken, authenticateTokenForParams} from "./middleware/auth";
 import bodyParser from 'body-parser';
+import roomsRoutes from './routes/rooms_routes';
 import cors from 'cors';
 import {config} from "./config/config";
 import validateUser from "./middleware/validateUser";
@@ -19,7 +20,7 @@ const specs = swaggerJsdoc(options);
 
 const app = express();
 
-app.use(cors({
+const corsOptions = {
     origin: [config.app.frontend_url(), config.app.backend_url()],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, // Allow cookies to be sent with requests
@@ -72,6 +73,6 @@ app.use('/post', postsRoutes);
 app.use("/user/:id", validateUser);
 app.use('/user', usersRoutes);
 app.use('/resource', resource_routes);
+app.use('/room', roomsRoutes);
 
-
-export default app;
+export { app, corsOptions };
