@@ -5,4 +5,5 @@ export interface Post {
   owner: string;
   createdAt: string;
   updatedAt?: string;
+  ownerProfileImage?: string;
 }

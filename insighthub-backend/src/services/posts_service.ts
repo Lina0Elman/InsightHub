@@ -7,9 +7,17 @@ import {UserModel} from "../models/user_model";
 import likeModel from "../models/like_model";
 
 
-const postToPostData = (post: Document<unknown, {}, IPost> & IPost): PostData => {
-    return { ...post.toJSON(), owner: post.owner.toString() };
-};
+const postToPostData = async (post: Document<unknown, {}, IPost> & IPost): Promise<PostData> => {
+    // Fetch the owner's profile image
+    const user = await UserModel.findById(post.owner).select('imageFilename').lean();
+    const profileImage = user?.imageFilename
+
+    return { 
+        ...post.toJSON(), 
+        owner: post.owner.toString(),
+        ownerProfileImage: profileImage // Add the profile image to the post data
+    };
+}
 
 /***
     * Add a new post
@@ -30,10 +38,10 @@ export const addPost = async (postData: PostData): Promise<PostData> => {
 export const getPosts = async (owner?: string): Promise<PostData[]> => {
     if (owner) {
         const posts = await PostModel.find({ owner }).exec();
-        return posts.map(postToPostData);
+        return Promise.all(posts.map(postToPostData));
     } else {
          const posts = await PostModel.find().exec();
-        return posts.map(postToPostData);
+        return Promise.all(posts.map(postToPostData));
     }
 };
 
@@ -51,7 +59,7 @@ export const getPostsByUsername = async (username: string): Promise<PostData[]> 
 
     // Then find posts with that user's ID
     const posts = await PostModel.find({ owner: user._id }).exec();
-    return posts.map(postToPostData);
+    return Promise.all(posts.map(postToPostData));
 };
 
 /**

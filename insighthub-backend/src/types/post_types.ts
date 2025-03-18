@@ -14,4 +14,5 @@ export interface PostData {
     owner: string;
     createdAt?: string;
     updatedAt?: string;
+    ownerProfileImage?: string;
 }

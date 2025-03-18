@@ -25,6 +25,8 @@ import { Post } from "../models/Post";
 import TopBar from "../components/TopBar";
 import api from "../serverApi";
 import {getUserAuth} from "../handlers/userAuth.ts";
+import defaultProfileImage from '../assets/defaultProfileImage.jpg'; // Import the default profile image
+
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -35,6 +37,7 @@ const Dashboard: React.FC = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [postIdToDelete, setPostIdToDelete] = useState<string | null>(null);
   const [filterByUser, setFilterByUser] = useState(false);
+  const [profileImages, setProfileImages] = useState<{ [key: string]: string }>({});
   const auth = getUserAuth();
 
   const handleCreatePost = () => {
@@ -70,6 +73,21 @@ const Dashboard: React.FC = () => {
     setPostIdToDelete(null);
   };
 
+  const fetchProfileImage = async (imageFilename: string | null) => {
+    try {
+      if (!imageFilename) {
+        return defaultProfileImage; // Return default image if no filename exists
+      }
+      const response = await api.get(`/resource/image/${imageFilename}`, {
+        responseType: 'blob',
+      });
+      return URL.createObjectURL(response.data as Blob);
+    } catch (error) {
+      console.error('Error fetching profile image:', error);
+      return defaultProfileImage; // Return default image on error
+    }
+  };
+
   const loadPosts = async () => {
     try {
       setIsLoading(true);
@@ -79,6 +97,16 @@ const Dashboard: React.FC = () => {
       });
       const postsData = response.data as Post[];
       setPosts(postsData);
+
+      // Fetch profile images for each post owner
+      const images: { [key: string]: string } = {};
+      await Promise.all(
+        postsData.map(async (post) => {
+          const imageUrl = await fetchProfileImage(post.ownerProfileImage as string);
+          images[post.owner] = imageUrl;
+        })
+      );
+      setProfileImages(images);
 
       // Fetch comments count for each post
       const commentsCountData: { [key: string]: number } = {};
@@ -109,7 +137,7 @@ const Dashboard: React.FC = () => {
         {/* Main Content */}
         <Box sx={{ flexGrow: 1, maxWidth: "900px" }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Button variant="contained" color="primary" onClick={handleCreatePost}>
+            <Button variant="contained" color="primary" onClick={handleCreatePost} sx={{ mr: 5 }}>
               Create New Post
             </Button>
             <FormControlLabel
@@ -146,7 +174,10 @@ const Dashboard: React.FC = () => {
                     }} onClick={() => navigate(`/post/${post.id}`)}>
                       <CardContent>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                          <Avatar sx={{ mr: 2 }}>{post.owner.charAt(0)}</Avatar> {/* make the avatar either the profile pic or the curr one */}
+                          <Avatar
+                            src={profileImages[post.owner] || defaultProfileImage}
+                            sx={{ mr: 2 }}
+                          />
                           <Typography variant="h6">{post.owner}</Typography>
                         </Box>
                         <Typography variant="h5" component="div">
