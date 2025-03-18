@@ -1,14 +1,17 @@
 import axios from "axios";
+import {config} from "../config/config";
 
 const cleanResponse = (response: string): string => {
     return response.replace(/\\boxed{(.*?)}/g, "$1"); // Removes \boxed{}
 }
 
-const API_URL = "https://openrouter.ai/api/v1/chat/completions";
-const API_KEY = process.env.OPENROUTER_API_KEY; // Replace with your actual OpenRouter API key
+
 
 export const chatWithAI = async (inputUserMessage: string)=> {
     try {
+        const API_URL = config.chatAi.api_url();
+        const API_KEY = config.chatAi.api_key();
+        const MODEL_NAME = config.chatAi.model_name();
 
         const systemMessage = {
             role: 'system',
@@ -24,7 +27,7 @@ export const chatWithAI = async (inputUserMessage: string)=> {
         const response = await axios.post(
             API_URL,
             {
-                model: "google/gemma-3-27b-it:free",
+                model: MODEL_NAME,
                 messages: [ systemMessage, userMessage ],
             },
             {

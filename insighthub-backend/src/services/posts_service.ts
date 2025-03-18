@@ -3,13 +3,33 @@ import { IPost, PostData } from 'types/post_types';
 import {ClientSession, Document} from 'mongoose';
 import * as mongoose from 'mongoose';
 import * as commentsService from './comments_service';
+import * as usersService from './users_service';
 import {UserModel} from "../models/user_model";
 import likeModel from "../models/like_model";
+import {CommentData} from "types/comment_types";
+import {UserData} from 'types/user_types';
+import * as chatService from './chat_api_service';
+import {config} from "../config/config";
 
 
 const postToPostData = (post: Document<unknown, {}, IPost> & IPost): PostData => {
     return { ...post.toJSON(), owner: post.owner.toString() };
 };
+
+
+const addMisterAIComment = async (postId: string, postContent: string) => {
+    let misterAI: UserData | null = await usersService.getUserByEmail('misterai@example.com');
+    if (!misterAI) {
+        misterAI = await usersService.addUser('misterai', 'securepassword', 'misterai@example.com');
+    }
+
+    const comment = await chatService.chatWithAI(postContent);
+    const commentData: CommentData = { postId, owner: misterAI.id, content: comment };
+    const savedComment = await commentsService.addComment(commentData);
+    return savedComment;
+};
+
+
 
 /***
     * Add a new post
@@ -19,10 +39,11 @@ const postToPostData = (post: Document<unknown, {}, IPost> & IPost): PostData =>
 export const addPost = async (postData: PostData): Promise<PostData> => {
     const newPost = new PostModel(postData);
     await newPost.save();
+    const turn = config.chatAi.turned_on();
+    if(postData.content && turn) {
+        addMisterAIComment(newPost.id, postData.content);
+    }
     return postToPostData(newPost);
-    // TODO - add a comment using the AIChat, only if a flag is set to true
-    // It will also be async anyway
-    // Need to implement in the client that it will try to retrieve the comments every some time
 };
 
 /***
