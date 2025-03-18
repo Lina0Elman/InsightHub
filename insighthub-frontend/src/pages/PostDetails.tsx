@@ -14,6 +14,7 @@ const PostDetails: React.FC = () => {
   const navigate = useNavigate();
   const [post, setPost] = useState<PostModel | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [commentProfileImages, setCommentProfileImages] = useState<{ [key: string]: string }>({});
   const [newComment, setNewComment] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +69,18 @@ const PostDetails: React.FC = () => {
       // Fetch comments
       try {
         const commentsResponse = await api.get(`/comment/post/${postId}`);
-        setComments(commentsResponse.data as Comment[]);
+        const commentsData = commentsResponse.data as Comment[];
+        setComments(commentsData);
+
+        // Fetch profile images for each comment owner
+        const images: { [key: string]: string } = {};
+        await Promise.all(
+          commentsData.map(async (comment) => {
+            const imageUrl = await fetchProfileImage(comment.ownerProfileImage as string);
+            images[comment.id] = imageUrl;
+          })
+        );
+        setCommentProfileImages(images);
       } catch (err) {
         console.log('Failed to load comments:', err);
       }
@@ -104,7 +116,16 @@ const PostDetails: React.FC = () => {
         content: newComment,
         postId,
       });
-      setComments([...comments, response.data as Comment]);
+      const newCommentData = response.data as Comment;
+      setComments([...comments, newCommentData]);
+
+      // Fetch profile image for the new comment owner
+      const imageUrl = await fetchProfileImage(newCommentData.ownerProfileImage as string);
+      setCommentProfileImages((prev) => ({
+        ...prev,
+        [newCommentData.id]: imageUrl,
+      }));
+
       setNewComment('');
     } catch (err) {
       console.error('Failed to add comment:', err);
@@ -273,7 +294,10 @@ const PostDetails: React.FC = () => {
                   {comments.map((comment) => (
                     <Box key={comment.id} sx={{ mb: 2 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                        <Avatar sx={{ mr: 2 }}>{comment.owner.charAt(0)}</Avatar>
+                        <Avatar
+                          src={commentProfileImages[comment.id] || defaultProfileImage}
+                          sx={{ mr: 2 }}
+                        />
                         <Typography variant="body2" color="text.primary" sx={{ flexGrow: 1 }}>
                           {comment.owner}
                         </Typography>

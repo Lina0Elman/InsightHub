@@ -14,4 +14,5 @@ export interface CommentData {
     owner: string;
     createdAt?: Date;
     updatedAt?: Date;
+    ownerProfileImage?: string;
 }
