@@ -112,4 +112,6 @@ See our `main` test coverage at https://Lina0Elman.github.io/InsightHub
 
 ## Documentation
 
+See the Swagger documentation in the `/api-docs` route.
+
 See more docs [here](/insighthub-backend/docs).
