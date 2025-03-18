@@ -4,6 +4,8 @@ import { handleError } from '../utils/handle_error';
 import {CustomRequest} from "types/customRequest";
 import {PostData} from "types/post_types";
 import {getLikedPostsByUser, getPostLikesCount, postExists, updatePostLike} from "../services/posts_service";
+import LikeModel from '../models/like_model';
+import mongoose from 'mongoose';
 
 
 export const addPost = async (req: CustomRequest, res: Response): Promise<void> => {
@@ -116,12 +118,19 @@ export const getLikesByPostId = async (req: Request, res: Response): Promise<voi
     const postId = req.params.postId;
 
     try {
-        const likesCount = await getPostLikesCount(postId);
-        res.status(200).json({ count: likesCount });
+        // Fetch the count of likes and the list of users who liked the post
+        const likes = await LikeModel.find({ postId: new mongoose.Types.ObjectId(postId) }).select('userId').exec();
+        const likesCount = likes.length;
+        const likedBy = likes.map((like) => like.userId.toString()); // Extract user IDs
+
+        res.status(200).json({ count: likesCount, likedBy });
     } catch (error) {
+        console.error(`Error fetching likes for post ${postId}:`, error);
         handleError(error, res);
     }
 };
+
+
 
 export const getLikedPosts =  async (req: CustomRequest, res: Response): Promise<void> => {
     try {

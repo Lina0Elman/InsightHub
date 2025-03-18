@@ -53,25 +53,26 @@ const PostDetails: React.FC = () => {
       setPost(postData);
       setEditedTitle(postData.title);
       setEditedContent(postData.content);
-
+  
       // Fetch profile image for the post owner
       const imageUrl = await fetchProfileImage(postData.ownerProfileImage as string);
       setProfileImage(imageUrl);
-
-      // Fetch likes count
+  
+      // Fetch likes count and determine if the user has liked the post
       try {
         const likesResponse = await api.get(`/post/${postId}/like`);
         setLikesCount(likesResponse.data.count);
+        setIsLiked(likesResponse.data.likedBy.includes(auth.userId)); // Check if the current user is in the likedBy array
       } catch (err) {
         console.error('Failed to fetch likes:', err);
       }
-
+  
       // Fetch comments
       try {
         const commentsResponse = await api.get(`/comment/post/${postId}`);
         const commentsData = commentsResponse.data as Comment[];
         setComments(commentsData);
-
+  
         // Fetch profile images for each comment owner
         const images: { [key: string]: string } = {};
         await Promise.all(
@@ -90,7 +91,7 @@ const PostDetails: React.FC = () => {
       setIsLoading(false);
     }
   };
-
+  
   const handleLikeToggle = async () => {
     try {
       const value = !isLiked; // Toggle the like state
