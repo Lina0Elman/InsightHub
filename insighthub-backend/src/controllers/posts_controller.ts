@@ -26,22 +26,28 @@ export const addPost = async (req: CustomRequest, res: Response): Promise<void> 
 
 export const getPosts = async (req: Request, res: Response): Promise<void> => {
     try {
+        const page = parseInt(req.query.page as string) || 1; // Default to page 1
+        const limit = parseInt(req.query.limit as string) || 5; // Default to 5 posts per page
+        const skip = (page - 1) * limit;
+
         let posts;
         if (req.query.owner) {
-            posts = await postsService.getPosts(req.query.owner as string);
-        } else if (req.query.username)
-        {
+            posts = await postsService.getPosts(req.query.owner as string, skip, limit);
+        } else if (req.query.username) {
             posts = await postsService.getPostsByUsername(req.query.username as string);
-        }
-        else {
-            posts = await postsService.getPosts();
+        } else {
+            posts = await postsService.getPosts(undefined, skip, limit);
         }
 
-        if (posts.length === 0) {
-            res.status(200).json([]);
-        } else {
-            res.json(posts);
-        }
+        const totalPosts = await postsService.getTotalPosts(req.query.owner as string, req.query.username as string);
+        const totalPages = Math.ceil(totalPosts / limit);
+
+        res.status(200).json({
+            posts,
+            totalPosts,
+            totalPages,
+            currentPage: page,
+        });
     } catch (err) {
         handleError(err, res);
     }

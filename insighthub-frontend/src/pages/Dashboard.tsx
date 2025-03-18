@@ -40,6 +40,8 @@ const Dashboard: React.FC = () => {
   const [postIdToDelete, setPostIdToDelete] = useState<string | null>(null);
   const [filterByUser, setFilterByUser] = useState(false);
   const [profileImages, setProfileImages] = useState<{ [key: string]: string }>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const auth = getUserAuth();
 
   const handleCreatePost = () => {
@@ -117,20 +119,26 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const loadPosts = async () => {
+  const loadPosts = async (page: number) => {
     try {
       setIsLoading(true);
       setError(null);
       const response = await api.get(`/post`, {
-        params: filterByUser ? { owner: auth.userId } : {},
+        params: {
+          page,
+          limit: 5, // Number of posts per page
+          owner: filterByUser ? auth.userId : undefined,
+        },
       });
-      const postsData = response.data as Post[];
+      const { posts: postsData, totalPages: total, currentPage: current } = response.data;
       setPosts(postsData);
+      setTotalPages(total);
+      setCurrentPage(current);
 
       // Fetch profile images for each post owner
       const images: { [key: string]: string } = {};
       await Promise.all(
-        postsData.map(async (post) => {
+        postsData.map(async (post: Post) => {
           const imageUrl = await fetchProfileImage(post.ownerProfileImage as string);
           images[post.owner] = imageUrl;
         })
@@ -140,7 +148,7 @@ const Dashboard: React.FC = () => {
       // Fetch comments count for each post
       const commentsCountData: { [key: string]: number } = {};
       await Promise.all(
-        postsData.map(async (post) => {
+        postsData.map(async (post: Post) => {
           const commentsResponse = await api.get(`/comment/post/${post.id}`);
           commentsCountData[post.id] = (commentsResponse.data as Comment[]).length;
         })
@@ -151,7 +159,7 @@ const Dashboard: React.FC = () => {
       const likesCountData: { [key: string]: number } = {};
       const isLikedByUserData: { [key: string]: boolean } = {};
       await Promise.all(
-        postsData.map(async (post) => {
+        postsData.map(async (post: Post) => {
           try {
             const likesResponse = await api.get(`/post/${post.id}/like`);
             likesCountData[post.id] = likesResponse.data.count;
@@ -174,8 +182,14 @@ const Dashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    loadPosts();
-  }, [filterByUser]);
+    loadPosts(currentPage);
+  }, [currentPage, filterByUser]);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -205,59 +219,78 @@ const Dashboard: React.FC = () => {
             ) : error ? (
               <Typography color="error">{error}</Typography>
             ) : (
-              <List>
-                {posts.map((post) => (
-                  <React.Fragment key={post.id}>
-                    <Card sx={{
-                      mb: 2,
-                      width: '80vh',
-                      cursor: 'pointer',
-                      transition: 'transform 0.2s, box-shadow 0.2s',
-                      '&:hover': {
-                        boxShadow: 3,
-                        backgroundColor: 'rgba(0, 0, 0, 0.03)',
-                      },
-                    }} onClick={() => navigate(`/post/${post.id}`)}>
-                      <CardContent>
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                          <Avatar
-                            src={profileImages[post.owner] || defaultProfileImage}
-                            sx={{ mr: 2 }}
-                          />
-                          <Typography variant="h6">{post.ownerUsername || post.owner}</Typography>
-                        </Box>
-                        <Typography variant="h5" component="div">
-                          {post.title}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                          <span dangerouslySetInnerHTML={{ __html: post.content }} />
-                        </Typography>
-                      </CardContent>
-                      <CardActions disableSpacing>
-                        <IconButton
-                          aria-label="add to favorites"
-                          onClick={(e) => handleLikePost(e, post.id)}
-                          color={isLikedByUser[post.id] ? 'primary' : 'default'}
-                        >
-                          <Badge badgeContent={likesCount[post.id] || 0} color="primary">
-                            <ThumbUp />
-                          </Badge>
-                        </IconButton>
-                        <IconButton aria-label="comments" sx={{ marginLeft: 'auto' }}>
-                          <Badge badgeContent={commentsCount[post.id] || 0} color="primary">
-                            <Message />
-                          </Badge>
-                        </IconButton>
-                        {post.owner === auth.userId && (
-                          <IconButton aria-label="delete" onClick={(e) => handleOpenDialog(e, post.id)}>
-                            <Delete />
+              <>
+                <List>
+                  {posts.map((post) => (
+                    <React.Fragment key={post.id}>
+                      <Card sx={{
+                        mb: 2,
+                        width: '80vh',
+                        cursor: 'pointer',
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        '&:hover': {
+                          boxShadow: 3,
+                          backgroundColor: 'rgba(0, 0, 0, 0.03)',
+                        },
+                      }} onClick={() => navigate(`/post/${post.id}`)}>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                            <Avatar
+                              src={profileImages[post.owner] || defaultProfileImage}
+                              sx={{ mr: 2 }}
+                            />
+                            <Typography variant="h6">{post.ownerUsername || post.owner}</Typography>
+                          </Box>
+                          <Typography variant="h5" component="div">
+                            {post.title}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                            <span dangerouslySetInnerHTML={{ __html: post.content }} />
+                          </Typography>
+                        </CardContent>
+                        <CardActions disableSpacing>
+                          <IconButton
+                            aria-label="add to favorites"
+                            onClick={(e) => handleLikePost(e, post.id)}
+                            color={isLikedByUser[post.id] ? 'primary' : 'default'}
+                          >
+                            <Badge badgeContent={likesCount[post.id] || 0} color="primary">
+                              <ThumbUp />
+                            </Badge>
                           </IconButton>
-                        )}
-                      </CardActions>
-                    </Card>
-                  </React.Fragment>
-                ))}
-              </List>
+                          <IconButton aria-label="comments" sx={{ marginLeft: 'auto' }}>
+                            <Badge badgeContent={commentsCount[post.id] || 0} color="primary">
+                              <Message />
+                            </Badge>
+                          </IconButton>
+                          {post.owner === auth.userId && (
+                            <IconButton aria-label="delete" onClick={(e) => handleOpenDialog(e, post.id)}>
+                              <Delete />
+                            </IconButton>
+                          )}
+                        </CardActions>
+                      </Card>
+                    </React.Fragment>
+                  ))}
+                </List>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                  <Button
+                    variant="outlined"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  <Typography sx={{ mx: 2 }}>{`Page ${currentPage} of ${totalPages}`}</Typography>
+                  <Button
+                    variant="outlined"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </Button>
+                </Box>
+              </>
             )}
           </Box>
         </Box>

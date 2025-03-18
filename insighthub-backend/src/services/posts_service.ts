@@ -36,14 +36,20 @@ export const addPost = async (postData: PostData): Promise<PostData> => {
     * @param owner - The owner of the posts to be fetched
     * @returns The list of posts
     */
-export const getPosts = async (owner?: string): Promise<PostData[]> => {
-    if (owner) {
-        const posts = await PostModel.find({ owner }).exec();
-        return Promise.all(posts.map(postToPostData));
-    } else {
-         const posts = await PostModel.find().exec();
-        return Promise.all(posts.map(postToPostData));
+export const getPosts = async (owner?: string, skip = 0, limit = 10): Promise<PostData[]> => {
+    const query = owner ? { owner } : {};
+    const posts = await PostModel.find(query).skip(skip).limit(limit).exec();
+    return Promise.all(posts.map(postToPostData));
+};
+
+export const getTotalPosts = async (owner?: string, username?: string): Promise<number> => {
+    if (username) {
+        const user = await UserModel.findOne({ username }).select('_id').lean().exec();
+        if (!user) return 0;
+        return PostModel.countDocuments({ owner: user._id }).exec();
     }
+    const query = owner ? { owner } : {};
+    return PostModel.countDocuments(query).exec();
 };
 
 /***
