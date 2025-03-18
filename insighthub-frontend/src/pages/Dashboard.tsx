@@ -32,7 +32,8 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [commentsCount, setCommentsCount] = useState<{ [key: string]: number }>({});
-  const [likesCount, setLikesCount] = useState<{ [key: string]: number }>({}); // Track likes count
+  const [likesCount, setLikesCount] = useState<{ [key: string]: number }>({});
+  const [isLikedByUser, setIsLikedByUser] = useState<{ [key: string]: boolean }>({}); // Track if the current user liked each post
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
@@ -91,11 +92,7 @@ const Dashboard: React.FC = () => {
   const handleLikePost = async (e: React.FormEvent, postId: string) => {
     e.stopPropagation();
     try {
-      // Determine whether to add or remove the like based on the current state
-      const isLiked = likesCount[postId] > 0;
-      const value = !isLiked; // Toggle the like state
-  
-      // Send the request to update the like
+      const value = !isLikedByUser[postId]; // Toggle the like state locally
       await api.put(
         `/post/${postId}/like`,
         { value }, // Send true to add a like, false to remove it
@@ -105,17 +102,20 @@ const Dashboard: React.FC = () => {
           },
         }
       );
-  
-      // Update the likes count locally
+
+      // Update the likes count and isLikedByUser state locally
       setLikesCount((prev) => ({
         ...prev,
         [postId]: value ? (prev[postId] || 0) + 1 : Math.max((prev[postId] || 0) - 1, 0),
+      }));
+      setIsLikedByUser((prev) => ({
+        ...prev,
+        [postId]: value,
       }));
     } catch (err) {
       console.error("Failed to toggle like for post:", err);
     }
   };
-  
 
   const loadPosts = async () => {
     try {
@@ -147,20 +147,24 @@ const Dashboard: React.FC = () => {
       );
       setCommentsCount(commentsCountData);
 
-      // Fetch likes count for each post
+      // Fetch likes count and determine if the user has liked each post
       const likesCountData: { [key: string]: number } = {};
+      const isLikedByUserData: { [key: string]: boolean } = {};
       await Promise.all(
         postsData.map(async (post) => {
           try {
             const likesResponse = await api.get(`/post/${post.id}/like`);
             likesCountData[post.id] = likesResponse.data.count;
+            isLikedByUserData[post.id] = likesResponse.data.likedBy.includes(auth.userId); // Check if the current user liked the post
           } catch (error) {
             console.error(`Failed to fetch likes for post ${post.id}:`, error);
             likesCountData[post.id] = 0; // Default to 0 likes if there's an error
+            isLikedByUserData[post.id] = false; // Default to not liked
           }
         })
       );
       setLikesCount(likesCountData);
+      setIsLikedByUser(isLikedByUserData);
     } catch (err) {
       setError("Failed to load posts. Please try again later.");
       console.error("Failed to load posts:", err);
@@ -230,7 +234,11 @@ const Dashboard: React.FC = () => {
                         </Typography>
                       </CardContent>
                       <CardActions disableSpacing>
-                        <IconButton aria-label="add to favorites" onClick={(e) => handleLikePost(e, post.id)}>
+                        <IconButton
+                          aria-label="add to favorites"
+                          onClick={(e) => handleLikePost(e, post.id)}
+                          color={isLikedByUser[post.id] ? 'primary' : 'default'}
+                        >
                           <Badge badgeContent={likesCount[post.id] || 0} color="primary">
                             <ThumbUp />
                           </Badge>
