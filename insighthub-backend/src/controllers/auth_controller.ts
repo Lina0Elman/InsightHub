@@ -52,9 +52,11 @@ export const socialAuth = async (req: Request, res: Response) => {
 
 
         const email = decodedToken.email;
-        loginUserGoogle(email, authProvider);
-
-        return res.status(200).json({ message: "Authentication successful", tokens });
+        const resultTokens = await usersService.loginUserGoogle(email, authProvider);
+        if (!resultTokens) {
+            return res.status(401).json({ message: 'Invalid' });
+        }
+        return res.status(200).json({ message: "Authentication successful", resultTokens });
     } catch (error) {
         console.error("Authentication failed:", error);
         return res.status(400).json({ message: "Authentication failed", error });
