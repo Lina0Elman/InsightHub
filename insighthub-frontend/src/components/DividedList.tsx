@@ -11,7 +11,7 @@ const DividedList: React.FC<any> = ({ onlineUsers, onUserClick }) => {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const handleUserClick = (user: any) => {
-    setSelectedUserId(user._id);
+    setSelectedUserId(user.id);
     onUserClick(user);
   };
 
@@ -20,14 +20,13 @@ const DividedList: React.FC<any> = ({ onlineUsers, onUserClick }) => {
       <div>
         <List variant="outlined" sx={{ minWidth: 240, borderRadius: 'sm' }}>
           {onlineUsers.map((user: any, index: number) => (
-            <div key={user._id} id={user._id} onClick={() => handleUserClick(user)}>
+            <div key={user.id} id={user.id} onClick={() => handleUserClick(user)}>
               {index !== 0 && <ListDivider />}
               <ListItem
-                key={user._id}
                 sx={{
                   cursor: 'pointer',
-                  backgroundColor: user._id === selectedUserId ? 'var(--color-1)' : 'transparent',
-                  color: user._id === selectedUserId ? 'white' : 'inherit',
+                  backgroundColor: user.id === selectedUserId ? 'var(--color-1)' : 'transparent',
+                  color: user.id === selectedUserId ? 'white' : 'inherit',
                   borderRadius: '5px',
                   transition: 'background 0.1s ease-in-out',
                   '&:hover': { backgroundColor: 'var(--color-4)' },

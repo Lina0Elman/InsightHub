@@ -56,7 +56,7 @@ const Chat: React.FC = () => {
   };
 
   const onUserClick = (user : any) => {
-    axios.get<Room>(`${config.app.backend_url()}/room/user/${user._id}`, {
+    axios.get<Room>(`${config.app.backend_url()}/room/user/${user.id}`, {
       headers: { Authorization: `Bearer ${userAuthRef.current.accessToken}` }
     })
     .then((response) => {
@@ -101,7 +101,7 @@ const Chat: React.FC = () => {
                 room.messages.map((m: any, index: any) => (
                     <div key={index} className="message">
                         <div className="message-header">
-                            <span className="message-user">{Array.from(usersMetadataCacheRef.current).find(u => u._id == m?.userId)?.email}</span>
+                            <span className="message-user">{Array.from(usersMetadataCacheRef.current).find(u => u.id == m?.userId)?.email}</span>
                             <span className="message-time">{new Date(m?.createdAt).toLocaleTimeString()}</span>
                         </div>
                         <div className="message-content">{m?.content}</div>
