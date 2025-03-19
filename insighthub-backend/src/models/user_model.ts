@@ -24,6 +24,9 @@ const userSchema: Schema = new Schema({
     updatedAt: {
         type: Date,
         default: Date.now
+    },
+    authProvider: {
+        type: String
     }
 }, { timestamps: true, strict: true, versionKey: false });
 
