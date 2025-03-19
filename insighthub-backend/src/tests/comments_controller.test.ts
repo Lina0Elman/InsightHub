@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../app';
+import { app } from '../app';
 import {PostData} from "types/post_types";
 import {CommentData} from "types/comment_types";
 

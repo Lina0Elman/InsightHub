@@ -15,6 +15,8 @@ tags:
     description: Operations related to users
   - name: Resources
     description: Operations related to uploading & downloading resources
+  - name: Rooms
+    description: Operations related to chat rooms
 
 paths:
   /post:
@@ -721,6 +723,64 @@ paths:
           description: Image not found
         '500':
           description: Internal server error
+
+  /room/user/{receiverUserId}:
+    get:
+      tags:
+        - Rooms
+      security:
+        - BearerAuth: []
+      summary: Get or create a room by user IDs
+      parameters:
+        - name: receiverUserId
+          in: path
+          required: true
+          description: The ID of the receiver user
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Room found and returned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    example: "67d5d49a9757556bd7e30939"
+                  userIds:
+                    type: array
+                    items:
+                      type: string
+                    example: ["67afa72968f736f112ae1d4f", "67afa589118b00ef7c04bbee"]
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example: []
+        '201':
+          description: Room created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    example: "67d5d49a9757556bd7e30939"
+                  userIds:
+                    type: array
+                    items:
+                      type: string
+                    example: ["67afa72968f736f112ae1d4f", "67afa589118b00ef7c04bbee"]
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example: []
+        '400':
+          description: Bad Request
 
 components:
   schemas:
