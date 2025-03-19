@@ -8,6 +8,7 @@ import {
 } from "../middleware/validation";
 import {authenticateLogoutToken} from "../middleware/auth";
 import {CustomRequest} from "types/customRequest";
+import { socialAuth } from '../controllers/auth_controller';
 
 const router: Router = express.Router();
 
@@ -18,5 +19,7 @@ router.post('/logout', authenticateLogoutToken as unknown as express.RequestHand
 router.post('/register', validateUserRegister, handleValidationErrors, (req: Request, res: Response) => authController.registerUser(req, res));
 
 router.post('/refresh', validateRefreshToken, handleValidationErrors, (req: Request, res: Response) => authController.refreshToken(req, res));
+
+router.post('/social',  handleValidationErrors, socialAuth);
 
 export default router;

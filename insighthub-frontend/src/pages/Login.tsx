@@ -6,6 +6,10 @@ import './Login.css';
 import { config } from '../config';
 import { LoginResponse } from '../models/LoginResponse';
 import {setUserAuth} from "../handlers/userAuth.ts";
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../firebase";
+
+
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -13,6 +17,27 @@ const Login: React.FC = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+   // Google Login
+   const handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      const idToken = await user.getIdToken(); // Get Firebase ID Token
+
+      // Send the token to the backend for authentication
+      const res = await axios.post<LoginResponse>(`${config.app.backend_url()}/auth/social`, {
+        idToken,
+        authProvider: "google",
+      });
+
+      setUserAuth(res.data);
+
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Google login failed:", error);
+      setError("Google login failed.");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,6 +119,11 @@ const Login: React.FC = () => {
                   Register
                 </Link>
               </Typography>
+            </Box>
+            <Box sx={{ mt: 2, textAlign: "center" }}>
+              <Button variant="contained" color="error" fullWidth sx={{ mb: 1 }} onClick={handleGoogleLogin}>
+                Login with Google
+              </Button>
             </Box>
           </Paper>
         </Box>

@@ -12,8 +12,8 @@ const userToUserData = (user: Document<unknown, {}, IUser> & IUser): UserData =>
 };
 
 
-export const addUser = async (username: string, password: string, email: string): Promise<UserData> => {
-    const newUser = new UserModel({username, password, email});
+export const addUser = async (username: string, password: string, email: string, authProvider: string): Promise<UserData> => {
+    const newUser = new UserModel({username, password, email, authProvider: authProvider || 'local'});
     await newUser.save()
     return userToUserData(newUser);
 };
@@ -49,9 +49,14 @@ export const deleteUserById = async (id: string): Promise<UserData | null> => {
     return user ? userToUserData(user) : null;
 };
 
-export const registerUser = async (username: string, password: string, email: string): Promise<UserData> => {
-    const hashedPassword = await bcrypt.hash(password, config.token.salt());
-    return await addUser(username, hashedPassword, email);
+export const registerUser = async (username: string, password: string, email: string, authProvider: string): Promise<UserData> => {
+    let hashedPassword: string = '';
+    // If registering with a password (local registration)
+    if (password && authProvider === 'local') {
+        const salt = config.token.salt();
+        hashedPassword = await bcrypt.hash(password, salt);
+    }
+    return await addUser(username, hashedPassword, email, authProvider);
 };
 
 export const getUserByUsernameOrEmail = async (username: string, email: string) => {
@@ -81,19 +86,44 @@ const generateTokens = (id: string): { accessToken: string, refreshToken: string
     return { accessToken, refreshToken };
 }
 
+export const loginUserGoogle = async (email: string, authProvider: string, name: string, image: string | undefined) => {
+    let user = await UserModel.findOne({ email });
 
+    // If the user does not exist, create a new user
+    if (!user) {
+        user = await UserModel.create({
+            email,
+            authProvider,
+            username: name,
+            imageFilename: image
+        });
+    }
+    const tokens = generateTokens(user.id.toString());
+    return {...tokens, userId: user.id, username: user.username, imageFilename: user.imageFilename}
+}
 
-export const loginUser = async (email: string, password: string): Promise<{ accessToken: string, refreshToken: string, userId: string, username: string, imageFilename?: string } | null> => {
+export const loginUser = async (email: string, password: string, authProvider?: string): Promise<{ accessToken: string, refreshToken: string, userId: string, username: string, imageFilename?: string } | null> => {
     const user = await getIUserByEmail(email);
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (!user) {
         return null;
     }
-
+     // Local login (with password)
+     if (authProvider === 'local') {
+        if ((await bcrypt.compare(password, user.password))) {
+            return null;
+        }
+     }
+      // OAuth login (Google)
+    if (authProvider === 'google') {
+        if (user.authProvider !== authProvider) {
+            throw new Error(`User is registered with ${user.authProvider}, not ${authProvider}.`);
+        }
+    }
     const { accessToken, refreshToken } = generateTokens(user.id);
 
     await new RefreshTokenModel({ userId: user.id, token: refreshToken, accessToken: accessToken }).save();
 
-    return { accessToken, refreshToken, userId: user.id, username: user.username, imageFilename: user.imageFilename };
+    return { accessToken, refreshToken, userId: user?.id, username: user.username, imageFilename: user.imageFilename };
 };
 
 export const refreshToken = async (refreshToken: string): Promise<{ newRefreshToken: string; accessToken: string }> => {

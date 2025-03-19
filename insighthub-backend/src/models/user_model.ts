@@ -4,7 +4,6 @@ import { IUser , UserData} from 'types/user_types';
 const userSchema: Schema = new Schema({
     username: {
         type: String,
-        required: true
     },
     email: {
         type: String,
@@ -12,7 +11,6 @@ const userSchema: Schema = new Schema({
     },
     password: {
         type: String,
-        required: true
     }, // Store hashed passwords
     imageFilename: {
         type: String
@@ -24,6 +22,9 @@ const userSchema: Schema = new Schema({
     updatedAt: {
         type: Date,
         default: Date.now
+    },
+    authProvider: {
+        type: String
     }
 }, { timestamps: true, strict: true, versionKey: false });
 
@@ -33,6 +34,7 @@ userSchema.set('toJSON', {
             id: ret._id,
             username: ret.username,
             email: ret.email,
+            password: ret.password,
             imageFilename: ret?.imageFilename,
             createdAt: ret.createdAt,
             updatedAt: ret.updatedAt
