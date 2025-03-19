@@ -522,6 +522,8 @@ paths:
     get:
       tags:
         - Users
+      security:
+        - BearerAuth: [ ]
       summary: Retrieve a user by ID
       parameters:
         - name: userId
