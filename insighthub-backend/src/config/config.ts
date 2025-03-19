@@ -23,5 +23,11 @@ export const config = {
         api_key: () => process.env.OPENROUTER_API_KEY || undefined,
         model_name: () => process.env.OPENROUTER_MODEL_NAME || 'google/gemma-3-27b-it:free',
         turned_on: () =>  process.env.CHAT_AI_TURNED_ON === 'true' || false
+    },
+    socketMethods: {
+        messageFromServer: "message-from-server",
+        messageFromClient: "message-from-client",
+        onlineUsers: "online-users",
+        enterRoom: "enter-room"
     }
 }

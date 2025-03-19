@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../app';
+import { app } from '../app';
 import {PostModel} from '../models/posts_model'; // Adjust the path as necessary
 import {UserModel} from '../models/user_model';
 import {UserData} from "types/user_types";
@@ -129,8 +129,8 @@ describe('given db initialized with posts when http request GET /post', () => {
             .get('/post')
             .set('Authorization', `jwt ` + userInfo.accessToken);
         expect(res.statusCode).toBe(200);
-        expect(res.body).not.toEqual([]);
-        expect(res.body.length).toBeGreaterThan(1);
+        expect(res.body.posts).not.toEqual([]);
+        expect(res.body.posts.length).toBeGreaterThan(1);
     });
 });
 
@@ -159,7 +159,7 @@ describe('given username when http request GET /post?username', () => {
             .set('Authorization', `jwt ` + userInfo.accessToken);
 
         expect(res.statusCode).toBe(200);
-        res.body.forEach((post: PostData) => {
+        res.body.posts.forEach((post: PostData) => {
             expect(post.owner).toEqual(userInfo.id);
         });
     });
@@ -195,14 +195,14 @@ describe('given existing username when http request GET /post?owner', () => {
         expect(resUserPosts.statusCode).toBe(200);
 
         // Check that the user posts are a subset of all posts
-        const userPostIds = userPosts.map((post: { id: string; }) => post.id);
-        const allPostIds = allPosts.map((post: { id: string; }) => post.id);
+        const userPostIds = userPosts.posts.map((post: { id: string; }) => post.id);
+        const allPostIds = allPosts.posts.map((post: { id: string; }) => post.id);
         userPostIds.forEach((id: string) => {
             expect(allPostIds).toContain(id);
         });
 
         // Check that all posts belong to the user
-        userPosts.forEach((post: PostData) => {
+        userPosts.posts.forEach((post: PostData) => {
             expect(post.owner).toEqual(userInfo2.id);
         });
     });

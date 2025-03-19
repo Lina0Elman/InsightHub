@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../app'; // Assuming your Express app is exported from this file
+import {app} from '../app'; // Assuming your Express app is exported from this file
 
 
 let accessToken1: string;

@@ -12,9 +12,18 @@ import * as chatService from './chat_api_service';
 import {config} from "../config/config";
 
 
-const postToPostData = (post: Document<unknown, {}, IPost> & IPost): PostData => {
-    return { ...post.toJSON(), owner: post.owner.toString() };
-};
+const postToPostData = async (post: Document<unknown, {}, IPost> & IPost): Promise<PostData> => {
+    // Fetch the owner's profile image
+    const user = await UserModel.findById(post.owner).lean();
+    const profileImage = user?.imageFilename
+
+    return { 
+        ...post.toJSON(), 
+        owner: post.owner.toString(),
+        ownerProfileImage: profileImage, // Add the profile image to the post data
+        ownerUsername: user?.username
+    };
+}
 
 
 const addMisterAIComment = async (postId: string, postContent: string) => {
@@ -51,14 +60,20 @@ export const addPost = async (postData: PostData): Promise<PostData> => {
     * @param owner - The owner of the posts to be fetched
     * @returns The list of posts
     */
-export const getPosts = async (owner?: string): Promise<PostData[]> => {
-    if (owner) {
-        const posts = await PostModel.find({ owner }).exec();
-        return posts.map(postToPostData);
-    } else {
-         const posts = await PostModel.find().exec();
-        return posts.map(postToPostData);
+export const getPosts = async (owner?: string, skip = 0, limit = 10): Promise<PostData[]> => {
+    const query = owner ? { owner } : {};
+    const posts = await PostModel.find(query).skip(skip).limit(limit).exec();
+    return Promise.all(posts.map(postToPostData));
+};
+
+export const getTotalPosts = async (owner?: string, username?: string): Promise<number> => {
+    if (username) {
+        const user = await UserModel.findOne({ username }).select('_id').lean().exec();
+        if (!user) return 0;
+        return PostModel.countDocuments({ owner: user._id }).exec();
     }
+    const query = owner ? { owner } : {};
+    return PostModel.countDocuments(query).exec();
 };
 
 /***
@@ -75,7 +90,7 @@ export const getPostsByUsername = async (username: string): Promise<PostData[]> 
 
     // Then find posts with that user's ID
     const posts = await PostModel.find({ owner: user._id }).exec();
-    return posts.map(postToPostData);
+    return Promise.all(posts.map(postToPostData));
 };
 
 /**
@@ -93,18 +108,18 @@ export const getPostById = async (postId: string): Promise<PostData | null> => {
  * @param postId
  */
 export const deletePostById = async (postId: string): Promise<PostData | null> => {
-    const session: ClientSession = await mongoose.startSession();
-    session.startTransaction();
     try {
-        await commentsService.deleteCommentsByPostId(postId, session );
-        const post = await PostModel.findByIdAndDelete(postId, { session }).exec();
-        await session.commitTransaction();
-        return post ? postToPostData(post) : null;
+        // Delete comments associated with the post
+        await commentsService.deleteCommentsByPostId(postId);
+
+        // Delete the post
+        const post = await PostModel.findByIdAndDelete(postId).exec();
+
+        // Return the deleted post data
+        return post ? await postToPostData(post) : null;
     } catch (error) {
-        await session.abortTransaction();
+        console.error("Error deleting post:", error);
         throw error;
-    } finally {
-        await session.endSession();
     }
 };
 
@@ -144,7 +159,7 @@ export const postExists = async (postId: string): Promise<boolean> => {
 export const updatePostLike = async (postId: string, booleanValue: string, userId: string): Promise<void> => {
     const post = await getPostById(postId);
     if(post != null) {
-        if (booleanValue == "true") {
+        if (booleanValue) {
             // Upsert
             await likeModel.updateOne({
                     userId: new mongoose.Types.ObjectId(userId),
@@ -165,6 +180,17 @@ export const updatePostLike = async (postId: string, booleanValue: string, userI
         throw new Error("Post not found")
     }
 }
+
+export const getPostLikesCount = async (postId: string): Promise<number> => {
+    try {
+        // Count the number of likes for the given post ID
+        const likesCount = await likeModel.countDocuments({ postId: new mongoose.Types.ObjectId(postId) }).exec();
+        return likesCount;
+    } catch (error) {
+        console.error(`Error fetching likes count for post ${postId}:`, error);
+        throw new Error('Failed to fetch likes count');
+    }
+};
 
 export const getLikedPostsByUser = async (userId: string) => {
     const likedPostsByUserId = await likeModel.aggregate([

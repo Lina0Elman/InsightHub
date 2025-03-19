@@ -75,6 +75,10 @@ export const validatePostIdParam = [
     param('postId').isMongoId().withMessage('Invalid post ID'),
 ];
 
+export const validateRoomUserIds = [
+    param('receiverUserId').isMongoId().withMessage('Invalid user ID'),
+];
+
 export const handleValidationErrors = (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
