@@ -56,7 +56,7 @@ app.use(authenticateToken.unless({
         { url: /^\/comment\/post\/[^\/]+$/, methods: ['GET'] },  // Match /comment/post/{anything} for GET
         { url: '/comment', methods: ['GET'] },
         { url: '/post', methods: ['GET'] },  // Allow GET to /post
-        { url: /^\/image\/[^\/]+$/, methods: ['GET'] },  // Allow GET to /image/{anything}
+        { url: /^\/resource\/image\/[^\/]+$/, methods: ['GET'] },  // Allow GET to /resource/image/{anything}
     ]
 }));
 
