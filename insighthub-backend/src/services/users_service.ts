@@ -23,8 +23,13 @@ export const getUsers = async (): Promise<UserData[]> => {
     return users.map(userToUserData);
 }
 
-export const getUserByEmail = async (email: string): Promise<IUser | null> => {
-    return await  UserModel.findOne({ email }).exec();
+const getIUserByEmail = async (email: string): Promise<IUser | null> => {
+    return await UserModel.findOne({ email }).exec();
+};
+
+export const getUserByEmail = async (email: string): Promise<UserData | null> => {
+    const user = await UserModel.findOne({ email }).exec();
+    return user ? userToUserData(user) : null;
 };
 
 export const getUserById = async (id: string): Promise<UserData | null> => {
@@ -98,7 +103,7 @@ export const loginUserGoogle = async (email: string, authProvider: string, name:
 }
 
 export const loginUser = async (email: string, password: string, authProvider?: string): Promise<{ accessToken: string, refreshToken: string, userId: string, username: string, imageFilename?: string } | null> => {
-    const user = await getUserByEmail(email);
+    const user = await getIUserByEmail(email);
     if (!user) {
         return null;
     }

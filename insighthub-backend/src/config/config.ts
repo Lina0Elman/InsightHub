@@ -18,6 +18,12 @@ export const config = {
         imagesDirectoryPath: () => 'resources/images',
         imageMaxSize: () => 10 * 1024 * 1024 // Max file size: 10MB
     },
+    chatAi: {
+        api_url: () => process.env.CHAT_AI_API_URL || 'https://openrouter.ai/api/v1/chat/completions',
+        api_key: () => process.env.OPENROUTER_API_KEY || undefined,
+        model_name: () => process.env.OPENROUTER_MODEL_NAME || 'google/gemma-3-27b-it:free',
+        turned_on: () =>  process.env.CHAT_AI_TURNED_ON === 'true' || false
+    },
     socketMethods: {
         messageFromServer: "message-from-server",
         messageFromClient: "message-from-client",

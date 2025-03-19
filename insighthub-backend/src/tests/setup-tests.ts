@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
 import mongoose, {ConnectOptions} from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-dotenvExpand.expand(dotenv.config());
+
 
 
 
@@ -23,6 +23,9 @@ dotenvExpand.expand(dotenv.config());
 
 
 let mongoServer: MongoMemoryServer;
+
+// Mock the chatWithAI function globally
+jest.mock('../services/chat_api_service');
 
 
 /**

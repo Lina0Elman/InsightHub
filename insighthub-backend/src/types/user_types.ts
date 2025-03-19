@@ -13,6 +13,7 @@ export interface UserData {
     id: string;
     username: string;
     email: string;
+    password: string;
     imageFilename?: string;
     createdAt?: string,
     updatedAt?: string,

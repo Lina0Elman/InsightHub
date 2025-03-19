@@ -34,6 +34,7 @@ userSchema.set('toJSON', {
             id: ret._id,
             username: ret.username,
             email: ret.email,
+            password: ret.password,
             imageFilename: ret?.imageFilename,
             createdAt: ret.createdAt,
             updatedAt: ret.updatedAt
