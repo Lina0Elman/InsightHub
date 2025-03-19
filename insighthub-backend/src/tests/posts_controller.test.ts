@@ -5,8 +5,9 @@ import {UserModel} from '../models/user_model';
 import {UserData} from "types/user_types";
 import {PostData} from "types/post_types"; // Adjust the path as necessary
 
-let existingPost: PostData = undefined;
+let existingPost: PostData;
 
+// @ts-ignore
 interface UserInfo extends UserData {
     id?: string;
     accessToken?: string;
