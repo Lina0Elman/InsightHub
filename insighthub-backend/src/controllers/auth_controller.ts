@@ -8,7 +8,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 // Initialize Firebase Admin SDK (ensure Firebase credentials are set in .env)
-if (!admin.apps.length) {
+if (!admin.apps.length && process.env.FIREBASE_SERVICE_ACCOUNT) {
     const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT!);
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
