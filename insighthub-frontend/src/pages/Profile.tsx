@@ -5,6 +5,7 @@ import TopBar from '../components/TopBar';
 import {getUserAuth} from "../handlers/userAuth.ts";
 import api from "../serverApi.ts";
 import {UserProfile} from "../models/UserProfile.ts";
+import defaultProfileImage from '../assets/defaultProfileImage.jpg';
 
 const Profile: React.FC = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -28,6 +29,7 @@ const Profile: React.FC = () => {
         setImage(imageUrl);
       } catch (error) {
         setError('Error fetching profile image.');
+        setImage(defaultProfileImage); // Set default image if there's an error
       }
     };
 

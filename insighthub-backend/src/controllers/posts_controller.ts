@@ -3,7 +3,9 @@ import * as postsService from '../services/posts_service';
 import { handleError } from '../utils/handle_error';
 import {CustomRequest} from "types/customRequest";
 import {PostData} from "types/post_types";
-import {getLikedPostsByUser, postExists, updatePostLike} from "../services/posts_service";
+import {getLikedPostsByUser, getPostLikesCount, postExists, updatePostLike} from "../services/posts_service";
+import LikeModel from '../models/like_model';
+import mongoose from 'mongoose';
 
 
 export const addPost = async (req: CustomRequest, res: Response): Promise<void> => {
@@ -24,21 +26,32 @@ export const addPost = async (req: CustomRequest, res: Response): Promise<void> 
 
 export const getPosts = async (req: Request, res: Response): Promise<void> => {
     try {
+        const page = parseInt(req.query.page as string) || 1; // Default to page 1
+        const limit = parseInt(req.query.limit as string) || 5; // Default to 5 posts per page
+        const skip = (page - 1) * limit;
+
         let posts;
         if (req.query.owner) {
-            posts = await postsService.getPosts(req.query.owner as string);
-        } else if (req.query.username)
-        {
+            posts = await postsService.getPosts(req.query.owner as string, skip, limit);
+        } else if (req.query.username) {
             posts = await postsService.getPostsByUsername(req.query.username as string);
-        }
-        else {
-            posts = await postsService.getPosts();
+        } else {
+            posts = await postsService.getPosts(undefined, skip, limit);
         }
 
         if (posts.length === 0) {
             res.status(200).json([]);
-        } else {
-            res.json(posts);
+        }
+        else {
+            const totalPosts = await postsService.getTotalPosts(req.query.owner as string, req.query.username as string);
+            const totalPages = Math.ceil(totalPosts / limit);
+
+            res.status(200).json({
+                posts,
+                totalPosts,
+                totalPages,
+                currentPage: page,
+            });
         }
     } catch (err) {
         handleError(err, res);
@@ -92,9 +105,8 @@ export const updatePost = async (req: CustomRequest, res: Response): Promise<voi
 
 export const updateLikeByPostId = async (req: CustomRequest, res: Response): Promise<void> => {
     const userId = req.user.id;
-    const id = req.params.id;
-    // TODO - change to json with a boolean value
-    const booleanValue: any = req.body;
+    const id = req.params.postId;
+    const booleanValue: any = req.body.value;
     try {
         if (booleanValue instanceof String && booleanValue != "false" && booleanValue != "true") {
             res.status(400).send("Bad Request. Body accepts `true` or `false` values only");
@@ -112,6 +124,24 @@ export const updateLikeByPostId = async (req: CustomRequest, res: Response): Pro
         handleError(err, res);
     }
 }
+
+export const getLikesByPostId = async (req: Request, res: Response): Promise<void> => {
+    const postId = req.params.postId;
+
+    try {
+        // Fetch the count of likes and the list of users who liked the post
+        const likes = await LikeModel.find({ postId: new mongoose.Types.ObjectId(postId) }).select('userId').exec();
+        const likesCount = likes.length;
+        const likedBy = likes.map((like) => like.userId.toString()); // Extract user IDs
+
+        res.status(200).json({ count: likesCount, likedBy });
+    } catch (error) {
+        console.error(`Error fetching likes for post ${postId}:`, error);
+        handleError(error, res);
+    }
+};
+
+
 
 export const getLikedPosts =  async (req: CustomRequest, res: Response): Promise<void> => {
     try {

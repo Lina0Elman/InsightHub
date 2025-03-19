@@ -8,39 +8,52 @@ import 'froala-editor/css/froala_editor.pkgd.min.css';
 import 'froala-editor/js/plugins/image.min.js';
 import TopBar from '../components/TopBar';
 import api from "../serverApi.ts";
+import { getUserAuth } from '../handlers/userAuth.ts';
 
 const NewPost: React.FC = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [images, setImages] = useState<File[]>([]); // Store images locally
   const navigate = useNavigate();
+  const auth = getUserAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
+      // Upload images to the server
+      const uploadedImages: { [placeholder: string]: string } = {};
+      for (const image of images) {
+        const formData = new FormData();
+        formData.append('file', image);
+
+        const response = await api.post(`/resource/image`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${auth.accessToken}`,
+          },
+        });
+
+        // Map the placeholder to the actual URL
+        const imageUrl = `${config.app.backend_url()}/resources/images/${response.data}`;
+        uploadedImages[image.name] = imageUrl;
+      }
+
+      // Replace placeholders in the content with actual URLs
+      let updatedContent = content;
+      Object.keys(uploadedImages).forEach((placeholder) => {
+        updatedContent = updatedContent.replace(placeholder, uploadedImages[placeholder]);
+      });
+
+      // Submit the post with the updated content
       await api.post(`/post`, {
         title,
-        content,
+        content: updatedContent,
       });
+
       navigate('/dashboard'); // Redirect to dashboard after successful post creation
     } catch (error) {
       console.error('Error creating post:', error);
-    }
-  };
-
-  const handleImageUpload = async (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const response = await api.post(`/resource/image`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      return null;
     }
   };
 
@@ -77,43 +90,23 @@ const NewPost: React.FC = () => {
                 "alert",
               ],
               imageUploadRemoteUrls: true,
-              imageMaxSize: config.resources.imageMaxSize(), // Example: 5 * 1024 * 1024 for 5MB
               imageAllowedTypes: ['jpeg', 'jpg', 'png', 'gif'],
               events: {
                 // Custom image upload handling
                 "image.beforeUpload": async function (fileList: File[]) {
                   const editor = this as any;
-                  let firstFile = fileList[0];
-
-                  // If the file is a Blob (image pasted from clipboard), convert to File
-                  if (firstFile instanceof Blob) {
-                    const fileExtension = firstFile.type.split('/')[1];
-                    const fileName = `file.${fileExtension}`;
-                    firstFile = new File([firstFile], fileName, { type: firstFile.type });
-                  }
+                  const firstFile = fileList[0];
 
                   if (firstFile) {
-                    const imageFilename = await handleImageUpload(firstFile);
-                    if (imageFilename) {
-                      const imageUrl = `${config.app.backend_url()}/resource/image/${imageFilename}`;
-                      
-                      // Insert image directly to the editor
-                      editor.image.insert(
-                        imageUrl,
-                        null,
-                        null,
-                        editor.image.get()
-                      );
-                    }
-                  }
+                    // Generate a placeholder for the image
+                    const placeholder = `[[image-${firstFile.name}]]`;
 
-                  // Remove any temporary blob images that Froala might try to handle internally
-                  const images = editor.el.getElementsByTagName("img");
-                  Array.from(images).forEach((img: any) => {
-                    if (img.src.startsWith("blob:")) {
-                      img.parentNode?.removeChild(img);
-                    }
-                  });
+                    // Insert the placeholder into the editor
+                    editor.image.insert(placeholder, null, null, editor.image.get());
+
+                    // Store the image locally
+                    setImages((prevImages) => [...prevImages, firstFile]);
+                  }
 
                   return false; // Prevent Froala's default upload mechanism
                 },
@@ -139,4 +132,4 @@ const NewPost: React.FC = () => {
   );
 };
 
-export default NewPost; 
+export default NewPost;
