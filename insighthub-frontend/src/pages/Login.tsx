@@ -32,7 +32,7 @@ const Login: React.FC = () => {
       // Handle login error
       const err = error as any;
       if (err.response && err.response.data) {
-        setError(err.response.data);
+        setError(err.response.data.message);
       } else {
         setError('An error occurred. Please try again.');
       }
