@@ -45,7 +45,7 @@ export const deleteUserById = async (id: string): Promise<UserData | null> => {
 };
 
 export const registerUser = async (username: string, password: string, email: string, authProvider: string): Promise<UserData> => {
-    let hashedPassword: string | null = null;
+    let hashedPassword: string = '';
     // If registering with a password (local registration)
     if (password && authProvider === 'local') {
         const salt = config.token.salt();
