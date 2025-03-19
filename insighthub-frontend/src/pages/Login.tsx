@@ -25,20 +25,14 @@ const Login: React.FC = () => {
       const idToken = await user.getIdToken(); // Get Firebase ID Token
 
       // Send the token to the backend for authentication
-      const res = await axios.post(`${config.app.backend_url()}/auth/social`, {
+      const res = await axios.post<LoginResponse>(`${config.app.backend_url()}/auth/social`, {
         idToken,
         authProvider: "google",
       });
 
-      const data = res.data as LoginResponse;
-      localStorage.setItem(config.localStorageKeys.userAuth, JSON.stringify(data))
-  
+      setUserAuth(res.data);
 
-      const token = localStorage.getItem("accessToken");
-      if (token) {
-        console.log("Redirecting to dashboard...");
-        navigate("/dashboard");
-      }
+      navigate("/dashboard");
     } catch (error) {
       console.error("Google login failed:", error);
       setError("Google login failed.");
