@@ -39,15 +39,20 @@ export const getPosts = async (req: Request, res: Response): Promise<void> => {
             posts = await postsService.getPosts(undefined, skip, limit);
         }
 
-        const totalPosts = await postsService.getTotalPosts(req.query.owner as string, req.query.username as string);
-        const totalPages = Math.ceil(totalPosts / limit);
+        if (posts.length === 0) {
+            res.status(200).json([]);
+        }
+        else {
+            const totalPosts = await postsService.getTotalPosts(req.query.owner as string, req.query.username as string);
+            const totalPages = Math.ceil(totalPosts / limit);
 
-        res.status(200).json({
-            posts,
-            totalPosts,
-            totalPages,
-            currentPage: page,
-        });
+            res.status(200).json({
+                posts,
+                totalPosts,
+                totalPages,
+                currentPage: page,
+            });
+        }
     } catch (err) {
         handleError(err, res);
     }
