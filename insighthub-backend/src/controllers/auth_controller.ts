@@ -3,11 +3,15 @@ import * as usersService from "../services/users_service";
 import {handleError} from "../utils/handle_error";
 import {CustomRequest} from "types/customRequest";
 import admin from 'firebase-admin';
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 // Initialize Firebase Admin SDK (ensure Firebase credentials are set in .env)
 if (!admin.apps.length) {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT!);
     admin.initializeApp({
-        credential: admin.credential.applicationDefault(),
+        credential: admin.credential.cert(serviceAccount),
     });
 }
 
@@ -29,8 +33,6 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
 // Google & Facebook Authentication (using Firebase)
 export const socialAuth = async (req: Request, res: Response) => {
     try {
-        console.log("Received request body:", req.body); // Log the received request
-
         const { idToken, authProvider } = req.body;
         if (!idToken) {
             console.error("Missing idToken"); // Debugging line
@@ -48,15 +50,14 @@ export const socialAuth = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Invalid token' });
         }
 
-        console.log("Decoded Firebase Token:", decodedToken); // Debugging line
-
-
         const email = decodedToken.email;
-        const resultTokens = await usersService.loginUserGoogle(email, authProvider);
+        const name = decodedToken.name.toString();
+        const image = decodedToken.picture;
+        const resultTokens = await usersService.loginUserGoogle(email, authProvider, name, image);
         if (!resultTokens) {
             return res.status(401).json({ message: 'Invalid' });
         }
-        return res.status(200).json({ message: "Authentication successful", resultTokens });
+        return res.status(200).json(resultTokens);
     } catch (error) {
         console.error("Authentication failed:", error);
         return res.status(400).json({ message: "Authentication failed", error });

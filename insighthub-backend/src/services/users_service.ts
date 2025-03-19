@@ -81,7 +81,7 @@ const generateTokens = (id: string): { accessToken: string, refreshToken: string
     return { accessToken, refreshToken };
 }
 
-export const loginUserGoogle = async (email: string, authProvider: string) => {
+export const loginUserGoogle = async (email: string, authProvider: string, name: string, image: string | undefined) => {
     let user = await UserModel.findOne({ email });
 
     // If the user does not exist, create a new user
@@ -89,11 +89,12 @@ export const loginUserGoogle = async (email: string, authProvider: string) => {
         user = await UserModel.create({
             email,
             authProvider,
+            username: name,
+            imageFilename: image
         });
     }
     const tokens = generateTokens(user.id.toString());
-    console.log("Sending response:", { tokens });
-    return {tokens}
+    return {...tokens, userId: user.id, username: user.username, imageFilename: user.imageFilename}
 }
 
 export const loginUser = async (email: string, password: string, authProvider?: string): Promise<{ accessToken: string, refreshToken: string, userId: string, username: string, imageFilename?: string } | null> => {

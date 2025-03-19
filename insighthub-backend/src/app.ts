@@ -51,6 +51,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(loadOpenApiFile() as JsonO
 app.use(authenticateToken.unless({
     path: [
         { url: '/auth/login' },
+        { url: '/auth/social' },
         { url: '/auth/register' },
         { url: '/auth/refresh' },
         { url: '/auth/logout' },

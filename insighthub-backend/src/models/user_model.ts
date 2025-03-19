@@ -4,7 +4,6 @@ import { IUser , UserData} from 'types/user_types';
 const userSchema: Schema = new Schema({
     username: {
         type: String,
-        required: true
     },
     email: {
         type: String,
@@ -12,7 +11,6 @@ const userSchema: Schema = new Schema({
     },
     password: {
         type: String,
-        required: true
     }, // Store hashed passwords
     imageFilename: {
         type: String

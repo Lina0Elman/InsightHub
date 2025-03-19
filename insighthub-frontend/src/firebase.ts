@@ -1,14 +1,14 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, FacebookAuthProvider } from "firebase/auth";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCyeT9neS1PVjnfEZh8Ftzh_Wbghs8yzKg",
-    authDomain: "insighthub-3143b.firebaseapp.com",
-    projectId: "insighthub-3143b",
-    storageBucket: "insighthub-3143b.firebasestorage.app",
-    messagingSenderId: "68649233569",
-    appId: "1:68649233569:web:6131349a6afe37941114e0",
-    measurementId: "G-CV8LE63BX0"
+    apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.REACT_APP_FIREBASE_APP_ID,
+    measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase
