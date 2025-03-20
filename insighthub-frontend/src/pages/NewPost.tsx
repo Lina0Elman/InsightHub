@@ -42,7 +42,10 @@ const NewPost: React.FC = () => {
       // Replace placeholders in the content with actual URLs
       let updatedContent = content;
       Object.keys(uploadedImages).forEach((placeholder) => {
-        updatedContent = updatedContent.replace(placeholder, uploadedImages[placeholder]);
+        updatedContent = updatedContent.replace(
+            new RegExp(`blob:http://localhost:5000/([\\w-]+)`, 'g'),
+            (match, uuid) => uploadedImages[placeholder] || match // Replace if found, else keep original
+        );
       });
 
       // Submit the post with the updated content
