@@ -53,7 +53,7 @@ router.use(authenticateToken.unless({
         { url: '/api/auth/register' },
         { url: '/api/auth/refresh' },
         { url: '/api/auth/logout' },
-        { url: /^\/socket.io\/[^\/]+$/, methods: ['GET'] },
+        { url: /^\/socket.io\/[^\/]+$/ },
         { url: /^\/api\/api-docs\/[^\/]+$/, methods: ['GET'] },
         { url: /^\/api\/post\/[^\/]+$/, methods: ['GET'] },
         { url: /^\/api\/comment\/[^\/]+$/, methods: ['GET'] },
