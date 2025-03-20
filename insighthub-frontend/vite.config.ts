@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import dotenv from 'dotenv';
+import { config } from './src/config'
 
 
 dotenv.config();
@@ -9,7 +10,11 @@ dotenv.config();
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: parseInt(process.env.VITE_PORT || '5000')
+    port: config.app.port(),
+    host: config.app.domain_name(),
   },
-  preview: { port: parseInt(process.env.VITE_PORT || '5000') }
+  preview: { port: config.app.port() },
+  define: {
+    'process.env': process.env
+  }
 })
