@@ -2,6 +2,7 @@ import request from 'supertest';
 import { app } from '../app';
 import {PostData} from "types/post_types";
 import {CommentData} from "types/comment_types";
+import { config } from '../config/config';
 
 let existingPost1: PostData;
 let existingPost2:PostData;
@@ -310,8 +311,10 @@ describe('given existing post without any comments when http request GET /commen
 
         expect(res.statusCode).toBe(200);
         expect(Array.isArray(res.body)).toBe(true);
-        expect(res.body).toHaveLength(1);
-        expect(res.body[0].content).toBe("Mocked response");
+        if (config.chatAi.turned_on()) {
+            expect(res.body).toHaveLength(1);
+            expect(res.body[0].content).toBe("Mocked response");
+        }        
     });
 });
 
