@@ -1,4 +1,4 @@
-import express, {Request, Response, NextFunction} from 'express';
+import express, {Request, Response, NextFunction, RequestHandler} from 'express';
 import authRoutes from './routes/auth_routes';
 import commentsRoutes from './routes/comments_routes';
 import postsRoutes from './routes/posts_routes';
@@ -44,8 +44,11 @@ app.use(removeUndefinedOrEmptyFields);
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(loadOpenApiFile() as JsonObject));
-
+app.use('/api-docs', (req, res, next) => {
+    const prefix = req.headers['x-forwarded-prefix'] || '';
+    const swaggerDoc = loadOpenApiFile(prefix);
+    swaggerUi.setup(swaggerDoc)(req, res, next);
+}, swaggerUi.serve);
 
 // Add Authentication for all routes except the ones listed below
 app.use(authenticateToken.unless({

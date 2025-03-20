@@ -26,7 +26,7 @@ FROM nginx:1.25.2
 COPY --from=build /usr/src/app/dist /usr/share/nginx/html
 
 # Copy custom Nginx configuration file
-#COPY nginx.conf /etc/nginx/nginx.conf
+COPY nginx.conf /etc/nginx/conf.d/additional.conf
 
 # Expose port 80
 EXPOSE 80
