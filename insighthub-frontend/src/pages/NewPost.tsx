@@ -35,7 +35,7 @@ const NewPost: React.FC = () => {
         });
 
         // Map the placeholder to the actual URL
-        const imageUrl = `${config.app.backend_url()}/resources/images/${response.data}`;
+        const imageUrl = `${config.app.backend_url()}/resource/image/${response.data}`;
         uploadedImages[image.name] = imageUrl;
       }
 
