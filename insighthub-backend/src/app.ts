@@ -48,17 +48,17 @@ router.use('/api-docs', swaggerUi.setup(loadOpenApiFile() as JsonObject), swagge
 // Add Authentication for all routes except the ones listed below
 router.use(authenticateToken.unless({
     path: [
-        { url: '/auth/login' },
-        { url: '/auth/social' },
-        { url: '/auth/register' },
-        { url: '/auth/refresh' },
-        { url: '/auth/logout' },
-        { url: /^\/post\/[^\/]+$/, methods: ['GET'] },
-        { url: /^\/comment\/[^\/]+$/, methods: ['GET'] },
-        { url: /^\/comment\/post\/[^\/]+$/, methods: ['GET'] },
-        { url: '/comment', methods: ['GET'] },
-        { url: '/post', methods: ['GET'] },
-        { url: /^\/resource\/image\/[^\/]+$/, methods: ['GET'] },
+        { url: '/api/auth/login' },
+        { url: '/api/auth/social' },
+        { url: '/api/auth/register' },
+        { url: '/api/auth/refresh' },
+        { url: '/api/auth/logout' },
+        { url: /^\/api\/post\/[^\/]+$/, methods: ['GET'] },
+        { url: /^\/api\/comment\/[^\/]+$/, methods: ['GET'] },
+        { url: /^\/api\/comment\/post\/[^\/]+$/, methods: ['GET'] },
+        { url: '/api/comment', methods: ['GET'] },
+        { url: '/api/post', methods: ['GET'] },
+        { url: /^\/api\/resource\/image\/[^\/]+$/, methods: ['GET'] },
     ]
 }));
 
@@ -76,8 +76,8 @@ router.use('/room', roomsRoutes);
 const app = express();
 
 app.use('/api', router);
-app.use('/', express.static(path.join(__dirname, '/dist')));
-app.use((req: Request, res: Response) => {
+app.use('/', express.static('/dist'));
+app.use((req, res) => {
     res.redirect('/');
 });
 export { app, corsOptions };
