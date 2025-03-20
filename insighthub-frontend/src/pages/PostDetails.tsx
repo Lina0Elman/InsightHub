@@ -389,7 +389,7 @@ const PostDetails: React.FC = () => {
                               },
                             });
 
-                            const imageUrl = `${config.app.backend_url()}/resources/images/${response.data}`;
+                            const imageUrl = `${config.app.backend_url()}/resource/image/${response.data}`;
                             editor.image.insert(imageUrl, null, null, editor.image.get());
                           } catch (error) {
                             console.error("Error uploading image:", error);
