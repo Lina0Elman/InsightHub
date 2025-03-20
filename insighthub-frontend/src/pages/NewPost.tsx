@@ -23,8 +23,15 @@ const NewPost: React.FC = () => {
     try {
       // Upload images to the server
       const uploadedImages: { [placeholder: string]: string } = {};
-      for (const image of images) {
+      for (let image of images) {
         const formData = new FormData();
+
+        if (image instanceof Blob) {
+            const fileExtension = image.type.split('/')[1];
+            const fileName = `fileName.${fileExtension}`;
+            image = new File([image], fileName, { type: image.type });
+        }
+
         formData.append('file', image);
 
         const response = await api.post(`/resource/image`, formData, {
