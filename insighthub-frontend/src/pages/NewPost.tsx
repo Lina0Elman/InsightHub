@@ -23,12 +23,13 @@ const NewPost: React.FC = () => {
     try {
       // Upload images to the server
       const uploadedImages: { [placeholder: string]: string } = {};
-      for (let image of images) {
+      for (let i = 0; i < images.length; i++) {
+        let image = images[i];
         const formData = new FormData();
 
         if (image instanceof Blob) {
             const fileExtension = image.type.split('/')[1];
-            const fileName = `fileName.${fileExtension}`;
+            const fileName = `fileName-${i}.${fileExtension}`;
             image = new File([image], fileName, { type: image.type });
         }
 
@@ -60,6 +61,8 @@ const NewPost: React.FC = () => {
         title,
         content: updatedContent,
       });
+
+      setImages([]);
 
       navigate('/dashboard'); // Redirect to dashboard after successful post creation
     } catch (error) {
