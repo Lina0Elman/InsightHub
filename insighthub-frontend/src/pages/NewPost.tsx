@@ -52,7 +52,7 @@ const NewPost: React.FC = () => {
       Object.keys(uploadedImages).forEach((placeholder) => {
         updatedContent = updatedContent.replace(
             new RegExp(`blob:http://${config.app.domain_name()}:${config.app.port()}/([\\w-]+)`, 'g'),
-            (match, uuid) => uploadedImages[placeholder] || match // Replace if found, else keep original
+            (match) => uploadedImages[placeholder] || match // Replace if found, else keep original
         );
       });
 
