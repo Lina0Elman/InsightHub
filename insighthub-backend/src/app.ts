@@ -43,11 +43,7 @@ router.use(bodyParser.json());
 router.use(removeUndefinedOrEmptyFields);
 router.use(bodyParser.urlencoded({ extended: true }));
 
-router.use('/api-docs', (req: Request, res: Response, next: NextFunction) => {
-    const prefix = req.headers['x-forwarded-prefix'] as string || '';
-    const swaggerDoc = loadOpenApiFile(prefix) as JsonObject;
-    swaggerUi.setup(swaggerDoc)(req, res, next);
-}, swaggerUi.serve);
+router.use('/api-docs', swaggerUi.setup(loadOpenApiFile() as JsonObject), swaggerUi.serve);
 
 // Add Authentication for all routes except the ones listed below
 router.use(authenticateToken.unless({
@@ -79,10 +75,9 @@ router.use('/room', roomsRoutes);
 
 const app = express();
 
-// Serve static files from the /static directory
-app.use('/static', express.static(path.join(__dirname, 'static')));
-
 app.use('/api', router);
-
+app.use('/', express.static(path.join(__dirname, '/dist')));
+app.use((req: Request, res: Response) => {
+    res.redirect('/');
+});
 export { app, corsOptions };
-g

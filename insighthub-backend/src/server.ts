@@ -24,8 +24,8 @@ const startServer = () => {
 
 if (process.env.NODE_ENV === 'production') {
     const options = {
-        key: fs.readFileSync('ssl/privkey.pem'),
-        cert: fs.readFileSync('ssl/fullchain.pem')
+        key: fs.readFileSync('/ssl/privkey.pem'),
+        cert: fs.readFileSync('/ssl/fullchain.pem')
     };
     listener = https.createServer(options, app).listen(port, () => {
         console.log(`Secure server running at https://localhost:${port}`);
