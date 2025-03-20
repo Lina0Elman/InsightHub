@@ -32,6 +32,7 @@ const PostDetails: React.FC = () => {
   const [likesCount, setLikesCount] = useState(0); // State for likes count
   const [profileImage, setProfileImage] = useState<string>(defaultProfileImage); // State for profile image
   const auth = getUserAuth();
+  const [images, setImages] = useState<File[]>([]); // Store images locally
 
   const fetchProfileImage = async (imageFilename: string | null) => {
     try {
@@ -116,11 +117,47 @@ const PostDetails: React.FC = () => {
   };
 
   const handleAddComment = async () => {
-    try {
+    try {      
+      // Upload images to the server
+      const uploadedImages: { [placeholder: string]: string } = {};
+      for (let i = 0; i < images.length; i++) {
+        let image = images[i];
+        const formData = new FormData();
+
+        if (image instanceof Blob) {
+            const fileExtension = image.type.split('/')[1];
+            const fileName = `fileName-${i}.${fileExtension}`;
+            image = new File([image], fileName, { type: image.type });
+        }
+
+        formData.append('file', image);
+
+        const response = await api.post(`/resource/image`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${auth.accessToken}`,
+          },
+        });
+
+        // Map the placeholder to the actual URL
+        const imageUrl = `${config.app.backend_url()}/resource/image/${response.data}`;
+        uploadedImages[image.name] = imageUrl;
+      }
+      
+      let editedContentToSet = newComment;
+      Object.keys(uploadedImages).forEach((placeholder) => {
+        editedContentToSet = editedContentToSet.replace(
+            new RegExp(`blob:http://${config.app.domain_name()}:${config.app.port()}/([\\w-]+)`, 'g'),
+            (match) => uploadedImages[placeholder] || match // Replace if found, else keep original
+        );
+      });
+
       const response = await api.post(`/comment`, {
-        content: newComment,
+        content: editedContentToSet,
         postId,
       });
+
+      setImages([]);
       const newCommentData = response.data as Comment;
       setComments([...comments, newCommentData]);
 
@@ -147,10 +184,12 @@ const PostDetails: React.FC = () => {
   };
 
   const handleEditPost = () => {
+    setImages([]);
     setIsEditing(true);
   };
 
   const handleCancelEdit = () => {
+    setImages([]);
     setIsEditing(false);
     setEditedTitle(post?.title || '');
     setEditedContent(post?.content || '');
@@ -158,10 +197,46 @@ const PostDetails: React.FC = () => {
 
   const handleSaveEdit = async () => {
     try {
+
+      // Upload images to the server
+      const uploadedImages: { [placeholder: string]: string } = {};
+      for (let i = 0; i < images.length; i++) {
+        let image = images[i];
+        const formData = new FormData();
+
+        if (image instanceof Blob) {
+            const fileExtension = image.type.split('/')[1];
+            const fileName = `fileName-${i}.${fileExtension}`;
+            image = new File([image], fileName, { type: image.type });
+        }
+
+        formData.append('file', image);
+
+        const response = await api.post(`/resource/image`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${auth.accessToken}`,
+          },
+        });
+
+        // Map the placeholder to the actual URL
+        const imageUrl = `${config.app.backend_url()}/resource/image/${response.data}`;
+        uploadedImages[image.name] = imageUrl;
+      }
+      
+      let editedContentToSet = editedContent;
+      Object.keys(uploadedImages).forEach((placeholder) => {
+        editedContentToSet = editedContentToSet.replace(
+            new RegExp(`blob:http://${config.app.domain_name()}:${config.app.port()}/([\\w-]+)`, 'g'),
+            (match) => uploadedImages[placeholder] || match // Replace if found, else keep original
+        );
+      });
+
       const response = await api.put(`/post/${postId}`, {
         title: editedTitle,
-        content: editedContent,
+        content: editedContentToSet,
       });
+      setImages([]);
       setPost(response.data as PostModel);
       setIsEditing(false);
     } catch (err) {
@@ -269,26 +344,12 @@ const PostDetails: React.FC = () => {
                       imageAllowedTypes: ["jpeg", "jpg", "png", "gif"],
                       events: {
                         "image.beforeUpload": async function (fileList: File[]) {
-                          const editor = this as any;
                           const firstFile = fileList[0];
 
                           if (firstFile) {
                             const formData = new FormData();
                             formData.append("file", firstFile);
-
-                            try {
-                              const response = await api.post(`/resource/image`, formData, {
-                                headers: {
-                                  "Content-Type": "multipart/form-data",
-                                  Authorization: `Bearer ${auth.accessToken}`,
-                                },
-                              });
-
-                              const imageUrl = `${config.app.backend_url()}/resources/images/${response.data}`;
-                              editor.image.insert(imageUrl, null, null, editor.image.get());
-                            } catch (error) {
-                              console.error("Error uploading image:", error);
-                            }
+                            setImages((prevImages) => [...prevImages, firstFile]);
                           }
 
                           return false; // Prevent Froala's default upload mechanism
@@ -374,26 +435,12 @@ const PostDetails: React.FC = () => {
                     imageAllowedTypes: ["jpeg", "jpg", "png", "gif"],
                     events: {
                       "image.beforeUpload": async function (fileList: File[]) {
-                        const editor = this as any;
                         const firstFile = fileList[0];
 
                         if (firstFile) {
                           const formData = new FormData();
                           formData.append("file", firstFile);
-
-                          try {
-                            const response = await api.post(`/resource/image`, formData, {
-                              headers: {
-                                "Content-Type": "multipart/form-data",
-                                Authorization: `Bearer ${auth.accessToken}`,
-                              },
-                            });
-
-                            const imageUrl = `${config.app.backend_url()}/resources/images/${response.data}`;
-                            editor.image.insert(imageUrl, null, null, editor.image.get());
-                          } catch (error) {
-                            console.error("Error uploading image:", error);
-                          }
+                          setImages((prevImages) => [...prevImages, firstFile]);
                         }
 
                         return false; // Prevent Froala's default upload mechanism

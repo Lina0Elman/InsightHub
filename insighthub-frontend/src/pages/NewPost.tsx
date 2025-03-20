@@ -23,8 +23,16 @@ const NewPost: React.FC = () => {
     try {
       // Upload images to the server
       const uploadedImages: { [placeholder: string]: string } = {};
-      for (const image of images) {
+      for (let i = 0; i < images.length; i++) {
+        let image = images[i];
         const formData = new FormData();
+
+        if (image instanceof Blob) {
+            const fileExtension = image.type.split('/')[1];
+            const fileName = `fileName-${i}.${fileExtension}`;
+            image = new File([image], fileName, { type: image.type });
+        }
+
         formData.append('file', image);
 
         const response = await api.post(`/resource/image`, formData, {
@@ -35,14 +43,17 @@ const NewPost: React.FC = () => {
         });
 
         // Map the placeholder to the actual URL
-        const imageUrl = `${config.app.backend_url()}/resources/images/${response.data}`;
+        const imageUrl = `${config.app.backend_url()}/resource/image/${response.data}`;
         uploadedImages[image.name] = imageUrl;
       }
 
       // Replace placeholders in the content with actual URLs
       let updatedContent = content;
       Object.keys(uploadedImages).forEach((placeholder) => {
-        updatedContent = updatedContent.replace(placeholder, uploadedImages[placeholder]);
+        updatedContent = updatedContent.replace(
+            new RegExp(`blob:http://${config.app.domain_name()}:${config.app.port()}/([\\w-]+)`, 'g'),
+            (match) => uploadedImages[placeholder] || match // Replace if found, else keep original
+        );
       });
 
       // Submit the post with the updated content
@@ -50,6 +61,8 @@ const NewPost: React.FC = () => {
         title,
         content: updatedContent,
       });
+
+      setImages([]);
 
       navigate('/dashboard'); // Redirect to dashboard after successful post creation
     } catch (error) {
