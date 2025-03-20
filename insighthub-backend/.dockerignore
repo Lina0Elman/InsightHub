@@ -1,0 +1,17 @@
+# IDEs
+.idea/
+.vscode/
+
+# Node
+node_modules/
+dist/
+package-lock.json
+openssl-secret.txt
+resources
+
+# Environment
+.env
+
+# Tests
+**/tests/reports
+coverage
