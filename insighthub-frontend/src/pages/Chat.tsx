@@ -22,6 +22,9 @@ const Chat: React.FC = () => {
       extraHeaders: {
         authorization: `Bearer ${userAuthRef.current.accessToken}`
       },
+      auth: {
+        token: `Bearer ${userAuthRef.current.accessToken}`
+      },
       path: "/api/socket.io/",
       transports: ["websocket", "polling"],  // Support WebSocket & polling
     });
