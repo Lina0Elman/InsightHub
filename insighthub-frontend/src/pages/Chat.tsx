@@ -21,7 +21,9 @@ const Chat: React.FC = () => {
     socketRef.current = io(config.app.backend_url(), {
       extraHeaders: {
         authorization: `Bearer ${userAuthRef.current.accessToken}`
-      }
+      },
+      path: "/socket.io/",  // Ensure it matches Nginx config
+      transports: ["websocket", "polling"],  // Support WebSocket & polling
     });
     
     socketRef.current.on(config.socketMethods.messageFromServer, ({ roomId, message } : any) => {
