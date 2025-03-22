@@ -48,8 +48,8 @@ const testPost4 = {
 }
 
 const addUser = async (userInfo: UserInfo) => {
-    await request(app).post('/auth/register').send(userInfo);
-    const loginResponse = await request(app).post('/auth/login').send(userInfo);
+    await request(app).post('/api/auth/register').send(userInfo);
+    const loginResponse = await request(app).post('/api/auth/login').send(userInfo);
     userInfo.accessToken = loginResponse.body.accessToken;
     userInfo.id = loginResponse.body.userId;
 }
@@ -66,7 +66,7 @@ beforeAll(async () => {
 describe('given db empty of posts when http request GET /post', () => {
     it('then should return empty list', async () => {
         const res = await request(app)
-            .get('/post')
+            .get('/api/post')
             .set('Authorization', `jwt ` + userInfo.accessToken);
         expect(res.statusCode).toBe(200);
         expect(res.body).toEqual([]);
@@ -78,7 +78,7 @@ describe('when http request POST /post', () => {
 
         const currentTime = Date.now();
         const res = await request(app)
-            .post('/post')
+            .post('/api/post')
             .set('Authorization', `jwt ` + userInfo.accessToken)
             .send(testPost1);
         const resBody = res.body;
@@ -101,7 +101,7 @@ describe('when http request POST /post', () => {
     it('then should add posts to the db', async () => {
         // Post 1
         await request(app)
-            .post('/post')
+            .post('/api/post')
             .set('Authorization', `jwt ` + userInfo.accessToken)
             .send(testPost1);
         // Post 2
@@ -112,13 +112,13 @@ describe('when http request POST /post', () => {
 
         // Post 3
         await request(app)
-            .post('/post')
+            .post('/api/post')
             .set('Authorization', `jwt ` + userInfo.accessToken)
             .send(testPost3);
 
         // Post 4 another owner
         await request(app)
-            .post('/post')
+            .post('/api/post')
             .set('Authorization', `jwt ` + userInfo2.accessToken)
             .send(testPost4);
     });
@@ -127,7 +127,7 @@ describe('when http request POST /post', () => {
 describe('given db initialized with posts when http request GET /post', () => {
     it('then should return all posts in the db', async () => {
         const res = await request(app)
-            .get('/post')
+            .get('/api/post')
             .set('Authorization', `jwt ` + userInfo.accessToken);
         expect(res.statusCode).toBe(200);
         expect(res.body.posts).not.toEqual([]);
@@ -137,17 +137,17 @@ describe('given db initialized with posts when http request GET /post', () => {
 
 describe('Check the private and public route for the auth need', () => {
     it('should allow GET /post without authentication', async () => {
-        const response = await request(app).get('/post');
+        const response = await request(app).get('/api/post');
         expect(response.status).toBe(200);
     });
 
     it('should allow GET /post/:id without authentication', async () => {
-        const response = await request(app).get(`/post/${existingPost.id}`);
+        const response = await request(app).get(`/api/post/${existingPost.id}`);
         expect(response.status).toBe(200);
     });
 
     it('should not allow GET /post?owner without authentication', async () => {
-        const response = await request(app).get(`/post?owner${existingPost.owner}`);
+        const response = await request(app).get(`/api/post?owner${existingPost.owner}`);
         expect(response.status).toBe(401);
     });
 });
@@ -156,7 +156,7 @@ describe('Check the private and public route for the auth need', () => {
 describe('given username when http request GET /post?username', () => {
     it('then should return a post', async () => {
         const res = await request(app)
-            .get(`/post?username=${userInfo.username}`)
+            .get(`/api/post?username=${userInfo.username}`)
             .set('Authorization', `jwt ` + userInfo.accessToken);
 
         expect(res.statusCode).toBe(200);
@@ -169,7 +169,7 @@ describe('given username when http request GET /post?username', () => {
 describe('given unknown userId when http request GET /post?owner', () => {
     it('then should return empty list', async () => {
         const res = await request(app)
-            .get('/post?owner=67c8975b8a05aa910017a481')
+            .get('/api/post?owner=67c8975b8a05aa910017a481')
             .set('Authorization', `jwt ` + userInfo.accessToken);
 
         expect(res.statusCode).toBe(200);
@@ -182,13 +182,13 @@ describe('given existing username when http request GET /post?owner', () => {
     it('then should return his posts only', async () => {
         // Fetch all posts
         const resAllPosts = await request(app)
-            .get('/post')
+            .get('/api/post')
             .set('Authorization', `jwt ` + userInfo.accessToken);
         const allPosts = resAllPosts.body;
 
         // Fetch posts by specific user
         const resUserPosts = await request(app)
-            .get(`/post?owner=${userInfo2.id}`)
+            .get(`/api/post?owner=${userInfo2.id}`)
             .set('Authorization', `jwt ` + userInfo.accessToken);
         const userPosts = resUserPosts.body;
 
@@ -212,7 +212,7 @@ describe('given existing username when http request GET /post?owner', () => {
 describe('when http request PUT /post/id of unknown post', () => {
     it('then should return 400 bad request http status', async () => {
         const res = await request(app)
-            .put(`/post/UNKNOWN`)
+            .put(`/api/post/UNKNOWN`)
             .set('Authorization', `jwt ` + userInfo.accessToken)
             .send(testUpdatedPost);
 
@@ -223,12 +223,12 @@ describe('when http request PUT /post/id of unknown post', () => {
 describe('when http request PUT /post/id of existing post', () => {
     it('then should update post in the db', async () => {
         const resOldPost = await request(app)
-            .get(`/post/${existingPost.id}`)
+            .get(`/api/post/${existingPost.id}`)
             .set('Authorization', `jwt ` + userInfo.accessToken)
 
         const oldPost = resOldPost.body;
         const res = await request(app)
-            .put(`/post/${existingPost.id}`)
+            .put(`/api/post/${existingPost.id}`)
             .set('Authorization', `jwt ` + userInfo.accessToken)
             .send(testUpdatedPost);
         const updatedPost = res.body;
@@ -253,7 +253,7 @@ describe('when http request PUT /post/id of existing post but without being the 
             "content": "UPDATED POST CONTENT"
         };
         const res = await request(app)
-            .put(`/post/${existingPost.id}`)
+            .put(`/api/post/${existingPost.id}`)
             .set('Authorization', `jwt ` + userInfo2.accessToken)
             .send(body);
 
@@ -268,7 +268,7 @@ describe('when http request PUT /post/id of non existing post', () => {
             "content": "UPDATED POST CONTENT"
         };
         const res = await request(app)
-            .put(`/post/67c8a86f81a290f10000e313`)
+            .put(`/api/post/67c8a86f81a290f10000e313`)
             .set('Authorization', `jwt ` + userInfo.accessToken)
             .send(body);
 
