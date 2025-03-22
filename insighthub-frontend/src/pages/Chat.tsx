@@ -18,7 +18,7 @@ const Chat: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   
   const connectHandler = () => {
-    socketRef.current = io(`${config.app.backend_url()}/socket.io/`, {
+    socketRef.current = io(`/`, {
       extraHeaders: {
         authorization: `Bearer ${userAuthRef.current.accessToken}`
       },
