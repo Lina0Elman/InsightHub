@@ -18,11 +18,10 @@ const Chat: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   
   const connectHandler = () => {
-    socketRef.current = io(config.app.backend_url(), {
+    socketRef.current = io(`${config.app.backend_url()}/socket.io/`, {
       extraHeaders: {
         authorization: `Bearer ${userAuthRef.current.accessToken}`
       },
-      path: "/socket.io/",  // Ensure it matches Nginx config
       transports: ["websocket", "polling"],  // Support WebSocket & polling
     });
     
