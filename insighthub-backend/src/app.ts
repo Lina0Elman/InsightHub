@@ -58,6 +58,7 @@ router.use(authenticateToken.unless({
         { url: /^\/api\/post\/[^\/]+$/, methods: ['GET'] },
         { url: /^\/api\/comment\/[^\/]+$/, methods: ['GET'] },
         { url: /^\/api\/comment\/post\/[^\/]+$/, methods: ['GET'] },
+        { url: /^\/api\/api-docs.*$/, methods: ['GET'] }, // Exclude Swagger UI static files
         { url: '/api/comment', methods: ['GET'] },
         { url: '/api/post', methods: ['GET'] },
         { url: /^\/api\/resource\/image\/[^\/]+$/, methods: ['GET'] },
