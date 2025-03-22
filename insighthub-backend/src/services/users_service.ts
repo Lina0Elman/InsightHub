@@ -12,8 +12,8 @@ const userToUserData = (user: Document<unknown, {}, IUser> & IUser): UserData =>
 };
 
 
-export const addUser = async (username: string, password: string, email: string, authProvider: string): Promise<UserData> => {
-    const newUser = new UserModel({username, password, email, authProvider: authProvider || 'local'});
+export const addUser = async (username: string, password: string, email: string, authProvider: string='local'): Promise<UserData> => {
+    const newUser = new UserModel({username, password, email, authProvider});
     await newUser.save()
     return userToUserData(newUser);
 };

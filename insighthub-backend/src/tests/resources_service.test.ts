@@ -14,8 +14,8 @@ describe('Resources Service - Upload Image', () => {
             password: "123456",
             username: "testing111"
         };
-        await request(app).post('/auth/register').send(user);
-        const loginResponse = await request(app).post('/auth/login').send(user);
+        await request(app).post('/api/auth/register').send(user);
+        const loginResponse = await request(app).post('/api/auth/login').send(user);
         accessToken = loginResponse.body.accessToken;
     });
 
@@ -46,7 +46,7 @@ describe('Resources Service - Upload Image', () => {
     it('should upload an image successfully', async () => {
         const imageBlob = generateImageBlob();
         const res = await request(app)
-            .post('/resource/image')
+            .post('/api/resource/image')
             .set('Authorization', `jwt ${accessToken}`)
             .attach('file', imageBlob, 'test-image.png');
 
@@ -60,7 +60,7 @@ describe('Resources Service - Upload Image', () => {
     it('should fail to upload a non-image file', async () => {
         const nonImageBlob = generateNonImageBlob();
         const res = await request(app)
-            .post('/resource/image')
+            .post('/api/resource/image')
             .set('Authorization', `jwt ${accessToken}`)
             .attach('file', nonImageBlob, 'test-non-image.pdf');
 
@@ -71,7 +71,7 @@ describe('Resources Service - Upload Image', () => {
     it('should fail to upload an image larger than the max size', async () => {
         const largeImageBlob = Buffer.alloc(11 * 1024 * 1024); // 11MB
         const res = await request(app)
-            .post('/resource/image')
+            .post('/api/resource/image')
             .set('Authorization', `jwt ${accessToken}`)
             .attach('file', largeImageBlob, 'large-test-image.jpg');
 

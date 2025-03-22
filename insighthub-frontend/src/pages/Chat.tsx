@@ -18,10 +18,15 @@ const Chat: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   
   const connectHandler = () => {
-    socketRef.current = io(config.app.backend_url(), {
+    socketRef.current = io(`/`, {
       extraHeaders: {
         authorization: `Bearer ${userAuthRef.current.accessToken}`
-      }
+      },
+      auth: {
+        token: `Bearer ${userAuthRef.current.accessToken}`
+      },
+      path: "/api/socket.io/",
+      transports: ["websocket", "polling"],  // Support WebSocket & polling
     });
     
     socketRef.current.on(config.socketMethods.messageFromServer, ({ roomId, message } : any) => {

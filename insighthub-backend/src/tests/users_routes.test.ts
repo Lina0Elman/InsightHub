@@ -29,8 +29,8 @@ describe('User Routes', () => {
         // Generate tokens for authenticated users
         // Register and login to get access token
 
-        const regRes1 = await request(app).post('/auth/register').send(user1);
-        const loginResponse1 = await request(app).post('/auth/login').send(user1);
+        const regRes1 = await request(app).post('/api/auth/register').send(user1);
+        const loginResponse1 = await request(app).post('/api/auth/login').send(user1);
         user1.id = loginResponse1.body.userId;
         user1.createdAt = regRes1.body.createdAt;
         user1.updatedAt = regRes1.body.updatedAt;
@@ -38,8 +38,8 @@ describe('User Routes', () => {
 
         // Register and login to get access token
 
-        const regRes2 = await request(app).post('/auth/register').send(user2);
-        const loginResponse2 = await request(app).post('/auth/login').send(user2);
+        const regRes2 = await request(app).post('/api/auth/register').send(user2);
+        const loginResponse2 = await request(app).post('/api/auth/login').send(user2);
         user2.id = loginResponse2.body.userId;
         user2.createdAt = regRes2.body.createdAt;
         user2.updatedAt = regRes2.body.updatedAt;
@@ -49,7 +49,7 @@ describe('User Routes', () => {
     describe('GET /user', () => {
         it('should return a list of users', async () => {
             const res = await request(app)
-                .get('/user')
+                .get('/api/user')
                 .set('Authorization', `Bearer ${accessToken1}`);
             expect(res.status).toBe(200);
             expect(res.body).toBeInstanceOf(Array);
@@ -59,7 +59,7 @@ describe('User Routes', () => {
     describe('GET /user/:id', () => {
         it('should return a user by ID', async () => {
             const res = await request(app)
-                .get(`/user/${user1.id}`)
+                .get(`/api/user/${user1.id}`)
                 .set('Authorization', `Bearer ${accessToken1}`);
             expect(res.status).toBe(200);
             expect(res.body).toHaveProperty('id', user1.id);
@@ -69,7 +69,7 @@ describe('User Routes', () => {
             console.info("the user is not authorized to perform on another user even if not exist")
 
             const res = await request(app)
-                .get('/user/000000000000000000000000')
+                .get('/api/user/000000000000000000000000')
                 .set('Authorization', `Bearer ${accessToken1}`);
             expect(res.status).toBe(403);
         });
@@ -80,7 +80,7 @@ describe('User Routes', () => {
             const newUser1 = { username: 'UpdatedName', email:"newmail@gmail.com" }
 
             const res = await request(app)
-                .patch(`/user/${user1.id}`)
+                .patch(`/api/user/${user1.id}`)
                 .set('Authorization', `Bearer ${accessToken1}`)
                 .send(newUser1);
             expect(res.status).toBe(200);
@@ -97,7 +97,7 @@ describe('User Routes', () => {
             const newUser1 = { password: '821njK@92', email:"newmail11@gmail.com" }
 
             const res = await request(app)
-                .patch(`/user/${user1.id}`)
+                .patch(`/api/user/${user1.id}`)
                 .set('Authorization', `Bearer ${accessToken1}`)
                 .send(newUser1);
             expect(res.status).toBe(200);
@@ -111,7 +111,7 @@ describe('User Routes', () => {
 
         it('should return 403 if trying to update another user', async () => {
             const res = await request(app)
-                .patch(`/user/${user2.id}`)
+                .patch(`/api/user/${user2.id}`)
                 .set('Authorization', `Bearer ${accessToken1}`)
                 .send({ name: 'Updated Name' });
             expect(res.status).toBe(403);
@@ -120,9 +120,9 @@ describe('User Routes', () => {
 
 
     describe('User Routes that will not pass for invalid or violations', () => {
-        describe('GET /user/:id without Authorization header', () => {
+        describe('GET /api/user/:id without Authorization header', () => {
             it('should return 401 for missing Authorization header', async () => {
-                const res = await request(app).get(`/user/${user1.id}`);
+                const res = await request(app).get(`/api/user/${user1.id}`);
                 expect(res.status).toBe(401);
             });
         });
@@ -130,7 +130,7 @@ describe('User Routes', () => {
         describe('PATCH /user/:id with empty request body', () => {
             it('should return 200 for empty request body - the user is the same, and an empty body is fine', async () => {
                 const res = await request(app)
-                    .patch(`/user/${user1.id}`)
+                    .patch(`/api/user/${user1.id}`)
                     .set('Authorization', `Bearer ${accessToken1}`)
                     .send({});
                 expect(res.status).toBe(200);
@@ -140,7 +140,7 @@ describe('User Routes', () => {
         describe('PATCH /user/:id with invalid data types', () => {
             it('should return 400 for invalid data types', async () => {
                 const res = await request(app)
-                    .patch(`/user/${user1.id}`)
+                    .patch(`/api/user/${user1.id}`)
                     .set('Authorization', `Bearer ${accessToken1}`)
                     .send({ username: 12345, email: true });
                 expect(res.status).toBe(400);
@@ -152,14 +152,14 @@ describe('User Routes', () => {
     describe('DELETE /user/:id', () => {
         it('should delete a user by ID', async () => {
             const res = await request(app)
-                .delete(`/user/${user1.id}`)
+                .delete(`/api/user/${user1.id}`)
                 .set('Authorization', `Bearer ${accessToken1}`);
             expect(res.status).toBe(200);
         });
 
         it('should return 403 if trying to delete another user', async () => {
             const res = await request(app)
-                .delete(`/user/${user2.id}`)
+                .delete(`/api/user/${user2.id}`)
                 .set('Authorization', `Bearer ${accessToken1}`);
             expect(res.status).toBe(403);
         });
@@ -168,7 +168,7 @@ describe('User Routes', () => {
             console.info("the user is not authorized to perform on another user even if not exists")
 
             const res = await request(app)
-                .delete('/user/000000000000000000000000')
+                .delete('/api/user/000000000000000000000000')
                 .set('Authorization', `Bearer ${accessToken1}`);
             expect(res.status).toBe(403);
         });

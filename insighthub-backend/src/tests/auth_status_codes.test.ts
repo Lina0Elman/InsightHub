@@ -14,8 +14,8 @@ describe('Authentication Status Code Tests', () => {
             username: "TestUser",
             password: "123456"
         };
-        await request(app).post('/auth/register').send(user);
-        const loginResponse = await request(app).post('/auth/login').send(user);
+        await request(app).post('/api/auth/register').send(user);
+        const loginResponse = await request(app).post('/api/auth/login').send(user);
         if (loginResponse.status != 200) {
             console.error('login error');
             return;
@@ -24,7 +24,7 @@ describe('Authentication Status Code Tests', () => {
 
         // Create a post for testing
         const postResponse = await request(app)
-            .post('/post')
+            .post('/api/post')
             .set('Authorization', `jwt ${validAccessToken}`)
             .send({
                 sender: "TestUser",
@@ -35,7 +35,7 @@ describe('Authentication Status Code Tests', () => {
 
         // Create a comment for testing
         const commentResponse = await request(app)
-            .post('/comment')
+            .post('/api/comment')
             .set('Authorization', `jwt ${validAccessToken}`)
             .send({
                 postId: postId,
@@ -48,21 +48,21 @@ describe('Authentication Status Code Tests', () => {
     describe('200 Success Status Tests', () => {
         it('should return 200 on successful GET posts', async () => {
             const res = await request(app)
-                .get('/post')
+                .get('/api/post')
                 .set('Authorization', `jwt ${validAccessToken}`);
             expect(res.status).toBe(200);
         });
 
         it('should return 200 on successful GET comments', async () => {
             const res = await request(app)
-                .get('/comment')
+                .get('/api/comment')
                 .set('Authorization', `jwt ${validAccessToken}`);
             expect(res.status).toBe(200);
         });
 
         it('should return 200 on successful comment deletion', async () => {
             const res = await request(app)
-                .delete(`/comment/${commentId}`)
+                .delete(`/api/comment/${commentId}`)
                 .set('Authorization', `jwt ${validAccessToken}`);
             expect(res.status).toBe(200);
         });
@@ -71,7 +71,7 @@ describe('Authentication Status Code Tests', () => {
     describe('201 Created Status Tests', () => {
         it('should return 201 on successful post creation', async () => {
             const res = await request(app)
-                .post('/post')
+                .post('/api/post')
                 .set('Authorization', `jwt ${validAccessToken}`)
                 .send({
                     sender: "TestUser",
@@ -83,7 +83,7 @@ describe('Authentication Status Code Tests', () => {
 
         it('should return 201 on successful comment creation', async () => {
             const res = await request(app)
-                .post('/comment')
+                .post('/api/comment')
                 .set('Authorization', `jwt ${validAccessToken}`)
                 .send({
                     postId: postId,
@@ -97,7 +97,7 @@ describe('Authentication Status Code Tests', () => {
     describe('400 Bad Request Status Tests', () => {
         it('should return 400 when creating post without required fields', async () => {
             const res = await request(app)
-                .post('/post')
+                .post('/api/post')
                 .set('Authorization', `jwt ${validAccessToken}`)
                 .send({
                     content: "Missing required fields"
@@ -107,7 +107,7 @@ describe('Authentication Status Code Tests', () => {
 
         it('should return 400 when creating comment with invalid post ID', async () => {
             const res = await request(app)
-                .post('/comment')
+                .post('/api/comment')
                 .set('Authorization', `jwt ${validAccessToken}`)
                 .send({
                     postId: "invalidid",
@@ -121,7 +121,7 @@ describe('Authentication Status Code Tests', () => {
     describe('401 Unauthorized Status Tests', () => {
         it('should return 401 when creating post without token', async () => {
             const res = await request(app)
-                .post('/post')
+                .post('/api/post')
                 .send({
                     sender: "TestUser",
                     title: "Test Post",
@@ -132,7 +132,7 @@ describe('Authentication Status Code Tests', () => {
 
         it('should return 401 when updating comment without token', async () => {
             const res = await request(app)
-                .put(`/comment/${commentId}`)
+                .put(`/api/comment/${commentId}`)
                 .send({
                     sender: "TestUser",
                     content: "Updated Comment"
@@ -144,7 +144,7 @@ describe('Authentication Status Code Tests', () => {
     describe('403 Forbidden Status Tests', () => {
         it('should return 403 when using expired access token for post creation', async () => {
             const res = await request(app)
-                .post('/post')
+                .post('/api/post')
                 .set('Authorization', `jwt ${expiredAccessToken}`)
                 .send({
                     sender: "TestUser",
@@ -156,7 +156,7 @@ describe('Authentication Status Code Tests', () => {
 
         it('should return 403 when using expired access token for comment update', async () => {
             const res = await request(app)
-                .put(`/comment/${commentId}`)
+                .put(`/api/comment/${commentId}`)
                 .set('Authorization', `jwt ${expiredAccessToken}`)
                 .send({
                     sender: "TestUser",
@@ -171,7 +171,7 @@ describe('Authentication Status Code Tests', () => {
             // Use a valid ObjectId format that doesn't exist in the database
             const nonExistentId = '507f1f77bcf86cd799439011';
             const res = await request(app)
-                .get(`/post/${nonExistentId}`)
+                .get(`/api/post/${nonExistentId}`)
                 .set('Authorization', `jwt ${validAccessToken}`);
             expect(res.status).toBe(404);
         });
@@ -180,7 +180,7 @@ describe('Authentication Status Code Tests', () => {
             // Use a valid ObjectId format that doesn't exist in the database
             const nonExistentId = '507f1f77bcf86cd799439011';
             const res = await request(app)
-                .post('/comment')
+                .post('/api/comment')
                 .set('Authorization', `jwt ${validAccessToken}`)
                 .send({
                     postId: nonExistentId,

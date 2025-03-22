@@ -5,7 +5,7 @@ import * as usersService from '../services/users_service';
 
 
 const getTokenFromHeader = (socket: Socket): string | undefined => {
-    const authHeader = (socket.handshake.headers['authorization'] as string | undefined) ?? (socket.handshake.headers['Authorization'] as string | undefined);
+    const authHeader = (socket.handshake.headers['authorization'] as string | undefined) ?? (socket.handshake.headers['Authorization'] as string | undefined) ?? (socket.handshake.auth.token as string | undefined);
     return authHeader?.split(' ')[1];
 }
 

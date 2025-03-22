@@ -4,6 +4,9 @@ info:
   description: API for managing all the abilities.
   version: 1.0.0
 
+servers:
+  - url: /api
+
 tags:
   - name: Posts
     description: Operations related to posts
