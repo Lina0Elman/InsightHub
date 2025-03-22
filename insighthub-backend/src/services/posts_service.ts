@@ -29,7 +29,7 @@ const postToPostData = async (post: Document<unknown, {}, IPost> & IPost): Promi
 const addMisterAIComment = async (postId: string, postContent: string) => {
     let misterAI: UserData | null = await usersService.getUserByEmail('misterai@example.com');
     if (!misterAI) {
-        misterAI = await usersService.addUser('misterai', 'securepassword', 'misterai@example.com');
+        misterAI = await usersService.addUser('misterai', 'securepassword', 'misterai@example.com', 'local');
     }
 
     const comment = await chatService.chatWithAI(postContent);
