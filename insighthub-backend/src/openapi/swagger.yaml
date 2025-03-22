@@ -4,6 +4,9 @@ info:
   description: API for managing all the abilities.
   version: 1.0.0
 
+servers:
+  - url: /api
+
 tags:
   - name: Posts
     description: Operations related to posts
@@ -19,7 +22,7 @@ tags:
     description: Operations related to chat rooms
 
 paths:
-  /post:
+  /api/post:
     get:
       tags:
         - Posts
@@ -70,7 +73,7 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
-  /post/{postId}:
+  /api/post/{postId}:
     get:
       tags:
         - Posts
@@ -186,7 +189,7 @@ paths:
         '404':
           $ref: '#/components/responses/PostNotFound'
 
-  /post/{postId}/like:
+  /api/post/{postId}/like:
     put:
       tags:
         - Posts
@@ -226,7 +229,7 @@ paths:
         '404':
           $ref: '#/components/responses/PostNotFound'
 
-  /post/like:
+  /api/post/like:
     get:
       tags:
         - Posts
@@ -291,7 +294,7 @@ paths:
         '404':
           $ref: '#/components/responses/PostNotFound'
 
-  /comment/{commentId}:
+  /api/comment/{commentId}:
     put:
       tags:
         - Comments
@@ -384,7 +387,7 @@ paths:
         '404':
           $ref: '#/components/responses/CommentNotFound'
 
-  /comment/post/{postId}:
+  /api/comment/post/{postId}:
     get:
       tags:
         - Comments
@@ -410,7 +413,7 @@ paths:
           $ref: '#/components/responses/PostNotFound'
 
   # Authentication Routes
-  /auth/register:
+  /api/auth/register:
     post:
       tags:
         - Authentication
@@ -427,7 +430,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /auth/login:
+  /api/auth/login:
     post:
       tags:
         - Authentication
@@ -448,7 +451,7 @@ paths:
         '401':
           description: Invalid credentials
 
-  /auth/refresh:
+  /api/auth/refresh:
     post:
       tags:
         - Authentication
@@ -474,7 +477,7 @@ paths:
         '401':
           description: Invalid refresh token
 
-  /auth/logout:
+  /api/auth/logout:
     post:
       tags:
         - Authentication
@@ -518,7 +521,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-  /user/{userId}:
+  /api/user/{userId}:
     get:
       tags:
         - Users
@@ -606,7 +609,7 @@ paths:
           $ref: '#/components/responses/UserNotFound'
 
 
-  /resource/image/user:
+  /api/resource/image/user:
     post:
       tags:
         - Resources
@@ -660,7 +663,7 @@ paths:
         '500':
           description: Internal server error
 
-  /resource/image:
+  /api/resource/image:
     post:
       tags:
         - Resources
@@ -699,7 +702,7 @@ paths:
         '500':
           description: Internal server error
 
-  /resource/image/{filename}:
+  /api/resource/image/{filename}:
     get:
       tags:
         - Resources
@@ -726,7 +729,7 @@ paths:
         '500':
           description: Internal server error
 
-  /room/user/{receiverUserId}:
+  /api/room/user/{receiverUserId}:
     get:
       tags:
         - Rooms
@@ -989,7 +992,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: JWT token obtained from /auth/login endpoint
+      description: JWT token obtained from /api/auth/login endpoint
 
   responses:
     BadRequest:

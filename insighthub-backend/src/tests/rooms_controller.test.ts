@@ -16,13 +16,13 @@ describe('Rooms Controller', () => {
 
     beforeAll(async () => {
         // Register and login to get access token
-        await request(app).post('/auth/register').send(initiatorUser);
-        const loginResponse = await request(app).post('/auth/login').send(initiatorUser);
+        await request(app).post('/api/auth/register').send(initiatorUser);
+        const loginResponse = await request(app).post('/api/auth/login').send(initiatorUser);
         initiatorUser = loginResponse.body;
 
         // Register and login to get access token
-        await request(app).post('/auth/register').send(receiverUser);
-        const loginResponse2 = await request(app).post('/auth/login').send(receiverUser);
+        await request(app).post('/api/auth/register').send(receiverUser);
+        const loginResponse2 = await request(app).post('/api/auth/login').send(receiverUser);
         receiverUser = loginResponse2.body;
     });
 
@@ -38,7 +38,7 @@ describe('Rooms Controller', () => {
         });
 
         const response = await request(app)
-            .get(`/room/user/${receiverUser.userId}`)
+            .get(`/api/room/user/${receiverUser.userId}`)
             .set('Authorization', `Bearer ${initiatorUser.accessToken}`);
 
         expect(response.status).toBe(200);
@@ -58,7 +58,7 @@ describe('Rooms Controller', () => {
         });
 
         const response = await request(app)
-            .get(`/room/user/${initiatorUser.userId}`)
+            .get(`/api/room/user/${initiatorUser.userId}`)
             .set('Authorization', `Bearer ${initiatorUser.accessToken}`);
 
         expect(response.status).toBe(200);
@@ -68,7 +68,7 @@ describe('Rooms Controller', () => {
 
     it('should create a new room if it does not exist', async () => {
         const response = await request(app)
-            .get(`/room/user/${receiverUser.userId}`)
+            .get(`/api/room/user/${receiverUser.userId}`)
             .set('Authorization', `Bearer ${initiatorUser.accessToken}`);
 
         expect(response.status).toBe(201);
@@ -79,7 +79,7 @@ describe('Rooms Controller', () => {
     it('should return 400 for invalid user IDs', async () => {
         const invalidUserId = "invalidUserId"
         const response = await request(app)
-            .get(`/room/user/invalidUserId`)
+            .get(`/api/room/user/invalidUserId`)
             .set('Authorization', `Bearer ${initiatorUser.accessToken}`)
             .query({ userId: 'invalidUserId' });
 
