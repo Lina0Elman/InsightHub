@@ -22,7 +22,7 @@ const Chat: React.FC = () => {
       extraHeaders: {
         authorization: `Bearer ${userAuthRef.current.accessToken}`
       },
-      path: "/api/socket.io/",  // Ensure it matches Nginx config
+      path: "/socket.io/",  // Ensure it matches Nginx config
       transports: ["websocket", "polling"],  // Support WebSocket & polling
     });
     
