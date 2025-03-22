@@ -41,7 +41,7 @@ if (process.env.NODE_ENV === 'production') {
 // Initialize socket.io
 const socketListener = new Server(listener, { 
     cors: corsOptions, 
-    path: "/socket.io/", // Ensure it matches Nginx
+    path: "/api/socket.io/", // Ensure it matches Nginx
     transports: ["websocket", "polling"], // Support both transports
  });
 socketListener.use((socket, next) => socketAuthMiddleware(socket, next));
