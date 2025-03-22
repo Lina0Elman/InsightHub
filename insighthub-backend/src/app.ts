@@ -43,7 +43,7 @@ router.use(bodyParser.json());
 router.use(removeUndefinedOrEmptyFields);
 router.use(bodyParser.urlencoded({ extended: true }));
 
-router.use('/api-docs', swaggerUi.setup(loadOpenApiFile() as JsonObject), swaggerUi.serve);
+router.use('/api-docs',swaggerUi.serve, swaggerUi.setup(loadOpenApiFile() as JsonObject));
 
 // Add Authentication for all routes except the ones listed below
 router.use(authenticateToken.unless({
