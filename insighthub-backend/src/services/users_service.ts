@@ -1,6 +1,6 @@
 import { UserModel } from '../models/user_model';
 import {IUser, UserData} from 'types/user_types';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { RefreshTokenModel } from '../models/refresh_token_model';
 import {config} from '../config/config'
